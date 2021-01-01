@@ -8,3 +8,5 @@
 #define fT_PLUGIN_DESCRIPTION ""
 #define fT_PLUGIN_VERSION "1.0.0"
 #define fT_PLUGIN_URL "github.com/fuckTimer"
+
+#define fT_BASE_CLOUD_URL "https://fucktimer.cloud/file"
