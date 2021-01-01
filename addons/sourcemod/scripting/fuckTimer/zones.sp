@@ -59,7 +59,6 @@ public void Frame_DownloadZone()
     
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
-    LogMessage("Zones->OnMapStart->sMap: %s", sMap);
 
     if (FileExists(sFile))
     {
