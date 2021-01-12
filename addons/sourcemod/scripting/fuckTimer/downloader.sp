@@ -3,7 +3,7 @@
 
 #include <sourcemod>
 #include <ripext>
-#include <fuckStocks>
+#include <fT_stocks>
 
 #undef REQUIRE_PLUGIN
 #include <fuckZones>
