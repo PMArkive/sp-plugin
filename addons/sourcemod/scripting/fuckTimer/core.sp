@@ -41,7 +41,7 @@ public int Native_GetBaseURL(Handle plugin, int numParams)
 
     g_cBaseURL.GetString(sURL, iLength);
 
-    if (strlen(sURL) > 4)
+    if (strlen(sURL) > MIN_BASE_URL_LENGTH)
     {
         int iCode = SetNativeString(1, sURL, iLength);
 
@@ -57,7 +57,7 @@ public int Native_GetAPIKey(Handle plugin, int numParams)
 
     g_cAPIKey.GetString(sKey, iLength);
 
-    if (strlen(sKey) > 12)
+    if (strlen(sKey) > MIN_API_KEY_LENGTH)
     {
         int iCode = SetNativeString(1, sKey, iLength);
 
