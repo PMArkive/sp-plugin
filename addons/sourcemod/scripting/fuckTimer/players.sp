@@ -1,0 +1,143 @@
+#pragma semicolon 1
+#pragma newdecls required
+
+#include <sourcemod>
+#include <ripext>
+#include <fT_stocks>
+#include <fT_core>
+
+char g_sBase[MAX_URL_LENGTH];
+char g_sKey[MAX_URL_LENGTH];
+
+public Plugin myinfo =
+{
+    name = fT_PLUGIN_NAME ... "Players",
+    author = fT_PLUGIN_AUTHOR,
+    description = fT_PLUGIN_DESCRIPTION,
+    version = fT_PLUGIN_VERSION,
+    url = fT_PLUGIN_URL
+};
+
+public void OnPluginStart()
+{
+    if (!fT_GetBaseURL(g_sBase, sizeof(g_sBase)))
+    {
+        SetFailState("[Players.OnPluginStart] Can't receive base url.");
+        return;
+    }
+
+    if (!fT_GetAPIKey(g_sKey, sizeof(g_sKey)))
+    {
+        SetFailState("[Players.OnPluginStart] Can't receive api key.");
+        return;
+    }
+
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i))
+        {
+            OnClientPutInServer(i);
+        }
+    }
+}
+
+public void OnMapStart()
+{
+    if (!fT_GetBaseURL(g_sBase, sizeof(g_sBase)))
+    {
+        SetFailState("[Players.OnMapStart] Can't receive base url.");
+        return;
+    }
+
+    if (!fT_GetAPIKey(g_sKey, sizeof(g_sKey)))
+    {
+        SetFailState("[Players.OnMapStart] Can't receive api key.");
+        return;
+    }
+}
+
+public void OnClientPutInServer(int client)
+{
+    if (!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
+    {
+        return;
+    }
+
+    LogMessage("%N - SteamAccountID: %d", client, GetSteamAccountID(client));
+
+    HTTPClient hClient = new HTTPClient(g_sBase);
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d/?API_KEY=%s", GetSteamAccountID(client), g_sKey);
+    
+    hClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
+}
+
+public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
+{
+    int client = GetClientOfUserId(userid);
+
+    if (client < 1)
+    {
+        LogError("[Players.GetPlayerData] Client is no longer valid.");
+        return;
+    }
+
+    if (response.Status != HTTPStatus_OK)
+    {
+        if (response.Status == HTTPStatus_NotFound)
+        {
+            LogMessage("[Players.GetPlayerData] 404 Player Not Found, we'll add this player.");
+            PreparePlayerPostData(client);
+            return;
+        }
+
+        LogError("[Players.GetPlayerData] Something went wrong. Status Code: %d, Error: %d", response.Status, error);
+        return;
+    }
+
+    JSONObject jPlayer = view_as<JSONObject>(response.Data);
+
+    char sName[MAX_NAME_LENGTH];
+    jPlayer.GetString("Name", sName, sizeof(sName));
+
+    bool bActive = jPlayer.GetBool("IsActive");
+
+    LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, bActive);
+}
+
+void PreparePlayerPostData(int client)
+{
+    HTTPClient hClient = new HTTPClient(g_sBase);
+
+    char sName[MAX_NAME_LENGTH];
+    GetClientName(client, sName, sizeof(sName));
+
+    JSONObject jPlayer = new JSONObject();
+    jPlayer.SetInt("Id", GetSteamAccountID(client));
+    jPlayer.SetString("Name", sName);
+    jPlayer.SetBool("IsActive", true);
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Player?API_KEY=%s", g_sKey);
+
+    hClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
+    delete jPlayer;
+}
+
+public void PostPlayerData(HTTPResponse response, int userid, const char[] error)
+{
+    int client = GetClientOfUserId(userid);
+
+    if (client < 1)
+    {
+        LogError("[Players.PostPlayerData] Client is no longer valid.");
+        return;
+    }
+
+    if (response.Status != HTTPStatus_Created)
+    {
+        LogError("[Players.PostPlayerData] Can't post player data. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+}
