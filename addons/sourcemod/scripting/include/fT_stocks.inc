@@ -8,10 +8,11 @@
 #define fT_PLUGIN_NAME "fuckTimer - "
 #define fT_PLUGIN_AUTHOR "fuckTimer Contributors"
 #define fT_PLUGIN_DESCRIPTION ""
-#define fT_PLUGIN_VERSION "1.0.0"
+#define fT_PLUGIN_VERSION "1.0.0-devvvvvvvvvvvvvvvv"
 #define fT_PLUGIN_URL "github.com/fuckTimer"
 
 #define fT_BASE_CLOUD_URL "https://fucktimer.cloud/file"
+#define MAX_URL_LENGTH 256
 
 stock void fT_StartConfig(char[] file, char[] directory = "fuckTimer")
 {
