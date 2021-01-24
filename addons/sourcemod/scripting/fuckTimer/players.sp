@@ -11,6 +11,18 @@ char g_sKey[MAX_URL_LENGTH];
 
 HTTPClient g_hClient = null;
 
+enum struct PlayerData
+{
+    bool IsActive;
+
+    void Reset()
+    {
+        this.IsActive = false;
+    }
+}
+
+PlayerData Player[MAXPLAYERS + 1];
+
 public Plugin myinfo =
 {
     name = fT_PLUGIN_NAME ... "Players",
@@ -67,6 +79,8 @@ public void OnClientPutInServer(int client)
         return;
     }
 
+    Player[client].Reset();
+
     LogMessage("%N - SteamAccountID: %d", client, GetSteamAccountID(client));
 
     CheckHTTPClient();
@@ -105,9 +119,9 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
     char sName[MAX_NAME_LENGTH];
     jPlayer.GetString("Name", sName, sizeof(sName));
 
-    bool bActive = jPlayer.GetBool("IsActive");
+    Player[client].IsActive = jPlayer.GetBool("IsActive");
 
-    LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, bActive);
+    LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].IsActive);
 }
 
 void PreparePlayerPostData(int client)
