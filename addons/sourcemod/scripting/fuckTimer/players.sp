@@ -9,6 +9,8 @@
 char g_sBase[MAX_URL_LENGTH];
 char g_sKey[MAX_URL_LENGTH];
 
+HTTPClient g_hClient = null;
+
 public Plugin myinfo =
 {
     name = fT_PLUGIN_NAME ... "Players",
@@ -31,6 +33,8 @@ public void OnPluginStart()
         SetFailState("[Players.OnPluginStart] Can't receive api key.");
         return;
     }
+
+    g_hClient = new HTTPClient(g_sBase);
 
     for (int i = 1; i <= MaxClients; i++)
     {
@@ -65,12 +69,12 @@ public void OnClientPutInServer(int client)
 
     LogMessage("%N - SteamAccountID: %d", client, GetSteamAccountID(client));
 
-    HTTPClient hClient = new HTTPClient(g_sBase);
+    CheckHTTPClient();
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d/?API_KEY=%s", GetSteamAccountID(client), g_sKey);
     
-    hClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
+    g_hClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
 }
 
 public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
@@ -108,7 +112,7 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
 
 void PreparePlayerPostData(int client)
 {
-    HTTPClient hClient = new HTTPClient(g_sBase);
+    CheckHTTPClient();
 
     char sName[MAX_NAME_LENGTH];
     GetClientName(client, sName, sizeof(sName));
@@ -121,7 +125,7 @@ void PreparePlayerPostData(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player?API_KEY=%s", g_sKey);
 
-    hClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
+    g_hClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;
 }
 
@@ -139,5 +143,17 @@ public void PostPlayerData(HTTPResponse response, int userid, const char[] error
     {
         LogError("[Players.PostPlayerData] Can't post player data. Status Code: %d, Error: %s", response.Status, error);
         return;
+    }
+
+    LogMessage("[Players.PostPlayerData] Success. Status Code: %d", response.Status);
+
+    OnClientPutInServer(client);
+}
+
+void CheckHTTPClient()
+{
+    if (g_hClient == null)
+    {
+        g_hClient = new HTTPClient(g_sBase);
     }
 }
