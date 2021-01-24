@@ -10,6 +10,8 @@
 
 char g_sName[32];
 
+HTTPClient g_hClient = null;
+
 public Plugin myinfo =
 {
     name = fT_PLUGIN_NAME ... "Downloader",
@@ -51,6 +53,14 @@ public void OnMapStart()
     RequestFrame(Frame_DownloadZone);
 }
 
+void CheckHTTPClient()
+{
+    if (g_hClient == null)
+    {
+        g_hClient = new HTTPClient(fT_BASE_CLOUD_URL);
+    }
+}
+
 public void Frame_DownloadZone()
 {
     char sMap[64];
@@ -67,10 +77,11 @@ public void Frame_DownloadZone()
     char sCloudPath[128];
     FormatEx(sCloudPath, sizeof(sCloudPath), "fZones/%s.zon", sMap);
 
-    HTTPClient hClient = new HTTPClient(fT_BASE_CLOUD_URL);
+    CheckHTTPClient();
+
     DataPack pack = new DataPack();
     pack.WriteString(sMap);
-    hClient.DownloadFile(sCloudPath, sFile, OnZoneDownload, pack);
+    g_hClient.DownloadFile(sCloudPath, sFile, OnZoneDownload, pack);
 }
 
 public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
@@ -96,8 +107,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         pack.WriteString(sMap);
         pack.WriteCell(bExist);
         
-        HTTPClient hClient = new HTTPClient(fT_BASE_CLOUD_URL);
-        hClient.DownloadFile(sCloudPath, sFile, OnStripperDownload, pack);
+        g_hClient.DownloadFile(sCloudPath, sFile, OnStripperDownload, pack);
     }
     else if (status == HTTPStatus_NotFound)
     {
