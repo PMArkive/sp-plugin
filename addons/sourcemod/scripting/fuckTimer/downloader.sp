@@ -65,6 +65,8 @@ public void Frame_DownloadZone()
 {
     char sMap[64];
     fuckZones_GetCurrentWorkshopMap(sMap, sizeof(sMap));
+
+    LogMessage("[fuckTimer.Downloader] Download %s.zon...", sMap);
     
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
@@ -95,6 +97,9 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
 
     if (status == HTTPStatus_OK)
     {
+        LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
+        LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", sMap);
+
         char sCloudPath[128];
         FormatEx(sCloudPath, sizeof(sCloudPath), "Stripper/%s.cfg", sMap);
 
@@ -111,7 +116,15 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
     }
     else if (status == HTTPStatus_NotFound)
     {
-        SetFailState("Zone not found");
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
+
+        if (FileExists(sFile))
+        {
+            DeleteFile(sFile);
+        }
+
+        SetFailState("Zone file \"%s.zon\" not found", sMap);
     }
     else
     {
@@ -132,17 +145,33 @@ public void OnStripperDownload(HTTPStatus status, DataPack pack, const char[] er
 
     if (status == HTTPStatus_OK)
     {
+        LogMessage("[fuckTimer.Downloader] %s.cfg downloaded!", sMap);
+
         if (!bExist)
         {
-            ForceChangeLevel(sMap, "Added stripper config");
+            LogMessage("[fuckTimer.Downloader] Reloading map to activate stripper config...", sMap);
+            ForceChangeLevel(sMap, "Stripper config added");
             return;
         }
     }
-    else if (status != HTTPStatus_NotFound)
+    else if (status == HTTPStatus_NotFound)
+    {
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
+
+        if (FileExists(sFile))
+        {
+            DeleteFile(sFile);
+        }
+
+        LogMessage("[fuckTimer.Downloader] %s.cfg doesn't exist!", sMap);
+    }
+    else
     {
         SetFailState("API is currently not available");
         return;
     }
+    
 
     ServerCommand("sm plugins load %s", g_sName);
 }
