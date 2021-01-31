@@ -150,7 +150,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
     else if (status == HTTPStatus_NotFound)
     {
         char sFile[PLATFORM_MAX_PATH + 1];
-        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/maps/global_filters.cfg");
+        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
 
         if (FileExists(sFile))
         {
@@ -211,6 +211,10 @@ public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[]
         }
 
         LogMessage("[fuckTimer.Downloader] %s.cfg doesn't exist!", sMap);
+
+        // Set bMapExist to true to probably avoid infinity map reloading, because map doesn't exist on the server + cloud
+        // so bExistMap is always false and should result into infinity map reloading
+        bMapExist = true;
     }
     else
     {
