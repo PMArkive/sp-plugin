@@ -98,13 +98,13 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
     if (status == HTTPStatus_OK)
     {
         LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
-        LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", sMap);
+        LogMessage("[fuckTimer.Downloader] Download global_filters.cfg");
 
         char sCloudPath[128];
-        FormatEx(sCloudPath, sizeof(sCloudPath), "Stripper/%s.cfg", sMap);
+        FormatEx(sCloudPath, sizeof(sCloudPath), "Stripper/global_filters.cfg");
 
         char sFile[PLATFORM_MAX_PATH + 1];
-        FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
+        FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
 
         bool bExist = FileExists(sFile);
 
@@ -112,7 +112,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         pack.WriteString(sMap);
         pack.WriteCell(bExist);
         
-        g_hClient.DownloadFile(sCloudPath, sFile, OnStripperDownload, pack);
+        g_hClient.DownloadFile(sCloudPath, sFile, OnStripperGlobalDownload, pack);
     }
     else if (status == HTTPStatus_NotFound)
     {
@@ -132,7 +132,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
     }
 }
 
-public void OnStripperDownload(HTTPStatus status, DataPack pack, const char[] error)
+public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
     pack.Reset();
 
@@ -145,14 +145,60 @@ public void OnStripperDownload(HTTPStatus status, DataPack pack, const char[] er
 
     if (status == HTTPStatus_OK)
     {
-        LogMessage("[fuckTimer.Downloader] %s.cfg downloaded!", sMap);
+        LogMessage("[fuckTimer.Downloader] global_filters.cfg downloaded!");
+    }
+    else if (status == HTTPStatus_NotFound)
+    {
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/maps/global_filters.cfg");
 
-        if (!bExist)
+        if (FileExists(sFile))
         {
-            LogMessage("[fuckTimer.Downloader] Reloading map to activate stripper config...", sMap);
-            ForceChangeLevel(sMap, "Stripper config added");
-            return;
+            DeleteFile(sFile);
         }
+
+        SetFailState("[fuckTimer.Downloader] global_filters.cfg doesn't exist!");
+        return;
+    }
+    else
+    {
+        SetFailState("API is currently not available");
+        return;
+    }
+    
+    LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", sMap);
+
+    char sCloudPath[128];
+    FormatEx(sCloudPath, sizeof(sCloudPath), "Stripper/%s.cfg", sMap);
+
+    char sFile[PLATFORM_MAX_PATH + 1];
+    FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
+
+    bool bMapExist = FileExists(sFile);
+
+    pack = new DataPack();
+    pack.WriteString(sMap);
+    pack.WriteCell(bExist);
+    pack.WriteCell(bMapExist);
+    
+    g_hClient.DownloadFile(sCloudPath, sFile, OnStripperMapDownload, pack);
+}
+
+public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[] error)
+{
+    pack.Reset();
+
+    char sMap[64];
+    pack.ReadString(sMap, sizeof(sMap));
+
+    bool bExist = pack.ReadCell();
+    bool bMapExist = pack.ReadCell();
+
+    delete pack;
+
+    if (status == HTTPStatus_OK)
+    {
+        LogMessage("[fuckTimer.Downloader] %s.cfg downloaded!", sMap);
     }
     else if (status == HTTPStatus_NotFound)
     {
@@ -171,7 +217,13 @@ public void OnStripperDownload(HTTPStatus status, DataPack pack, const char[] er
         SetFailState("API is currently not available");
         return;
     }
-    
+
+    if (!bExist || !bMapExist)
+    {
+        LogMessage("[fuckTimer.Downloader] Reloading map to activate stripper config(s)...");
+        ForceChangeLevel(sMap, "Stripper config(s) added");
+        return;
+    }
 
     ServerCommand("sm plugins load %s", g_sName);
 }
