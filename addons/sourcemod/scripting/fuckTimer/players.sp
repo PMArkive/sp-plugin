@@ -3,8 +3,8 @@
 
 #include <sourcemod>
 #include <ripext>
-#include <fT_stocks>
-#include <fT_core>
+#include <fuckTimer_stocks>
+#include <fuckTimer_core>
 
 char g_sBase[MAX_URL_LENGTH];
 char g_sKey[MAX_URL_LENGTH];
@@ -25,22 +25,22 @@ PlayerData Player[MAXPLAYERS + 1];
 
 public Plugin myinfo =
 {
-    name = fT_PLUGIN_NAME ... "Players",
-    author = fT_PLUGIN_AUTHOR,
-    description = fT_PLUGIN_DESCRIPTION,
-    version = fT_PLUGIN_VERSION,
-    url = fT_PLUGIN_URL
+    name = FUCKTIMER_PLUGIN_NAME ... "Players",
+    author = FUCKTIMER_PLUGIN_AUTHOR,
+    description = FUCKTIMER_PLUGIN_DESCRIPTION,
+    version = FUCKTIMER_PLUGIN_VERSION,
+    url = FUCKTIMER_PLUGIN_URL
 };
 
 public void OnPluginStart()
 {
-    if (!fT_GetBaseURL(g_sBase, sizeof(g_sBase)))
+    if (!fuckTimer_GetBaseURL(g_sBase, sizeof(g_sBase)))
     {
         SetFailState("[Players.OnPluginStart] Can't receive base url.");
         return;
     }
 
-    if (!fT_GetAPIKey(g_sKey, sizeof(g_sKey)))
+    if (!fuckTimer_GetAPIKey(g_sKey, sizeof(g_sKey)))
     {
         SetFailState("[Players.OnPluginStart] Can't receive api key.");
         return;
@@ -59,13 +59,13 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-    if (!fT_GetBaseURL(g_sBase, sizeof(g_sBase)))
+    if (!fuckTimer_GetBaseURL(g_sBase, sizeof(g_sBase)))
     {
         SetFailState("[Players.OnMapStart] Can't receive base url.");
         return;
     }
 
-    if (!fT_GetAPIKey(g_sKey, sizeof(g_sKey)))
+    if (!fuckTimer_GetAPIKey(g_sKey, sizeof(g_sKey)))
     {
         SetFailState("[Players.OnMapStart] Can't receive api key.");
         return;

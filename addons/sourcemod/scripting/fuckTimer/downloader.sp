@@ -3,10 +3,7 @@
 
 #include <sourcemod>
 #include <ripext>
-#include <fT_stocks>
-
-#undef REQUIRE_PLUGIN
-#include <fuckZones>
+#include <fuckTimer_stocks>
 
 char g_sName[32];
 
@@ -14,11 +11,11 @@ HTTPClient g_hClient = null;
 
 public Plugin myinfo =
 {
-    name = fT_PLUGIN_NAME ... "Downloader",
-    author = fT_PLUGIN_AUTHOR,
-    description = fT_PLUGIN_DESCRIPTION,
-    version = fT_PLUGIN_VERSION,
-    url = fT_PLUGIN_URL
+    name = FUCKTIMER_PLUGIN_NAME ... "Downloader",
+    author = FUCKTIMER_PLUGIN_AUTHOR,
+    description = FUCKTIMER_PLUGIN_DESCRIPTION,
+    version = FUCKTIMER_PLUGIN_VERSION,
+    url = FUCKTIMER_PLUGIN_URL
 };
 
 public void OnMapStart()
@@ -57,14 +54,14 @@ void CheckHTTPClient()
 {
     if (g_hClient == null)
     {
-        g_hClient = new HTTPClient(fT_BASE_CLOUD_URL);
+        g_hClient = new HTTPClient(fuckTimer_BASE_CLOUD_URL);
     }
 }
 
 public void Frame_DownloadZone()
 {
     char sMap[64];
-    fuckZones_GetCurrentWorkshopMap(sMap, sizeof(sMap));
+    fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
 
     LogMessage("[fuckTimer.Downloader] Download %s.zon...", sMap);
     
