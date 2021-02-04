@@ -95,7 +95,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
     if (status == HTTPStatus_OK)
     {
         LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
-        LogMessage("[fuckTimer.Downloader] Download global_filters.cfg");
+        LogMessage("[fuckTimer.Downloader] Download global_filters.cfg...");
 
         char sCloudPath[128];
         FormatEx(sCloudPath, sizeof(sCloudPath), "Stripper/global_filters.cfg");
