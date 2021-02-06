@@ -55,7 +55,7 @@ public void fuckTimer_OnZoneDownload(const char[] map, bool success)
 void LoadMapData(const char[] map)
 {
     char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "MapName/%s/?API_KEY=%s", map, g_sKey);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s?API_KEY=%s", map, g_sKey);
     
     DataPack pack = new DataPack();
     pack.WriteString(map);
