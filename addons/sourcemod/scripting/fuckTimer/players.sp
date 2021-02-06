@@ -86,7 +86,7 @@ public void OnClientPutInServer(int client)
     CheckHTTPClient();
 
     char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d/?API_KEY=%s", GetSteamAccountID(client), g_sKey);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
     
     g_hClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
 }
@@ -137,7 +137,7 @@ void PreparePlayerPostData(int client)
     jPlayer.SetBool("IsActive", true);
 
     char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Player?API_KEY=%s", g_sKey);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Player");
 
     g_hClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;
@@ -169,5 +169,10 @@ void CheckHTTPClient()
     if (g_hClient == null)
     {
         g_hClient = new HTTPClient(g_sBase);
+
+        char sBuffer[128];
+        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", g_sKey);
+
+        g_hClient.SetHeader("Authorization", sBuffer);
     }
 }

@@ -55,7 +55,7 @@ public void fuckTimer_OnZoneDownload(const char[] map, bool success)
 void LoadMapData(const char[] map)
 {
     char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s?API_KEY=%s", map, g_sKey);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", map);
     
     DataPack pack = new DataPack();
     pack.WriteString(map);
@@ -111,7 +111,7 @@ void PrepareMapPostData(const char[] map)
     jMap.SetBool("IsActive", true);
 
     char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Map?API_KEY=%s", g_sKey);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
 
     DataPack pack = new DataPack();
     pack.WriteString(map);
@@ -197,6 +197,11 @@ void CheckHTTPClient()
     if (g_hClient == null)
     {
         g_hClient = new HTTPClient(g_sBase);
+
+        char sBuffer[128];
+        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", g_sKey);
+
+        g_hClient.SetHeader("Authorization", sBuffer);
     }
 }
 
