@@ -5,6 +5,7 @@
 #include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
+#include <fuckTimer_downloader>
 
 char g_sBase[MAX_URL_LENGTH];
 char g_sKey[MAX_URL_LENGTH];
@@ -28,26 +29,27 @@ public Plugin myinfo =
     url = FUCKTIMER_PLUGIN_URL
 };
 
-public void OnMapStart()
+public void fuckTimer_OnZoneDownload(const char[] map, bool success)
 {
+    if (!success)
+    {
+        SetFailState("[Maps.fuckTimer_OnZoneDownload] Can not add/update map.");
+        return;
+    }
+
     if (!fuckTimer_GetBaseURL(g_sBase, sizeof(g_sBase)))
     {
-        SetFailState("[Maps.OnMapStart] Can't receive base url.");
+        SetFailState("[Maps.fuckTimer_OnZoneDownload] Can't receive base url.");
         return;
     }
 
     if (!fuckTimer_GetAPIKey(g_sKey, sizeof(g_sKey)))
     {
-        SetFailState("[Maps.OnMapStart] Can't receive api key.");
+        SetFailState("[Maps.fuckTimer_OnZoneDownload] Can't receive api key.");
         return;
     }
 
-    CheckHTTPClient();
-
-    char sMap[64];
-    fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
-
-    LoadMapData(sMap);
+    LoadMapData(map);
 }
 
 void LoadMapData(const char[] map)
@@ -57,6 +59,8 @@ void LoadMapData(const char[] map)
     
     DataPack pack = new DataPack();
     pack.WriteString(map);
+
+    CheckHTTPClient();
 
     g_hClient.Get(sEndpoint, GetMapData, pack);
 }
@@ -136,15 +140,56 @@ public void PostMapData(HTTPResponse response, DataPack pack, const char[] error
     LoadMapData(sMap);
 }
 
+// If (fuckTimer_)GetMapTIer returns 0 or lower -> invalid map, map not found or tier entry didn't exist in the zone file
 int GetMapTier(const char[] map)
 {
     char sFile[PLATFORM_MAX_PATH + 1];
-    BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", map);
 
-    // Check if file exist, but we should do this whole part after download
-    //  - Adding forward to downloader after map download with status (true/false)
-    // Then we're pretty sure if this file exist and didn't need to check it.
-    if ()
+    if (!FileExists(sFile))
+    {
+        SetFailState("[Maps.GetMapTier] Zone file \"%s\" not found.");
+        return 0;
+    }
+
+    KeyValues kv = new KeyValues("zones");
+
+    if (!kv.ImportFromFile(sFile))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetMapTier] Can not data read from file.");
+        return 0;
+    }
+
+    if (!kv.JumpToKey("main0_start"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetMapTier] Can not find \"main0_start\" zone.");
+        return 0;
+    }
+
+    if (!kv.JumpToKey("effects"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetMapTier] Can not find \"effects\" key.");
+        return 0;
+    }
+
+    if (!kv.JumpToKey("fuckTimer"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetMapTier] Can not find \"fuckTimer\" effect.");
+        return 0;
+    }
+
+    int iTier = kv.GetNum("Tier");
+    delete kv;
+
+    return iTier;
 }
 
 void CheckHTTPClient()
