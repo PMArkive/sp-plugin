@@ -9,6 +9,8 @@ char g_sName[32];
 
 HTTPClient g_hClient = null;
 
+GlobalForward g_fwOnZoneDownload = null;
+
 public Plugin myinfo =
 {
     name = FUCKTIMER_PLUGIN_NAME ... "Downloader",
@@ -17,6 +19,15 @@ public Plugin myinfo =
     version = FUCKTIMER_PLUGIN_VERSION,
     url = FUCKTIMER_PLUGIN_URL
 };
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    g_fwOnZoneDownload = new GlobalForward("fuckTimer_OnZoneDownload", ET_Ignore, Param_String, Param_Cell);
+
+    RegPluginLibrary("fuckTimer_downloader");
+
+    return APLRes_Success;
+}
 
 public void OnMapStart()
 {
@@ -110,6 +121,8 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         pack.WriteCell(bExist);
         
         g_hClient.DownloadFile(sCloudPath, sFile, OnStripperGlobalDownload, pack);
+
+        CallZoneDownload(sMap, true);
     }
     else if (status == HTTPStatus_NotFound)
     {
@@ -121,10 +134,14 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
             DeleteFile(sFile);
         }
 
+        CallZoneDownload(sMap, false);
+        
         SetFailState("Zone file \"%s.zon\" not found", sMap);
     }
     else
     {
+        CallZoneDownload(sMap, false);
+        
         SetFailState("API is currently not available");
     }
 }
@@ -227,4 +244,12 @@ public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[]
     }
 
     ServerCommand("sm plugins load %s", g_sName);
+}
+
+void CallZoneDownload(const char[] map, bool success)
+{
+    Call_StartForward(g_fwOnZoneDownload);
+    Call_PushString(map);
+    Call_PushCell(success);
+    Call_Finish();
 }
