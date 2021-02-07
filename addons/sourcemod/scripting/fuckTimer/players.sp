@@ -32,17 +32,17 @@ public Plugin myinfo =
     url = FUCKTIMER_PLUGIN_URL
 };
 
-public void OnPluginStart()
+public void OnConfigsExecuted()
 {
     if (!fuckTimer_GetBaseURL(g_sBase, sizeof(g_sBase)))
     {
-        SetFailState("[Players.OnPluginStart] Can't receive base url.");
+        SetFailState("[Players.OnConfigsExecuted] Can't receive base url.");
         return;
     }
 
     if (!fuckTimer_GetAPIKey(g_sKey, sizeof(g_sKey)))
     {
-        SetFailState("[Players.OnPluginStart] Can't receive api key.");
+        SetFailState("[Players.OnConfigsExecuted] Can't receive api key.");
         return;
     }
 
@@ -54,21 +54,6 @@ public void OnPluginStart()
         {
             OnClientPutInServer(i);
         }
-    }
-}
-
-public void OnMapStart()
-{
-    if (!fuckTimer_GetBaseURL(g_sBase, sizeof(g_sBase)))
-    {
-        SetFailState("[Players.OnMapStart] Can't receive base url.");
-        return;
-    }
-
-    if (!fuckTimer_GetAPIKey(g_sKey, sizeof(g_sKey)))
-    {
-        SetFailState("[Players.OnMapStart] Can't receive api key.");
-        return;
     }
 }
 
