@@ -2,16 +2,23 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <intmap>
 #include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_zones>
 
-enum struct PlayerTimes {
-    float Time;
+enum struct PlayerTimes
+{
+    float Main;
+    IntMap Stage;
+    IntMap Checkpoint;
 
     void Reset()
     {
-        this.Time = -1.0;
+        this.Main = -1.0;
+
+        delete this.Stage;
+        delete this.Checkpoint;
     }
 }
 
@@ -39,11 +46,30 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     {
         Times[client].Reset();
     }
-
-    if (end && Times[client].Time > 0)
+    else if (end && Times[client].Main > 0)
     {
-        PrintToChatAll("%N's time: %.4f", client, GetGameTime() - Times[client].Time); // TODO: for testing
+        PrintToChatAll("%N's time: %.4f", client, GetGameTime() - Times[client].Main); // TODO: for testing
         Times[client].Reset();
+    }
+    else if (stage > 1)
+    {
+        float fStart;
+        Times[client].Stage.GetValue(stage - 1, fStart);
+        
+        float fTime = GetGameTime() - fStart;
+        Times[client].Stage.SetValue(stage - 1, fTime);
+        PrintToChatAll("%N's time for Stage %d: %.4f", client, stage - 1, fTime);
+        Times[client].Stage.SetValue(stage, GetGameTime());
+    }
+    else if (checkpoint > 1)
+    {
+        float fStart;
+        Times[client].Checkpoint.GetValue(checkpoint - 1, fStart);
+        
+        float fTime = GetGameTime() - fStart;
+        Times[client].Checkpoint.SetValue(checkpoint - 1, fTime);
+        PrintToChatAll("%N's time for Checkpoint %d: %.4f", client, checkpoint - 1, fTime);
+        Times[client].Checkpoint.SetValue(checkpoint, GetGameTime());
     }
 }
 
@@ -53,6 +79,13 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
 
     if (start)
     {
-        Times[client].Time = GetGameTime();
+        Times[client].Reset();
+
+        Times[client].Stage = new IntMap();
+        Times[client].Checkpoint = new IntMap();
+
+        Times[client].Main = GetGameTime();
+        Times[client].Stage.SetValue(1, GetGameTime());
+        Times[client].Checkpoint.SetValue(1, GetGameTime());
     }
 }
