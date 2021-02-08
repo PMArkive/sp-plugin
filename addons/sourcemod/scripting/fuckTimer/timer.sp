@@ -51,24 +51,38 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         PrintToChatAll("%N's time: %.4f", client, GetGameTime() - Times[client].Main); // TODO: for testing
         Times[client].Reset();
     }
-    else if (stage > 1)
+    else if (stage > 0)
     {
+        int iPrevStage = stage - 1;
+
+        if (iPrevStage < 1)
+        {
+            iPrevStage = 1;
+        }
+
         float fStart;
-        Times[client].Stage.GetValue(stage - 1, fStart);
+        Times[client].Stage.GetValue(iPrevStage, fStart);
         
         float fTime = GetGameTime() - fStart;
-        Times[client].Stage.SetValue(stage - 1, fTime);
-        PrintToChatAll("%N's time for Stage %d: %.4f", client, stage - 1, fTime);
+        Times[client].Stage.SetValue(iPrevStage, fTime);
+        PrintToChatAll("%N's time for Stage %d: %.4f", client, iPrevStage, fTime);
         Times[client].Stage.SetValue(stage, GetGameTime());
     }
-    else if (checkpoint > 1)
+    else if (checkpoint > 0)
     {
+        int iPrevCheckpoint = checkpoint - 1;
+
+        if (iPrevCheckpoint < 1)
+        {
+            iPrevCheckpoint = 1;
+        }
+
         float fStart;
-        Times[client].Checkpoint.GetValue(checkpoint - 1, fStart);
+        Times[client].Checkpoint.GetValue(iPrevCheckpoint, fStart);
         
         float fTime = GetGameTime() - fStart;
-        Times[client].Checkpoint.SetValue(checkpoint - 1, fTime);
-        PrintToChatAll("%N's time for Checkpoint %d: %.4f", client, checkpoint - 1, fTime);
+        Times[client].Checkpoint.SetValue(iPrevCheckpoint, fTime);
+        PrintToChatAll("%N's time for Checkpoint %d: %.4f", client, iPrevCheckpoint, fTime);
         Times[client].Checkpoint.SetValue(checkpoint, GetGameTime());
     }
 }
