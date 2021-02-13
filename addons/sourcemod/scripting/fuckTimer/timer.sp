@@ -6,6 +6,7 @@
 #include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_zones>
+#include <fuckTimer_timer>
 
 enum struct PlayerTimes
 {
@@ -15,7 +16,7 @@ enum struct PlayerTimes
 
     void Reset()
     {
-        this.Main = -1.0;
+        this.Main = 0.0;
 
         delete this.Stage;
         delete this.Checkpoint;
@@ -32,6 +33,15 @@ public Plugin myinfo =
     version = FUCKTIMER_PLUGIN_VERSION,
     url = FUCKTIMER_PLUGIN_URL
 };
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
+
+    RegPluginLibrary("fuckTimer_timer");
+
+    return APLRes_Success;
+}
 
 public void OnClientPutInServer(int client)
 {
@@ -51,7 +61,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         PrintToChatAll("%N's time: %.4f", client, GetGameTime() - Times[client].Main); // TODO: for testing
         Times[client].Reset();
     }
-    else if (stage > 0)
+    else if (stage > 0) // TODO: need some testing since the latest changes
     {
         int iPrevStage = stage - 1;
 
@@ -68,7 +78,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         PrintToChatAll("%N's time for Stage %d: %.4f", client, iPrevStage, fTime);
         Times[client].Stage.SetValue(stage, GetGameTime());
     }
-    else if (checkpoint > 0)
+    else if (checkpoint > 0) // TODO: need some testing since the latest changes
     {
         int iPrevCheckpoint = checkpoint - 1;
 
@@ -102,4 +112,18 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
         Times[client].Stage.SetValue(1, GetGameTime());
         Times[client].Checkpoint.SetValue(1, GetGameTime());
     }
+}
+
+public any Native_GetClientTime(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+
+    TimeType type = GetNativeCell(2);
+
+    if (type == TimeMain)
+    {
+        return Times[client].Main;
+    }
+
+    return 0.0;
 }
