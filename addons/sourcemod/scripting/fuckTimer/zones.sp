@@ -10,8 +10,8 @@ GlobalForward g_fwOnLeavingZone = null;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	g_fwOnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-	g_fwOnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+	g_fwOnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+	g_fwOnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
 	RegPluginLibrary("fuckTimer_zones");
 
@@ -47,6 +47,7 @@ public void OneZoneStartTouch(int client, int entity, StringMap values)
 	Call_PushCell(IsEndZone(values));
 	Call_PushCell(GetStageNumber(values));
 	Call_PushCell(GetCheckpointNumber(values));
+	Call_PushCell(GetBonusNumber(values));
 	Call_Finish();
 }
 
@@ -63,6 +64,7 @@ public void OnZoneEndTouch(int client, int entity, StringMap values)
 	Call_PushCell(IsEndZone(values));
 	Call_PushCell(GetStageNumber(values));
 	Call_PushCell(GetCheckpointNumber(values));
+	Call_PushCell(GetBonusNumber(values));
 	Call_Finish();
 }
 
@@ -100,6 +102,16 @@ int GetCheckpointNumber(StringMap values)
 {
 	char sValue[MAX_KEY_VALUE_LENGTH];
 	if (GetZoneValue(values, "Checkpoint", sValue, sizeof(sValue)))
+	{
+		return StringToInt(sValue);
+	}
+	return -1;
+}
+
+int GetBonusNumber(StringMap values)
+{
+	char sValue[MAX_KEY_VALUE_LENGTH];
+	if (GetZoneValue(values, "Bonus", sValue, sizeof(sValue)))
 	{
 		return StringToInt(sValue);
 	}

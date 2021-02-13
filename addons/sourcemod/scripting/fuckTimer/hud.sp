@@ -5,6 +5,7 @@
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
+#include <fuckTimer_maps>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
 
@@ -14,20 +15,26 @@ enum struct PlayerData
 
 	int Stage;
 	int Checkpoint;
+	int Bonus;
 
-	void Reset()
+	void Reset(bool zoneOnly)
 	{
 		this.Zone[0] = '\0';
 
-		this.Stage = 0;
-		this.Checkpoint = 0;
+		if (!zoneOnly)
+		{
+			this.Stage = 0;
+			this.Checkpoint = 0;
+			this.Bonus = 0;
+		}
 	}
 }
 
 PlayerData Player[MAXPLAYERS + 1];
 
-int g_iMaxStage = 0;
-int g_iMaxCheckpoint = 0;
+int g_iStages = 0;
+int g_iCheckpoints = 0;
+int g_iBonus = 0;
 
 public Plugin myinfo =
 {
@@ -40,12 +47,14 @@ public Plugin myinfo =
 
 public void OnMapStart()
 {
-	g_iMaxStage = 0;
+	g_iStages = 0;
+	g_iCheckpoints = 0;
+	g_iBonus = 0;
 }
 
 public void OnClientPutInServer(int client)
 {
-	Player[client].Reset();
+	Player[client].Reset(false);
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
@@ -61,6 +70,7 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 	char sValue[MAX_KEY_VALUE_LENGTH];
 	int iStage = 0;
 	int iCheckpoint = 0;
+	int iBonus = 0;
 
 	if (snap != null)
 	{
@@ -74,9 +84,9 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
 				iStage = StringToInt(sValue);
 
-				if (iStage > 0 && iStage > g_iMaxStage)
+				if (iStage > 0 && iStage > g_iStages)
 				{
-					g_iMaxStage = iStage;
+					g_iStages = iStage;
 				}
 
 				iStage = 0;
@@ -88,12 +98,26 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
 				iCheckpoint = StringToInt(sValue);
 
-				if (iCheckpoint > 0 && iCheckpoint > g_iMaxCheckpoint)
+				if (iCheckpoint > 0 && iCheckpoint > g_iCheckpoints)
 				{
-					g_iMaxCheckpoint = iCheckpoint;
+					g_iCheckpoints = iCheckpoint;
 				}
 
 				iCheckpoint = 0;
+			}
+
+			if (StrEqual(sKey, "Bonus", false))
+			{
+				smValues.GetString(sKey, sValue, sizeof(sValue));
+
+				iBonus = StringToInt(sValue);
+
+				if (iBonus > 0 && iBonus > g_iBonus)
+				{
+					g_iBonus = iBonus;
+				}
+
+				iBonus = 0;
 			}
 		}
 	}
@@ -121,39 +145,49 @@ public void OnGameFrame()
 			FormatEx(sZone, sizeof(sZone), " | Zone: %s", Player[client].Zone);
 		}
 
-		if (g_iMaxStage > 0)
+		if (g_iStages > 0)
 		{
-			FormatEx(sCPStage, sizeof(sCPStage), "Stage: %d/%d", Player[client].Stage, g_iMaxStage);
+			FormatEx(sCPStage, sizeof(sCPStage), "Stage: %d/%d", Player[client].Stage, g_iStages);
 		}
-		else if (g_iMaxCheckpoint > 0)
+		else if (g_iCheckpoints > 0)
 		{
-			FormatEx(sCPStage, sizeof(sCPStage), "CP: %d/%d", Player[client].Checkpoint, g_iMaxCheckpoint);
+			FormatEx(sCPStage, sizeof(sCPStage), "CP: %d/%d", Player[client].Checkpoint, g_iCheckpoints);
 		}
 		else
 		{
 			FormatEx(sCPStage, sizeof(sCPStage), "Linear");
 		}
+
+		if (g_iBonus > 0 && Player[client].Bonus > 0)
+		{
+			FormatEx(sCPStage, sizeof(sCPStage), "Bonus: %d/%d", Player[client].Bonus, g_iBonus);
+		}
 		
-		PrintCSGOHUDText(client, "Speed: %.0f | Time: %.3f\n %s%s", GetSpeed(client), fTime, sCPStage, sZone);
+		PrintCSGOHUDText(client, " Speed: %.0f | Time: %.3f\n %s%s\n Tier: %d", GetSpeed(client), fTime, sCPStage, sZone, fuckTimer_GetMapTier());
 	}
 }
 
-public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint)
+public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
 {
-	Player[client].Reset();
+	Player[client].Reset(false);
 
 	if (start)
 	{
 		FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Start");
 		
-		if (g_iMaxStage > 0)
+		if (g_iStages > 0)
 		{
 			Player[client].Stage = 1;
 		}
 
-		if (g_iMaxCheckpoint > 0)
+		if (g_iCheckpoints > 0)
 		{
 			Player[client].Checkpoint = 1;
+		}
+
+		if (bonus > 0)
+		{
+			Player[client].Bonus = bonus;
 		}
 	}
 	else if (end)
@@ -164,36 +198,56 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
 	if (stage > 0)
 	{
 		Player[client].Stage = stage;
+		Player[client].Bonus = 0;
 		FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Stage %d", stage);
 	}
 	
 	if (checkpoint > 0)
 	{
 		Player[client].Checkpoint = checkpoint;
+		Player[client].Bonus = 0;
 	}
-	// TODO: Add Bonus
+	
+	if (bonus > 0)
+	{
+		Player[client].Bonus = bonus;
+		Player[client].Stage = 0;
+		Player[client].Checkpoint = 0;
+		FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Bonus %d", bonus);
+	}
 }
 
-public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint)
+public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
 {
-	Player[client].Reset();
+	Player[client].Reset(true);
 
-	if ((start && g_iMaxStage > 0))
+	if (Player[client].Bonus == 0)
 	{
-		Player[client].Stage = 1;
-	}
-	else if (stage > 0)
-	{
-		Player[client].Stage = stage;
+		if ((start && g_iStages > 0))
+		{
+			Player[client].Stage = 1;
+		}
+		else if (stage > 0)
+		{
+			Player[client].Stage = stage;
+		}
+
+		if ((start && g_iCheckpoints > 0))
+		{
+			Player[client].Checkpoint = 1;
+		}
+		else if (checkpoint > 0)
+		{
+			Player[client].Checkpoint = checkpoint;
+		}
 	}
 
-	if ((start && g_iMaxCheckpoint > 0))
+	if (Player[client].Stage == 0 && Player[client].Checkpoint == 0)
 	{
-		Player[client].Checkpoint = 1;
-	}
-	else if (checkpoint > 0)
-	{
-		Player[client].Checkpoint = checkpoint;
+		if ((start && bonus > 0))
+		{
+			Player[client].Bonus = bonus;
+		}
 	}
 }
 
