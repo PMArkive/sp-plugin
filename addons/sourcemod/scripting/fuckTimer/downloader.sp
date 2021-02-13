@@ -65,7 +65,7 @@ void CheckHTTPClient()
 {
     if (g_hClient == null)
     {
-        g_hClient = new HTTPClient(fuckTimer_BASE_CLOUD_URL);
+        g_hClient = new HTTPClient(FUCKTIMER_BASE_CLOUD_URL);
     }
 }
 
