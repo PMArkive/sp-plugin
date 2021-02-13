@@ -3,6 +3,8 @@
 #endif
 #define _fuckTimer_zones_included
 
+#define FUCKTIMER_EFFECT_NAME "fuckTimer"
+
 forward void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint);
 forward void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint);
 

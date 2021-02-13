@@ -3,8 +3,7 @@
 
 #include <sourcemod>
 #include <fuckZones>
-
-#define EFFECT_NAME "fuckTimer"
+#include <fuckTimer_zones>
 
 GlobalForward g_fwOnEnteringZone = null;
 GlobalForward g_fwOnLeavingZone = null;
@@ -21,18 +20,18 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void fuckZones_OnEffectsReady()
 {
-	fuckZones_RegisterEffect(EFFECT_NAME, OneZoneStartTouch, INVALID_FUNCTION, OnZoneEndTouch);
+	fuckZones_RegisterEffect(FUCKTIMER_EFFECT_NAME, OneZoneStartTouch, INVALID_FUNCTION, OnZoneEndTouch);
 
-	fuckZones_RegisterEffectKey(EFFECT_NAME, "Tier", "0");
+	fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Tier", "0");
 
-	fuckZones_RegisterEffectKey(EFFECT_NAME, "Start", "0");
-	fuckZones_RegisterEffectKey(EFFECT_NAME, "End", "0");
-	fuckZones_RegisterEffectKey(EFFECT_NAME, "Misc", "0");
+	fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Start", "0");
+	fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "End", "0");
+	fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Misc", "0");
 
-	fuckZones_RegisterEffectKey(EFFECT_NAME, "Stage", "0");
-	fuckZones_RegisterEffectKey(EFFECT_NAME, "Checkpoint", "0");
+	fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Stage", "0");
+	fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Checkpoint", "0");
 
-	fuckZones_RegisterEffectKey(EFFECT_NAME, "Bonus", "0");
+	fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Bonus", "0");
 }
 
 public void OneZoneStartTouch(int client, int entity, StringMap values)
