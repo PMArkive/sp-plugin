@@ -29,6 +29,15 @@ public Plugin myinfo =
     url = FUCKTIMER_PLUGIN_URL
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    CreateNative("fuckTimer_GetMapTier", Native_GetMapTier);
+
+    RegPluginLibrary("fuckTimer_maps");
+
+    return APLRes_Success;
+}
+
 public void fuckTimer_OnZoneDownload(const char[] map, bool success)
 {
     if (!success)
@@ -205,4 +214,7 @@ void CheckHTTPClient()
     }
 }
 
-
+public int Native_GetMapTier(Handle plugin, int numParams)
+{
+    return Map.Tier;
+}
