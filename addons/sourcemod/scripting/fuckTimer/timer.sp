@@ -16,8 +16,6 @@ enum struct PlayerTimes
     IntMap Stage;
     IntMap Checkpoint;
 
-    float Cooldown;
-
     void Reset()
     {
         this.MainTime = 0.0;
@@ -55,8 +53,6 @@ public void OnClientPutInServer(int client)
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
 {
-    PrintToChat(client, "fuckTimer_OnEnteringZone, Zone: %s (%d), Start: %d, End: %d, Stage: %d, Checkpoint: %d", name, zone, start, end, stage, checkpoint);
-
     if (start)
     {
         Times[client].Reset();
@@ -126,13 +122,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
 {
-    if (Times[client].Cooldown < 1.0 || GetGameTime() - Times[client].Cooldown > 1.0)
-    {
-        PrintToChat(client, "fuckTimer_OnTouchZone, Zone: %s (%d), Start: %d, End: %d, Stage: %d, Checkpoint: %d", name, zone, start, end, stage, checkpoint);
-
-        Times[client].Cooldown = GetGameTime();
-    }
-
     if (start)
     {
         SetClientSpeed(client);
@@ -149,8 +138,6 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool 
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
 {
-    PrintToChat(client, "fuckTimer_OnLeavingZone, Zone: %s (%d), Start: %d, End: %d, Stage: %d, Checkpoint: %d", name, zone, start, end, stage, checkpoint);
-
     if (start)
     {
         Times[client].Reset();
