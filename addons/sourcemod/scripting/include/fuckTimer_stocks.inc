@@ -34,8 +34,8 @@ stock void fuckTimer_EndConfig()
 
 stock void fuckTimer_GetCurrentWorkshopMap(char[] sMap, int iMapSize)
 {
-	GetCurrentMap(sMap, iMapSize);
-	ReplaceString(sMap, iMapSize, "/", "-", false);
+    GetCurrentMap(sMap, iMapSize);
+    ReplaceString(sMap, iMapSize, "/", "-", false);
 }
 
 stock bool fuckTimer_IsClientValid(int client, bool bots = false, bool sourcetv = false)

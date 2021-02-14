@@ -10,24 +10,21 @@
 
 enum struct PlayerTimes
 {
-    float Main;
+    float MainTime;
+    float BonusTime;
 
     IntMap Stage;
     IntMap Checkpoint;
 
-    bool Bonus;
+    float Cooldown;
 
     void Reset()
     {
-        this.Main = 0.0;
+        this.MainTime = 0.0;
+        this.BonusTime = 0.0;
 
         delete this.Stage;
         delete this.Checkpoint;
-    }
-
-    void ResetBonus()
-    {
-        this.Bonus = false;
     }
 }
 
@@ -54,7 +51,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnClientPutInServer(int client)
 {
     Times[client].Reset();
-    Times[client].ResetBonus();
 }
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
@@ -64,16 +60,16 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     if (start)
     {
         Times[client].Reset();
-
-        if (bonus > 0)
-        {
-            Times[client].Bonus = true;
-        }
     }
     
-    if (end && Times[client].Main > 0)
+    if (end && bonus == 0 && Times[client].MainTime > 0.0)
     {
-        PrintToChatAll("%N's time: %.4f", client, GetGameTime() - Times[client].Main); // TODO: for testing
+        PrintToChatAll("%N's time: %.3f", client, GetGameTime() - Times[client].MainTime); // TODO: for testing
+        Times[client].Reset();
+    }
+    else if (end && bonus > 0 && Times[client].BonusTime > 0.0)
+    {
+        PrintToChatAll("%N's bonus time: %.3f", client, GetGameTime() - Times[client].BonusTime); // TODO: for testing
         Times[client].Reset();
     }
     else if (stage > 0)
@@ -90,7 +86,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         
         float fTime = GetGameTime() - fStart;
         Times[client].Stage.SetValue(iPrevStage, fTime);
-        PrintToChatAll("%N's time for Stage %d: %.4f", client, iPrevStage, fTime);
+        PrintToChatAll("%N's time for Stage %d: %.3f", client, iPrevStage, fTime);
         Times[client].Stage.SetValue(stage, GetGameTime());
     }
     else if (checkpoint > 0)
@@ -107,8 +103,23 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         
         float fTime = GetGameTime() - fStart;
         Times[client].Checkpoint.SetValue(iPrevCheckpoint, fTime);
-        PrintToChatAll("%N's time for Checkpoint %d: %.4f", client, iPrevCheckpoint, fTime);
+        PrintToChatAll("%N's time for Checkpoint %d: %.3f", client, iPrevCheckpoint, fTime);
         Times[client].Checkpoint.SetValue(checkpoint, GetGameTime());
+    }
+}
+
+public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
+{
+    if (Times[client].Cooldown < 1.0 || GetGameTime() - Times[client].Cooldown > 1.0)
+    {
+        PrintToChat(client, "fuckTimer_OnTouchZone, Zone: %s (%d), Start: %d, End: %d, Stage: %d, Checkpoint: %d", name, zone, start, end, stage, checkpoint);
+
+        Times[client].Cooldown = GetGameTime();
+    }
+
+    if (start)
+    {
+        Times[client].Reset();
     }
 }
 
@@ -120,17 +131,19 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
     {
         Times[client].Reset();
 
-        if (!Times[client].Bonus && bonus == 0)
+        if (bonus < 1)
         {
             Times[client].Stage = new IntMap();
             Times[client].Checkpoint = new IntMap();
 
-            Times[client].Main = GetGameTime();
+            Times[client].MainTime = GetGameTime();
             Times[client].Stage.SetValue(1, GetGameTime());
             Times[client].Checkpoint.SetValue(1, GetGameTime());
         }
-
-        Times[client].ResetBonus();
+        else
+        {
+            Times[client].BonusTime = GetGameTime();
+        }
     }
 }
 
@@ -142,7 +155,11 @@ public any Native_GetClientTime(Handle plugin, int numParams)
 
     if (type == TimeMain)
     {
-        return Times[client].Main;
+        return Times[client].MainTime;
+    }
+    else if (type == TimeBonus)
+    {
+        return Times[client].BonusTime;
     }
 
     return 0.0;
