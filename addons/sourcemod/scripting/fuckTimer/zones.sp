@@ -3,11 +3,21 @@
 
 #include <sourcemod>
 #include <fuckZones>
+#include <fuckTimer_stocks>
 #include <fuckTimer_zones>
 
 GlobalForward g_fwOnEnteringZone = null;
 GlobalForward g_fwOnTouchZone = null;
 GlobalForward g_fwOnLeavingZone = null;
+
+public Plugin myinfo =
+{
+    name = FUCKTIMER_PLUGIN_NAME ... "Zones",
+    author = FUCKTIMER_PLUGIN_AUTHOR,
+    description = FUCKTIMER_PLUGIN_DESCRIPTION,
+    version = FUCKTIMER_PLUGIN_VERSION,
+    url = FUCKTIMER_PLUGIN_URL
+};
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
