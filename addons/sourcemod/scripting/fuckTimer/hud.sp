@@ -178,7 +178,7 @@ public void OnGameFrame()
             FormatEx(sCPStage, sizeof(sCPStage), "Bonus: %d/%d", Player[client].Bonus, g_iBonus);
         }
         
-        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s%s\n Tier: %d", GetSpeed(client), sTime, sCPStage, sZone, fuckTimer_GetMapTier());
+        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s%s\n Tier: %d", GetClientSpeed(client), sTime, sCPStage, sZone, fuckTimer_GetMapTier());
     }
 }
 
@@ -287,13 +287,4 @@ void PrintCSGOHUDText(int client, const char[] format, any ...)
     pbBuf.AddString("params", NULL_STRING);
     
     EndMessage();
-}
-
-float GetSpeed(int client)
-{
-    float fVelocity[3];
-    GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-    float speed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
-
-    return speed;
 }

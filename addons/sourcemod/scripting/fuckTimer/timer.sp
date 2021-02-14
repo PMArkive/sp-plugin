@@ -119,8 +119,16 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool 
 
     if (start)
     {
+        SetClientSpeed(client);
+
         Times[client].Reset();
     }
+    
+    if (stage > 0)
+    {
+        SetClientSpeed(client);
+    }
+
 }
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
