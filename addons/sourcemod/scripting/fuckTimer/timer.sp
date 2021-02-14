@@ -74,6 +74,15 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     }
     else if (stage > 0)
     {
+        float fBuffer = 0.0;
+        Times[client].Stage.GetValue(stage, fBuffer);
+
+        if (fBuffer > 0.0)
+        {
+            Times[client].Stage.SetValue(stage, 0.0);
+            return;
+        }
+
         int iPrevStage = stage - 1;
 
         if (iPrevStage < 1)
@@ -87,10 +96,18 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         float fTime = GetGameTime() - fStart;
         Times[client].Stage.SetValue(iPrevStage, fTime);
         PrintToChatAll("%N's time for Stage %d: %.3f", client, iPrevStage, fTime);
-        Times[client].Stage.SetValue(stage, GetGameTime());
     }
     else if (checkpoint > 0)
     {
+        float fBuffer = 0.0;
+        Times[client].Checkpoint.GetValue(stage, fBuffer);
+
+        if (fBuffer > 0.0)
+        {
+            Times[client].Checkpoint.SetValue(checkpoint, 0.0);
+            return;
+        }
+
         int iPrevCheckpoint = checkpoint - 1;
 
         if (iPrevCheckpoint < 1)
@@ -104,7 +121,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         float fTime = GetGameTime() - fStart;
         Times[client].Checkpoint.SetValue(iPrevCheckpoint, fTime);
         PrintToChatAll("%N's time for Checkpoint %d: %.3f", client, iPrevCheckpoint, fTime);
-        Times[client].Checkpoint.SetValue(checkpoint, GetGameTime());
     }
 }
 
@@ -153,6 +169,16 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
             Times[client].BonusTime = GetGameTime();
         }
     }
+
+    if (stage > 1)
+    {
+        Times[client].Stage.SetValue(stage, GetGameTime());
+    }
+
+    if (checkpoint > 1)
+    {
+        Times[client].Checkpoint.SetValue(checkpoint, GetGameTime());
+    }
 }
 
 public any Native_GetClientTime(Handle plugin, int numParams)
@@ -161,6 +187,9 @@ public any Native_GetClientTime(Handle plugin, int numParams)
 
     TimeType type = GetNativeCell(2);
 
+    int level = GetNativeCell(3);
+    float fTime = 0.0;
+
     if (type == TimeMain)
     {
         return Times[client].MainTime;
@@ -168,6 +197,24 @@ public any Native_GetClientTime(Handle plugin, int numParams)
     else if (type == TimeBonus)
     {
         return Times[client].BonusTime;
+    }
+    else if (type == TimeCheckpoint)
+    {
+        if (Times[client].Checkpoint != null)
+        {
+            Times[client].Checkpoint.GetValue(level, fTime);
+        }
+        
+        return fTime;
+    }
+    else if (type == TimeStage)
+    {
+        if (Times[client].Stage != null)
+        {
+            Times[client].Stage.GetValue(level, fTime);
+        }
+        
+        return fTime;
     }
 
     return 0.0;

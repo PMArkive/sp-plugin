@@ -11,7 +11,7 @@ enum TimeType
     TimeBonus
 };
 
-native float fuckTimer_GetClientTime(int client, TimeType type);
+native float fuckTimer_GetClientTime(int client, TimeType type, int level = 0);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_timer_SetNTVOptional()

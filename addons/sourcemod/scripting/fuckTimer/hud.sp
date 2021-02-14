@@ -131,15 +131,11 @@ public void OnGameFrame()
 
     fuckTimer_LoopClients(client, false, false)
     {
-        char sTime[16];
-        FormatEx(sTime, sizeof(sTime), "Time: N/A");
-
         fTime = fuckTimer_GetClientTime(client, TimeMain);
 
         if (fTime > 0.0)
         {
             fTime = GetGameTime() - fTime;
-            FormatEx(sTime, sizeof(sTime), "Time: %.3f", fTime);
         }
 
         if (fTime  == 0.0)
@@ -149,11 +145,12 @@ public void OnGameFrame()
             if (fTime > 0.0)
             {
                 fTime = GetGameTime() - fTime;
-                FormatEx(sTime, sizeof(sTime), "Bonus: %.3f", fTime);
             }
         }
 
-        char sZone[MAX_ZONE_NAME_LENGTH + 6], sCPStage[12];
+        float fCPStageTime = 0.0;
+        char sTime[16], sCPStageTime[16], sZone[MAX_ZONE_NAME_LENGTH + 6], sCPStage[32];
+        GetTimeBySeconds(fTime, sTime, sizeof(sTime));
 
         if (strlen(Player[client].Zone) > 1)
         {
@@ -162,11 +159,27 @@ public void OnGameFrame()
 
         if (g_iStages > 0)
         {
-            FormatEx(sCPStage, sizeof(sCPStage), "Stage: %d/%d", Player[client].Stage, g_iStages);
+            fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, Player[client].Stage);
+
+            if (fCPStageTime > 0.0)
+            {
+                fCPStageTime = GetGameTime() - fCPStageTime;
+            }
+
+            GetTimeBySeconds(fCPStageTime, sCPStageTime, sizeof(sCPStageTime));
+            FormatEx(sCPStage, sizeof(sCPStage), "Stage: %d/%d | Time: %s", Player[client].Stage, g_iStages, sCPStageTime);
         }
         else if (g_iCheckpoints > 0)
         {
-            FormatEx(sCPStage, sizeof(sCPStage), "CP: %d/%d", Player[client].Checkpoint, g_iCheckpoints);
+            fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, Player[client].Checkpoint);
+
+            if (fCPStageTime > 0.0)
+            {
+                fCPStageTime = GetGameTime() - fCPStageTime;
+            }
+
+            GetTimeBySeconds(fCPStageTime, sCPStageTime, sizeof(sCPStageTime));
+            FormatEx(sCPStage, sizeof(sCPStage), "CP: %d/%d | Time: %s", Player[client].Checkpoint, g_iCheckpoints, sCPStageTime);
         }
         else
         {
@@ -178,7 +191,7 @@ public void OnGameFrame()
             FormatEx(sCPStage, sizeof(sCPStage), "Bonus: %d/%d", Player[client].Bonus, g_iBonus);
         }
         
-        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s%s\n Tier: %d", GetClientSpeed(client), sTime, sCPStage, sZone, fuckTimer_GetMapTier());
+        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s\n Tier: %d%s", GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone);
     }
 }
 

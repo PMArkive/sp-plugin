@@ -90,3 +90,28 @@ stock void SetClientSpeed(int client)
         }
     }
 }
+
+stock void GetTimeBySeconds(float seconds, char[] time, int length)
+{
+    if (seconds < 60.0)
+    {
+        FormatEx(time, length, "%.3f", seconds);
+    }
+    else if (seconds < 3600.0)
+    {
+        int iBuffer = RoundToFloor(seconds);
+        int iMinutes = (iBuffer / 60) % 60;
+        float fSeconds = (iBuffer % 60) + seconds - iBuffer;
+        FormatEx(time, length, "%d:%.3f", iMinutes, fSeconds);
+    }
+    else
+    {
+        int iBuffer = RoundToFloor(seconds);
+
+        int iHours = RoundToFloor(iBuffer / 3600.0);
+        int iMinutes = (iBuffer / 60) % 60;
+        float fSeconds = (iBuffer % 60) + seconds - iBuffer;
+
+        FormatEx(time, length, "%d:%d:%.3f", iHours, iMinutes, fSeconds);
+    }
+}
