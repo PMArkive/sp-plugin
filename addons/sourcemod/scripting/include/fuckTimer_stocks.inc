@@ -115,3 +115,25 @@ stock void GetTimeBySeconds(float seconds, char[] time, int length)
         FormatEx(time, length, "%d:%d:%.3f", iHours, iMinutes, fSeconds);
     }
 }
+
+stock bool GetZoneValue(StringMap values, const char[] key, char[] value, int length)
+{
+    char sKey[MAX_KEY_NAME_LENGTH];
+    StringMapSnapshot keys = values.Snapshot();
+
+    for (int x = 0; x < keys.Length; x++)
+    {
+        keys.GetKey(x, sKey, sizeof(sKey));
+
+        if (StrEqual(sKey, key, false))
+        {
+            values.GetString(sKey, value, length);
+
+            delete keys;
+            return true;
+        }
+    }
+
+    delete keys;
+    return false;
+}

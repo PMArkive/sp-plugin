@@ -56,11 +56,14 @@ public void fuckZones_OnEffectsReady()
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Start", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "End", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Misc", "0");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Stop", "0");
 
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Stage", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Checkpoint", "0");
 
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Bonus", "0");
+
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "TeleToStart", "0");
 }
 
 public void OneZoneStartTouch(int client, int entity, StringMap values)
@@ -175,28 +178,6 @@ int GetBonusNumber(StringMap values)
         return StringToInt(sValue);
     }
     return -1;
-}
-
-bool GetZoneValue(StringMap values, const char[] key, char[] value, int length)
-{
-    char sKey[MAX_KEY_NAME_LENGTH];
-    StringMapSnapshot keys = values.Snapshot();
-
-    for (int x = 0; x < keys.Length; x++)
-    {
-        keys.GetKey(x, sKey, sizeof(sKey));
-
-        if (strcmp(sKey, key, false) == 0)
-        {
-            values.GetString(sKey, value, length);
-
-            delete keys;
-            return true;
-        }
-    }
-
-    delete keys;
-    return false;
 }
 
 public int Native_GetStartZone(Handle plugin, int numParams)

@@ -167,6 +167,42 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         return;
     }
 
+    if (misc)
+    {
+        StringMap smEffects = fuckZones_GetZoneEffects(zone);
+
+        StringMap smValues;
+        smEffects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
+
+        char sValue[4];
+        if (GetZoneValue(smValues, "Stop", sValue, sizeof(sValue)))
+        {
+            if (view_as<bool>(StringToInt(sValue)))
+            {
+                Player[client].Reset();
+
+                return;
+            }
+        }
+        
+        if (GetZoneValue(smValues, "TeleToStart", sValue, sizeof(sValue)))
+        {
+            if (view_as<bool>(StringToInt(sValue)))
+            {
+                Player[client].Reset();
+
+                int iZone = fuckTimer_GetStartZone();
+
+                if (iZone > 0)
+                {
+                    fuckZones_TeleportClientToZoneIndex(client, iZone);
+                }
+
+                return;
+            }
+        }
+    }
+
     // Fix for missing checkpoint entry in end zone
     if (checkpoint == 0 && Player[client].Checkpoint > 0)
     {
