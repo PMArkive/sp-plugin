@@ -173,8 +173,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         Player[client].Checkpoint++;
         checkpoint = Player[client].Checkpoint;
     }
-
-    PrintToChat(client, "stage: %d, checkpoint: %d", stage, checkpoint);
     
     if (stage > 0)
     {
@@ -312,6 +310,11 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
         }
         else
         {
+            if (Player[client].BonusTimes == null)
+            {
+                Player[client].BonusTimes = new IntMap();
+            }
+            
             Player[client].BonusTimes.SetValue(bonus, GetGameTime());
             Player[client].Checkpoint = 0;
             Player[client].Stage = 0;

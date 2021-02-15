@@ -50,7 +50,7 @@ public void OnGameFrame()
 
         if (fTime  == 0.0)
         {
-            fTime = fuckTimer_GetClientTime(client, TimeBonus);
+            fTime = fuckTimer_GetClientTime(client, TimeBonus, fuckTimer_GetClientBonus(client));
 
             if (fTime > 0.0)
             {
