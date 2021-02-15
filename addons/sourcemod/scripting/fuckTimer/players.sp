@@ -6,13 +6,12 @@
 #include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
+#include <fuckTimer_zones>
 
 char g_sBase[MAX_URL_LENGTH];
 char g_sKey[MAX_URL_LENGTH];
 
 HTTPClient g_hClient = null;
-
-int g_iStartZone = -1;
 
 enum struct PlayerData
 {
@@ -38,11 +37,6 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
     HookEvent("player_spawn", Event_PlayerSpawn);
-}
-
-public void OnMapStart()
-{
-    g_iStartZone = -1;
 }
 
 public void OnConfigsExecuted()
@@ -173,18 +167,12 @@ public void Frame_PlayerSpawn(int userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
-        if (g_iStartZone > 0)
-        {
-            fuckZones_TeleportClientToZoneIndex(client, g_iStartZone);
-        }
-    }
-}
+        int iZone = fuckTimer_GetStartZone();
 
-public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
-{
-    if (StrContains(zone_name, "main0_start", false) != -1)
-    {
-        g_iStartZone = entity;
+        if (iZone > 0)
+        {
+            fuckZones_TeleportClientToZoneIndex(client, iZone);
+        }
     }
 }
 

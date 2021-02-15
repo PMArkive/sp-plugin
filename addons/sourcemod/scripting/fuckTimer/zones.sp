@@ -10,6 +10,8 @@ GlobalForward g_fwOnEnteringZone = null;
 GlobalForward g_fwOnTouchZone = null;
 GlobalForward g_fwOnLeavingZone = null;
 
+int g_iStartZone = -1;
+
 public Plugin myinfo =
 {
     name = FUCKTIMER_PLUGIN_NAME ... "Zones",
@@ -25,9 +27,24 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     g_fwOnTouchZone = new GlobalForward("fuckTimer_OnTouchZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_fwOnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
+    CreateNative("fuckTimer_GetStartZone", Native_GetStartZone);
+
     RegPluginLibrary("fuckTimer_zones");
 
     return APLRes_Success;
+}
+
+public void OnMapStart()
+{
+    g_iStartZone = -1;
+}
+
+public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
+{
+    if (StrContains(zone_name, "main0_start", false) != -1)
+    {
+        g_iStartZone = entity;
+    }
 }
 
 public void fuckZones_OnEffectsReady()
@@ -167,4 +184,9 @@ bool GetZoneValue(StringMap values, const char[] key, char[] value, int length)
 
     delete keys;
     return false;
+}
+
+public int Native_GetStartZone(Handle plugin, int numParams)
+{
+    return g_iStartZone;
 }

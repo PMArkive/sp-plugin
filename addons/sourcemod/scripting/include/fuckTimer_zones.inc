@@ -9,10 +9,12 @@ forward void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, b
 forward void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus);
 forward void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus);
 
+native int fuckTimer_GetStartZone();
+
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_zones_SetNTVOptional()
 {
-    // MarkNativeAsOptional("<NativeName>");
+    MarkNativeAsOptional("fuckTimer_GetStartZone");
 }
 #endif
 
