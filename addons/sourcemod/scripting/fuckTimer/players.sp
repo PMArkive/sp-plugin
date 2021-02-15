@@ -173,7 +173,10 @@ public void Frame_PlayerSpawn(int userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
-        fuckZones_TeleportClientToZoneIndex(client, g_iStartZone);
+        if (g_iStartZone > 0)
+        {
+            fuckZones_TeleportClientToZoneIndex(client, g_iStartZone);
+        }
     }
 }
 
