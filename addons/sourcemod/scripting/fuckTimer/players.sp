@@ -7,6 +7,7 @@
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
 #include <fuckTimer_zones>
+#include <fuckTimer_commands>
 
 char g_sBase[MAX_URL_LENGTH];
 char g_sKey[MAX_URL_LENGTH];
@@ -173,6 +174,16 @@ public void Frame_PlayerSpawn(int userid)
         {
             fuckZones_TeleportClientToZoneIndex(client, iZone);
         }
+    }
+}
+
+public void fuckTimer_OnClientRestart(int client)
+{
+    int iZone = fuckTimer_GetStartZone();
+
+    if (iZone > 0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
     }
 }
 
