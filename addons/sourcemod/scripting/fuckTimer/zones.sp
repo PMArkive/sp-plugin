@@ -23,9 +23,9 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    g_fwOnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    g_fwOnTouchZone = new GlobalForward("fuckTimer_OnTouchZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    g_fwOnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    g_fwOnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    g_fwOnTouchZone = new GlobalForward("fuckTimer_OnTouchZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    g_fwOnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_GetStartZone", Native_GetStartZone);
 
@@ -73,6 +73,7 @@ public void OneZoneStartTouch(int client, int entity, StringMap values)
     Call_PushCell(entity);
     Call_PushString(sName);
     Call_PushCell(IsStartZone(values));
+    Call_PushCell(IsMiscZone(values));
     Call_PushCell(IsEndZone(values));
     Call_PushCell(GetStageNumber(values));
     Call_PushCell(GetCheckpointNumber(values));
@@ -90,6 +91,7 @@ public void OnZoneTouch(int client, int entity, StringMap values)
     Call_PushCell(entity);
     Call_PushString(sName);
     Call_PushCell(IsStartZone(values));
+    Call_PushCell(IsMiscZone(values));
     Call_PushCell(IsEndZone(values));
     Call_PushCell(GetStageNumber(values));
     Call_PushCell(GetCheckpointNumber(values));
@@ -107,6 +109,7 @@ public void OnZoneEndTouch(int client, int entity, StringMap values)
     Call_PushCell(entity);
     Call_PushString(sName);
     Call_PushCell(IsStartZone(values));
+    Call_PushCell(IsMiscZone(values));
     Call_PushCell(IsEndZone(values));
     Call_PushCell(GetStageNumber(values));
     Call_PushCell(GetCheckpointNumber(values));
@@ -118,6 +121,16 @@ bool IsStartZone(StringMap values)
 {
     char sValue[MAX_KEY_VALUE_LENGTH];
     if (GetZoneValue(values, "Start", sValue, sizeof(sValue)))
+    {
+        return view_as<bool>(StringToInt(sValue));
+    }
+    return false;
+}
+
+bool IsMiscZone(StringMap values)
+{
+    char sValue[MAX_KEY_VALUE_LENGTH];
+    if (GetZoneValue(values, "Misc", sValue, sizeof(sValue)))
     {
         return view_as<bool>(StringToInt(sValue));
     }

@@ -114,7 +114,7 @@ public void OnGameFrame()
     }
 }
 
-public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
     Player[client].Reset(false);
 
@@ -138,7 +138,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     }
 }
 
-public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
     Player[client].Reset(true);
 }

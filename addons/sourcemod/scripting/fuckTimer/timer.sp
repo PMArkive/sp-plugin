@@ -158,7 +158,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     }
 }
 
-public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
     if (start)
     {
@@ -268,7 +268,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     }
 }
 
-public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
     if (start)
     {
@@ -282,7 +282,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool 
 
 }
 
-public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
     Player[client].SetSpeed = false;
 
@@ -314,7 +314,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
             {
                 Player[client].BonusTimes = new IntMap();
             }
-            
+
             Player[client].BonusTimes.SetValue(bonus, GetGameTime());
             Player[client].Checkpoint = 0;
             Player[client].Stage = 0;
