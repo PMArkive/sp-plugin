@@ -2,6 +2,7 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <fuckZones>
 #include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
@@ -10,6 +11,8 @@ char g_sBase[MAX_URL_LENGTH];
 char g_sKey[MAX_URL_LENGTH];
 
 HTTPClient g_hClient = null;
+
+int g_iStartZone = -1;
 
 enum struct PlayerData
 {
@@ -31,6 +34,16 @@ public Plugin myinfo =
     version = FUCKTIMER_PLUGIN_VERSION,
     url = FUCKTIMER_PLUGIN_URL
 };
+
+public void OnPluginStart()
+{
+    HookEvent("player_spawn", Event_PlayerSpawn);
+}
+
+public void OnMapStart()
+{
+    g_iStartZone = -1;
+}
 
 public void OnConfigsExecuted()
 {
@@ -147,6 +160,29 @@ public void PostPlayerData(HTTPResponse response, int userid, const char[] error
     LogMessage("[Players.PostPlayerData] Success. Status Code: %d", response.Status);
 
     OnClientPutInServer(client);
+}
+
+public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{
+    RequestFrame(Frame_PlayerSpawn, event.GetInt("userid"));
+}
+
+public void Frame_PlayerSpawn(int userid)
+{
+    int client = GetClientOfUserId(userid);
+
+    if (fuckTimer_IsClientValid(client, true, false))
+    {
+        fuckZones_TeleportClientToZoneIndex(client, g_iStartZone);
+    }
+}
+
+public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
+{
+    if (StrContains(zone_name, "main0_start", false) != -1)
+    {
+        g_iStartZone = entity;
+    }
 }
 
 void CheckHTTPClient()
