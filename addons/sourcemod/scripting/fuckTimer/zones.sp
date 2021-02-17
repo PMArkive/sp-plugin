@@ -2,6 +2,7 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <intmap>
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_zones>
@@ -11,6 +12,11 @@ GlobalForward g_fwOnTouchZone = null;
 GlobalForward g_fwOnLeavingZone = null;
 
 int g_iStartZone = -1;
+int g_iEndZone = -1;
+
+IntMap g_imCheckpoint = null;
+IntMap g_imStage = null;
+IntMap g_imBonus = null;
 
 public Plugin myinfo =
 {
@@ -28,6 +34,10 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     g_fwOnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_GetStartZone", Native_GetStartZone);
+    CreateNative("fuckTimer_GetEndZone", Native_GetEndZone);
+    CreateNative("fuckTimer_GetCheckpointZone", Native_GetCheckpointZone);
+    CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
+    CreateNative("fuckTimer_GetBonusZone", Native_GetBonusZone);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -37,13 +47,60 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnMapStart()
 {
     g_iStartZone = -1;
+    g_iEndZone = -1;
+
+    delete g_imCheckpoint;
+    g_imCheckpoint = new IntMap();
+
+    delete g_imStage;
+    g_imStage = new IntMap();
+
+    delete g_imBonus;
+    g_imBonus = new IntMap();
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
+    StringMap smEffects = fuckZones_GetZoneEffects(entity);
+
+    char sBuffer[12];
+
     if (StrContains(zone_name, "main0_start", false) != -1)
     {
         g_iStartZone = entity;
+
+        g_imStage.SetValue(1, entity);
+    }
+    else if (StrContains(zone_name, "main0_end", false) != -1)
+    {
+        g_iEndZone = entity;
+    }
+    else if (StrContains(zone_name, "Stage", false) != -1 && GetfuckTimerZoneValue(smEffects, "Stage", sBuffer, sizeof(sBuffer)))
+    {
+        int iStage = StringToInt(sBuffer);
+
+        if (iStage > 0)
+        {
+            g_imStage.SetValue(iStage, entity);
+        }
+    }
+    else if (StrContains(zone_name, "Checkpoint", false) != -1 && GetfuckTimerZoneValue(smEffects, "Checkpoint", sBuffer, sizeof(sBuffer)))
+    {
+        int iCheckpoint = StringToInt(sBuffer);
+
+        if (iCheckpoint > 0)
+        {
+            g_imCheckpoint.SetValue(iCheckpoint, entity);
+        }
+    }
+    else if (StrContains(zone_name, "Bonus", false) != -1 && GetfuckTimerZoneValue(smEffects, "Bonus", sBuffer, sizeof(sBuffer)))
+    {
+        int iBonus = StringToInt(sBuffer);
+
+        if (iBonus > 0)
+        {
+            g_imBonus.SetValue(iBonus, entity);
+        }
     }
 }
 
@@ -183,4 +240,39 @@ int GetBonusNumber(StringMap values)
 public int Native_GetStartZone(Handle plugin, int numParams)
 {
     return g_iStartZone;
+}
+
+public int Native_GetEndZone(Handle plugin, int numParams)
+{
+    return g_iEndZone;
+}
+
+public int Native_GetCheckpointZone(Handle plugin, int numParams)
+{
+    int level = GetNativeCell(1);
+
+    int iLevel;
+    g_imCheckpoint.GetValue(level, iLevel);
+
+    return iLevel;
+}
+
+public int Native_GetStageZone(Handle plugin, int numParams)
+{
+    int level = GetNativeCell(1);
+
+    int iLevel;
+    g_imStage.GetValue(level, iLevel);
+
+    return iLevel;
+}
+
+public int Native_GetBonusZone(Handle plugin, int numParams)
+{
+    int level = GetNativeCell(1);
+
+    int iLevel;
+    g_imBonus.GetValue(level, iLevel);
+
+    return iLevel;
 }

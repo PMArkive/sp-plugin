@@ -14,6 +14,8 @@
 
 #define FUCKTIMER_BASE_CLOUD_URL "https://fucktimer.cloud/file"
 
+#define FUCKTIMER_EFFECT_NAME "fuckTimer"
+
 #define MAX_URL_LENGTH 256
 #define MIN_BASE_URL_LENGTH 4
 #define MIN_API_KEY_LENGTH 12
