@@ -137,3 +137,28 @@ stock bool GetZoneValue(StringMap values, const char[] key, char[] value, int le
     delete keys;
     return false;
 }
+
+stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
+{
+    StringMap smValues;
+    effects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
+
+    char sKey[MAX_KEY_NAME_LENGTH];
+    StringMapSnapshot keys = smValues.Snapshot();
+
+    for (int x = 0; x < keys.Length; x++)
+    {
+        keys.GetKey(x, sKey, sizeof(sKey));
+
+        if (StrEqual(sKey, key, false))
+        {
+            smValues.GetString(sKey, value, length);
+
+            delete keys;
+            return true;
+        }
+    }
+
+    delete keys;
+    return false;
+}

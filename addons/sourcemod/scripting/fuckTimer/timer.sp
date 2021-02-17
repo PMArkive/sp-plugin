@@ -171,11 +171,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     {
         StringMap smEffects = fuckZones_GetZoneEffects(zone);
 
-        StringMap smValues;
-        smEffects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
-
         char sValue[4];
-        if (GetZoneValue(smValues, "Stop", sValue, sizeof(sValue)))
+        if (GetZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
@@ -185,7 +182,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
             }
         }
         
-        if (GetZoneValue(smValues, "TeleToStart", sValue, sizeof(sValue)))
+        if (GetZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
