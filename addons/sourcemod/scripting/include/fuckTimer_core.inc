@@ -5,12 +5,14 @@
 
 native bool fuckTimer_GetBaseURL(char[] url, int length);
 native bool fuckTimer_GetAPIKey(char[] key, int length);
+native void fuckTimer_GetUserAgent(char[] agent, int length);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_core_SetNTVOptional()
 {
     MarkNativeAsOptional("fuckTimer_GetBaseURL");
     MarkNativeAsOptional("fuckTimer_GetAPIKey");
+    MarkNativeAsOptional("fuckTimer_GetUserAgent");
 }
 #endif
 

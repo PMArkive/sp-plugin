@@ -198,7 +198,7 @@ void CheckHTTPClient()
         FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", g_sKey);
         g_hClient.SetHeader("Authorization", sBuffer);
 
-        FormatEx(sBuffer, sizeof(sBuffer), "fuckTimer/%s", FUCKTIMER_PLUGIN_VERSION);
+        fuckTimer_GetUserAgent(sBuffer, sizeof(sBuffer));
         g_hClient.SetHeader("User-Agent", sBuffer);
     }
 }
