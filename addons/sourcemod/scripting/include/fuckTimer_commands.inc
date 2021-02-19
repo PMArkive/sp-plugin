@@ -5,10 +5,12 @@
 
 forward void fuckTimer_OnClientRestart(int client);
 
+native void fuckTimer_RestartClient(int client);
+
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_commands_SetNTVOptional()
 {
-    // MarkNativeAsOptional("");
+    MarkNativeAsOptional("fuckTimer_RestartClient");
 }
 #endif
 

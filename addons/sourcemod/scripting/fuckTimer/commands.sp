@@ -20,6 +20,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
     g_fwOnClientRestart = new GlobalForward("fuckTimer_OnClientRestart", ET_Ignore, Param_Cell);
 
+    CreateNative("fuckTimer_RestartClient", Native_RestartClient);
+
     RegPluginLibrary("fuckTimer_commands");
 
     return APLRes_Success;
@@ -33,14 +35,26 @@ public void OnPluginStart()
 
 public Action Command_Restart(int client, int args)
 {
-    if (!client)
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
 
+    ClientRestart(client);
+
+    return Plugin_Handled;
+}
+
+public int Native_RestartClient(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+
+    ClientRestart(client);
+}
+
+void ClientRestart(int client)
+{
     Call_StartForward(g_fwOnClientRestart);
     Call_PushCell(client);
     Call_Finish();
-
-    return Plugin_Handled;
 }
