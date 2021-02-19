@@ -208,9 +208,12 @@ void CheckHTTPClient()
         g_hClient = new HTTPClient(g_sBase);
 
         char sBuffer[128];
-        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", g_sKey);
 
+        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", g_sKey);
         g_hClient.SetHeader("Authorization", sBuffer);
+
+        FormatEx(sBuffer, sizeof(sBuffer), "fuckTimer/%s", FUCKTIMER_PLUGIN_VERSION);
+        g_hClient.SetHeader("User-Agent", sBuffer);
     }
 }
 
