@@ -3,7 +3,10 @@
 
 #include <sourcemod>
 #include <ripext>
+#include <fuckZones>
 #include <fuckTimer_stocks>
+#include <fuckTimer_timer>
+#include <fuckTimer_zones>
 
 GlobalForward g_fwOnClientRestart = null;
 
@@ -31,6 +34,8 @@ public void OnPluginStart()
 {
     RegConsoleCmd("sm_r", Command_Restart);
     RegConsoleCmd("sm_restart", Command_Restart);
+
+    RegConsoleCmd("sm_end", Command_End);
 }
 
 public Action Command_Restart(int client, int args)
@@ -41,6 +46,25 @@ public Action Command_Restart(int client, int args)
     }
 
     ClientRestart(client);
+
+    return Plugin_Handled;
+}
+
+public Action Command_End(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    fuckTimer_ResetClientTimer(client);
+
+    int iZone = fuckTimer_GetEndZone();
+
+    if (iZone > 0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
+    }
 
     return Plugin_Handled;
 }
