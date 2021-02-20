@@ -65,6 +65,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetAmountOfStages", Native_GetAmountOfStages);
     CreateNative("fuckTimer_GetAmountOfBonus", Native_GetAmountOfBonus);
 
+    CreateNative("fuckTimer_ResetClientTimer", Native_ResetClientTimer);
+
     RegPluginLibrary("fuckTimer_timer");
 
     return APLRes_Success;
@@ -462,4 +464,11 @@ public int Native_GetAmountOfStages(Handle plugin, int numParams)
 public int Native_GetAmountOfBonus(Handle plugin, int numParams)
 {
     return g_iBonus;
+}
+
+public int Native_ResetClientTimer(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+
+    Player[client].Reset();
 }

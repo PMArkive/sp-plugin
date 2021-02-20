@@ -21,6 +21,8 @@ native int fuckTimer_GetAmountOfCheckpoints();
 native int fuckTimer_GetAmountOfStages();
 native int fuckTimer_GetAmountOfBonus();
 
+native int fuckTimer_ResetClientTimer(int client);
+
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_timer_SetNTVOptional()
 {
@@ -33,6 +35,8 @@ public void __pl_fuckTimer_timer_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_GetAmountOfCheckpoints");
     MarkNativeAsOptional("fuckTimer_GetAmountOfStages");
     MarkNativeAsOptional("fuckTimer_GetAmountOfBonus");
+
+    MarkNativeAsOptional("fuckTimer_ResetClientTimer");
 }
 #endif
 
