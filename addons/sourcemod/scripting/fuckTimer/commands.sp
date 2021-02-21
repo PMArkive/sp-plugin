@@ -33,10 +33,16 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
     RegConsoleCmd("sm_stop", Command_Stop);
+
     RegConsoleCmd("sm_r", Command_Restart);
     RegConsoleCmd("sm_restart", Command_Restart);
+
     RegConsoleCmd("sm_end", Command_End);
+
     RegConsoleCmd("sm_teleport", Command_Teleport);
+
+    RegConsoleCmd("sm_b", Command_Bonus);
+    RegConsoleCmd("sm_bonus", Command_Bonus);
 }
 
 public Action Command_Stop(int client, int args)
@@ -107,6 +113,60 @@ public Action Command_Teleport(int client, int args)
     else
     {
         iZone = fuckTimer_GetStartZone();
+    }
+
+    if (iZone > 0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
+    }
+
+    return Plugin_Handled;
+}
+
+public Action Command_Bonus(int client, int args)
+{
+    if (fuckTimer_GetAmountOfBonus() < 1)
+    {
+        return Plugin_Handled;
+    }
+
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    fuckTimer_ResetClientTimer(client);
+
+    int iZone = 0;
+    int iBonus = fuckTimer_GetClientBonus(client);
+
+    if (args == 0)
+    {
+        if (iBonus < 2)
+        {
+            iZone = fuckTimer_GetBonusZone(1);
+        }
+        else
+        {
+            iZone = fuckTimer_GetBonusZone(iBonus);
+        }
+    }
+    else
+    {
+        char sBuffer[12];
+        GetCmdArg(1, sBuffer, sizeof(sBuffer));
+
+        int iTemp = IsStringNumeric(sBuffer);
+
+        if (iTemp)
+        {
+            iZone = fuckTimer_GetBonusZone(iTemp);
+        }
+        
+        if (iZone  < 1)
+        {
+            iZone = fuckTimer_GetBonusZone(1);
+        }
     }
 
     if (iZone > 0)
