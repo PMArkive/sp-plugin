@@ -34,8 +34,8 @@ public void OnPluginStart()
 {
     RegConsoleCmd("sm_r", Command_Restart);
     RegConsoleCmd("sm_restart", Command_Restart);
-
     RegConsoleCmd("sm_end", Command_End);
+    RegConsoleCmd("sm_teleport", Command_Teleport);
 }
 
 public Action Command_Restart(int client, int args)
@@ -60,6 +60,41 @@ public Action Command_End(int client, int args)
     fuckTimer_ResetClientTimer(client);
 
     int iZone = fuckTimer_GetEndZone();
+
+    if (iZone > 0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
+    }
+
+    return Plugin_Handled;
+}
+
+public Action Command_Teleport(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    fuckTimer_ResetClientTimer(client);
+
+    int iZone = 0;
+
+    int iStage = fuckTimer_GetClientStage(client);
+    int iBonus = fuckTimer_GetClientBonus(client);
+
+    if (iStage > 1)
+    {
+        iZone = fuckTimer_GetStageZone(iStage);
+    }
+    else if (iBonus > 0)
+    {
+        iZone = fuckTimer_GetBonusZone(iBonus);
+    }
+    else
+    {
+        iZone = fuckTimer_GetStartZone();
+    }
 
     if (iZone > 0)
     {
