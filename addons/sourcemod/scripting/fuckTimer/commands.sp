@@ -157,9 +157,14 @@ public Action Command_Bonus(int client, int args)
     else
     {
         char sBuffer[12];
-        GetCmdArg(1, sBuffer, sizeof(sBuffer));
+        GetCmdArgString(sBuffer, sizeof(sBuffer));
 
-        int iTemp = IsStringNumeric(sBuffer);
+        int iTemp = 0;
+        
+        if (IsStringNumeric(sBuffer))
+        {
+            iTemp = StringToInt(sBuffer);
+        }
 
         if (iTemp)
         {
@@ -211,9 +216,14 @@ public Action Command_Stage(int client, int args)
     else
     {
         char sBuffer[12];
-        GetCmdArg(1, sBuffer, sizeof(sBuffer));
+        GetCmdArgString(sBuffer, sizeof(sBuffer));
 
-        int iTemp = IsStringNumeric(sBuffer);
+        int iTemp = 0;
+        
+        if (IsStringNumeric(sBuffer))
+        {
+            iTemp = StringToInt(sBuffer);
+        }
 
         if (iTemp)
         {
