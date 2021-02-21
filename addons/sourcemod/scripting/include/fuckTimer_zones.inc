@@ -3,6 +3,15 @@
 #endif
 #define _fuckTimer_zones_included
 
+enum eZone
+{
+    ZoneStart = 0,
+    ZoneEnd,
+    ZoneCheckpoint,
+    ZoneStage,
+    ZoneBonus
+}
+
 forward void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus);
 forward void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus);
 forward void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus);
