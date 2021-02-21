@@ -164,3 +164,45 @@ stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] val
     delete keys;
     return false;
 }
+
+stock bool IsStringNumeric(const char[] str)
+{
+	int x=0;
+	int dotsFound=0;
+	int numbersFound=0;
+
+	if (str[x] == '+' || str[x] == '-')
+    {
+		x++;
+	}
+
+	while (str[x] != '\0') {
+
+		if (IsCharNumeric(str[x]))
+        {
+			numbersFound++;
+		}
+		else if (str[x] == '.')
+        {
+			dotsFound++;
+
+			if (dotsFound > 1)
+            {
+				return false;
+			}
+		}
+		else
+        {
+			return false;
+		}
+
+		x++;
+	}
+
+	if (!numbersFound)
+    {
+		return false;
+	}
+
+	return true;
+}
