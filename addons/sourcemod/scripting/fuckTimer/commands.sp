@@ -43,6 +43,9 @@ public void OnPluginStart()
 
     RegConsoleCmd("sm_b", Command_Bonus);
     RegConsoleCmd("sm_bonus", Command_Bonus);
+
+    RegConsoleCmd("sm_s", Command_Stage);
+    RegConsoleCmd("sm_stage", Command_Stage);
 }
 
 public Action Command_Stop(int client, int args)
@@ -166,6 +169,60 @@ public Action Command_Bonus(int client, int args)
         if (iZone  < 1)
         {
             iZone = fuckTimer_GetBonusZone(1);
+        }
+    }
+
+    if (iZone > 0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
+    }
+
+    return Plugin_Handled;
+}
+
+public Action Command_Stage(int client, int args)
+{
+    if (fuckTimer_GetAmountOfStages() < 1)
+    {
+        return Plugin_Handled;
+    }
+
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    fuckTimer_ResetClientTimer(client);
+
+    int iZone = 0;
+    int iStage = fuckTimer_GetClientStage(client);
+
+    if (args == 0)
+    {
+        if (iStage < 2)
+        {
+            iZone = fuckTimer_GetStageZone(1);
+        }
+        else
+        {
+            iZone = fuckTimer_GetStageZone(iStage);
+        }
+    }
+    else
+    {
+        char sBuffer[12];
+        GetCmdArg(1, sBuffer, sizeof(sBuffer));
+
+        int iTemp = IsStringNumeric(sBuffer);
+
+        if (iTemp)
+        {
+            iZone = fuckTimer_GetStageZone(iTemp);
+        }
+        
+        if (iZone  < 1)
+        {
+            iZone = fuckTimer_GetStageZone(1);
         }
     }
 
