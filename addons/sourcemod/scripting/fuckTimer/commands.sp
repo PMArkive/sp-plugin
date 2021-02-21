@@ -9,6 +9,7 @@
 #include <fuckTimer_zones>
 
 GlobalForward g_fwOnClientRestart = null;
+GlobalForward g_fwOnClientTeleport = null;
 
 public Plugin myinfo =
 {
@@ -22,6 +23,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     g_fwOnClientRestart = new GlobalForward("fuckTimer_OnClientRestart", ET_Ignore, Param_Cell);
+    g_fwOnClientTeleport = new GlobalForward("fuckTimer_OnClientTeleport", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_RestartClient", Native_RestartClient);
 
@@ -69,6 +71,8 @@ public Action Command_Restart(int client, int args)
 
     ClientRestart(client);
 
+    ClientTeleport(client, ZoneStart, 0);
+
     return Plugin_Handled;
 }
 
@@ -85,6 +89,8 @@ public Action Command_End(int client, int args)
 
     if (iZone > 0)
     {
+        ClientTeleport(client, ZoneEnd, 0);
+
         fuckZones_TeleportClientToZoneIndex(client, iZone);
     }
 
@@ -108,14 +114,20 @@ public Action Command_Teleport(int client, int args)
     if (iStage > 1)
     {
         iZone = fuckTimer_GetStageZone(iStage);
+
+        ClientTeleport(client, ZoneStage, iStage);
     }
     else if (iBonus > 0)
     {
         iZone = fuckTimer_GetBonusZone(iBonus);
+
+        ClientTeleport(client, ZoneBonus, iBonus);
     }
     else
     {
         iZone = fuckTimer_GetStartZone();
+
+        ClientTeleport(client, ZoneStart, 0);
     }
 
     if (iZone > 0)
@@ -148,10 +160,14 @@ public Action Command_Bonus(int client, int args)
         if (iBonus < 2)
         {
             iZone = fuckTimer_GetBonusZone(1);
+
+            ClientTeleport(client, ZoneBonus, 1);
         }
         else
         {
             iZone = fuckTimer_GetBonusZone(iBonus);
+
+            ClientTeleport(client, ZoneStage, iBonus);
         }
     }
     else
@@ -169,11 +185,15 @@ public Action Command_Bonus(int client, int args)
         if (iTemp)
         {
             iZone = fuckTimer_GetBonusZone(iTemp);
+
+            ClientTeleport(client, ZoneBonus, iTemp);
         }
         
         if (iZone  < 1)
         {
             iZone = fuckTimer_GetBonusZone(1);
+
+            ClientTeleport(client, ZoneBonus, 1);
         }
     }
 
@@ -207,10 +227,14 @@ public Action Command_Stage(int client, int args)
         if (iStage < 2)
         {
             iZone = fuckTimer_GetStageZone(1);
+
+            ClientTeleport(client, ZoneStage, 1);
         }
         else
         {
             iZone = fuckTimer_GetStageZone(iStage);
+
+            ClientTeleport(client, ZoneStage, iStage);
         }
     }
     else
@@ -228,11 +252,15 @@ public Action Command_Stage(int client, int args)
         if (iTemp)
         {
             iZone = fuckTimer_GetStageZone(iTemp);
+
+            ClientTeleport(client, ZoneStage, iTemp);
         }
         
         if (iZone  < 1)
         {
             iZone = fuckTimer_GetStageZone(1);
+
+            ClientTeleport(client, ZoneStage, 1);
         }
     }
 
@@ -255,5 +283,14 @@ void ClientRestart(int client)
 {
     Call_StartForward(g_fwOnClientRestart);
     Call_PushCell(client);
+    Call_Finish();
+}
+
+void ClientTeleport(int client, eZone type, int level)
+{
+    Call_StartForward(g_fwOnClientTeleport);
+    Call_PushCell(client);
+    Call_PushCell(type);
+    Call_PushCell(level);
     Call_Finish();
 }
