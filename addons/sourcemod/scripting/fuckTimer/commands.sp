@@ -32,10 +32,23 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+    RegConsoleCmd("sm_stop", Command_Stop);
     RegConsoleCmd("sm_r", Command_Restart);
     RegConsoleCmd("sm_restart", Command_Restart);
     RegConsoleCmd("sm_end", Command_End);
     RegConsoleCmd("sm_teleport", Command_Teleport);
+}
+
+public Action Command_Stop(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    fuckTimer_ResetClientTimer(client);
+
+    return Plugin_Handled;
 }
 
 public Action Command_Restart(int client, int args)
