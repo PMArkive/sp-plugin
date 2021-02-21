@@ -18,6 +18,8 @@ IntMap g_imCheckpoint = null;
 IntMap g_imStage = null;
 IntMap g_imBonus = null;
 
+float g_fTime = -1.0;
+
 public Plugin myinfo =
 {
     name = FUCKTIMER_PLUGIN_NAME ... "Zones",
@@ -128,6 +130,8 @@ public void OneZoneStartTouch(int client, int entity, StringMap values)
     char sName[MAX_ZONE_NAME_LENGTH];
     fuckZones_GetZoneName(entity, sName, sizeof(sName));
 
+    PrintToChat(client, "OneZoneStartTouch - Name: %s", sName);
+
     Call_StartForward(g_fwOnEnteringZone);
     Call_PushCell(client);
     Call_PushCell(entity);
@@ -146,6 +150,12 @@ public void OnZoneTouch(int client, int entity, StringMap values)
     char sName[MAX_ZONE_NAME_LENGTH];
     fuckZones_GetZoneName(entity, sName, sizeof(sName));
 
+    if (g_fTime == -1.0 || (GetGameTime() - g_fTime > 1.0))
+    {
+        PrintToChat(client, "OnZoneTouch - Name: %s", sName);
+        g_fTime = GetGameTime();
+    }
+
     Call_StartForward(g_fwOnTouchZone);
     Call_PushCell(client);
     Call_PushCell(entity);
@@ -163,6 +173,8 @@ public void OnZoneEndTouch(int client, int entity, StringMap values)
 {
     char sName[MAX_ZONE_NAME_LENGTH];
     fuckZones_GetZoneName(entity, sName, sizeof(sName));
+
+    PrintToChat(client, "OnZoneEndTouch - Name: %s", sName);
 
     Call_StartForward(g_fwOnLeavingZone);
     Call_PushCell(client);
