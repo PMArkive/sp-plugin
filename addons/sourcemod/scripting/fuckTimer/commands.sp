@@ -45,7 +45,9 @@ public void OnPluginStart()
 
     RegConsoleCmd("sm_goback", Command_GoBack);
 
-    RegConsoleCmd("sm_teleport", Command_Teleport);
+    RegConsoleCmd("sm_rs", Command_RestartStage);
+    RegConsoleCmd("sm_restartstage", Command_RestartStage);
+    RegConsoleCmd("sm_teleport", Command_RestartStage);
 
     RegConsoleCmd("sm_b", Command_Bonus);
     RegConsoleCmd("sm_bonus", Command_Bonus);
@@ -174,7 +176,7 @@ public Action Command_GoBack(int client, int args)
     return Plugin_Handled;
 }
 
-public Action Command_Teleport(int client, int args)
+public Action Command_RestartStage(int client, int args)
 {
     if (!fuckTimer_IsClientValid(client, true, true))
     {
