@@ -82,7 +82,15 @@ public void OnGameFrame()
                 fCPStageTime = GetGameTime() - fCPStageTime;
             }
 
-            GetTimeBySeconds(fCPStageTime, sCPStageTime, sizeof(sCPStageTime));
+            if (strlen(Player[client].Zone) < 1)
+            {
+                GetTimeBySeconds(fCPStageTime, sCPStageTime, sizeof(sCPStageTime));
+            }
+            else
+            {
+                FormatEx(sCPStageTime, sizeof(sCPStageTime), "0.000");
+            }
+
             FormatEx(sCPStage, sizeof(sCPStage), "Stage: %d/%d | Time: %s", iStage, iStages, sCPStageTime);
         }
         else if (iCheckpoints > 0)

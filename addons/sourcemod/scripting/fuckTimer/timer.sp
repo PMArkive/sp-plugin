@@ -215,6 +215,17 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
 
         Player[client].Bonus = 0;
 
+        // That isn't really an workaround or dirty fix but... 
+        // with this check we're able to start the stage timer
+        // and just count the stage times. So you don't need to
+        // restart the whole timer from the first stage to your
+        // selected or current stage.
+        if (Player[client].StageTimes == null)
+        {
+            Player[client].StageTimes = new IntMap();
+            return;
+        }
+
         float fBuffer = 0.0;
         Player[client].StageTimes.GetValue(stage, fBuffer);
 
@@ -314,7 +325,11 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool 
     {
         Player[client].SetSpeed = true;
     }
+}
 
+public void fuckTimer_OnClientTeleport(int client, eZone type, int level)
+{
+    Player[client].Reset();
 }
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
@@ -359,17 +374,6 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
 
     if (stage > 1)
     {
-        // That isn't really an workaround or dirty fix but... 
-        // with this check we're able to start the stage timer
-        // and just count the stage times. So you don't need to
-        // restart the whole timer from the first stage to your
-        // selected or current stage.
-        
-        if (Player[client].StageTimes == null)
-        {
-            Player[client].StageTimes = new IntMap();
-        }
-
         Player[client].StageTimes.SetValue(stage, GetGameTime());
         Player[client].Stage = stage;
         Player[client].Bonus = 0;
