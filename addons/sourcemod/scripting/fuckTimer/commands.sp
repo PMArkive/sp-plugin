@@ -34,12 +34,14 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+    RegConsoleCmd("sm_start", Command_Start);
+
     RegConsoleCmd("sm_stop", Command_Stop);
+
+    RegConsoleCmd("sm_end", Command_End);
 
     RegConsoleCmd("sm_r", Command_Restart);
     RegConsoleCmd("sm_restart", Command_Restart);
-
-    RegConsoleCmd("sm_end", Command_End);
 
     RegConsoleCmd("sm_goback", Command_GoBack);
 
@@ -52,7 +54,7 @@ public void OnPluginStart()
     RegConsoleCmd("sm_stage", Command_Stage);
 }
 
-public Action Command_Stop(int client, int args)
+public Action Command_Start(int client, int args)
 {
     if (!fuckTimer_IsClientValid(client, true, true))
     {
@@ -61,19 +63,26 @@ public Action Command_Stop(int client, int args)
 
     fuckTimer_ResetClientTimer(client);
 
+    int iZone = fuckTimer_GetStartZone();
+
+    if (iZone > 0)
+    {
+        ClientTeleport(client, ZoneStart, 0);
+
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
+    }
+
     return Plugin_Handled;
 }
 
-public Action Command_Restart(int client, int args)
+public Action Command_Stop(int client, int args)
 {
     if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
 
-    ClientRestart(client);
-
-    ClientTeleport(client, ZoneStart, 0);
+    fuckTimer_ResetClientTimer(client);
 
     return Plugin_Handled;
 }
@@ -95,6 +104,20 @@ public Action Command_End(int client, int args)
 
         fuckZones_TeleportClientToZoneIndex(client, iZone);
     }
+
+    return Plugin_Handled;
+}
+
+public Action Command_Restart(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    ClientRestart(client);
+
+    ClientTeleport(client, ZoneStart, 0);
 
     return Plugin_Handled;
 }
