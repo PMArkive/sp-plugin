@@ -213,6 +213,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     {
         Player[client].SetSpeed = true;
 
+        Player[client].Stage = stage;
         Player[client].Bonus = 0;
 
         // That isn't really an workaround or dirty fix but... 
@@ -252,6 +253,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     
     if (checkpoint > 0)
     {
+        Player[client].Stage = 0;
         Player[client].Bonus = 0;
 
         float fBuffer = 0.0;
@@ -372,14 +374,14 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
         }
     }
 
-    if (stage > 1)
+    if (stage > 1 && Player[client].StageTimes != null)
     {
         Player[client].StageTimes.SetValue(stage, GetGameTime());
         Player[client].Stage = stage;
         Player[client].Bonus = 0;
     }
 
-    if (checkpoint > 1)
+    if (checkpoint > 1 && Player[client].CheckpointTimes != null)
     {
         Player[client].CheckpointTimes.SetValue(checkpoint, GetGameTime());
         Player[client].Checkpoint = checkpoint;

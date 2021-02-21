@@ -41,6 +41,8 @@ public void OnPluginStart()
 
     RegConsoleCmd("sm_end", Command_End);
 
+    RegConsoleCmd("sm_goback", Command_GoBack);
+
     RegConsoleCmd("sm_teleport", Command_Teleport);
 
     RegConsoleCmd("sm_b", Command_Bonus);
@@ -97,6 +99,58 @@ public Action Command_End(int client, int args)
     return Plugin_Handled;
 }
 
+public Action Command_GoBack(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    int iZone = 0;
+
+    int iStage = fuckTimer_GetClientStage(client);
+    int iBonus = fuckTimer_GetClientBonus(client);
+
+    fuckTimer_ResetClientTimer(client);
+
+    PrintToChat(client, "Stage: %d, Bonus: %d", iStage, iBonus);
+
+    if (iStage > 1)
+    {
+        iStage--;
+
+        iZone = fuckTimer_GetStageZone(iStage);
+
+        ClientTeleport(client, ZoneStage, iStage);
+    }
+    else if (iBonus > 0)
+    {
+        iBonus--;
+
+        if (iBonus == 0)
+        {
+            iBonus = 1;
+        }
+
+        iZone = fuckTimer_GetBonusZone(iBonus);
+
+        ClientTeleport(client, ZoneBonus, iBonus);
+    }
+    else
+    {
+        iZone = fuckTimer_GetStartZone();
+
+        ClientTeleport(client, ZoneStart, 0);
+    }
+
+    if (iZone > 0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
+    }
+
+    return Plugin_Handled;
+}
+
 public Action Command_Teleport(int client, int args)
 {
     if (!fuckTimer_IsClientValid(client, true, true))
@@ -104,12 +158,12 @@ public Action Command_Teleport(int client, int args)
         return Plugin_Handled;
     }
 
-    fuckTimer_ResetClientTimer(client);
-
     int iZone = 0;
 
     int iStage = fuckTimer_GetClientStage(client);
     int iBonus = fuckTimer_GetClientBonus(client);
+
+    fuckTimer_ResetClientTimer(client);
 
     if (iStage > 1)
     {
@@ -150,10 +204,10 @@ public Action Command_Bonus(int client, int args)
         return Plugin_Handled;
     }
 
-    fuckTimer_ResetClientTimer(client);
-
     int iZone = 0;
     int iBonus = fuckTimer_GetClientBonus(client);
+
+    fuckTimer_ResetClientTimer(client);
 
     if (args == 0)
     {
@@ -217,10 +271,10 @@ public Action Command_Stage(int client, int args)
         return Plugin_Handled;
     }
 
-    fuckTimer_ResetClientTimer(client);
-
     int iZone = 0;
     int iStage = fuckTimer_GetClientStage(client);
+
+    fuckTimer_ResetClientTimer(client);
 
     if (args == 0)
     {
