@@ -214,7 +214,7 @@ int GetStageNumber(StringMap values)
     {
         return StringToInt(sValue);
     }
-    return -1;
+    return 0;
 }
 
 int GetCheckpointNumber(StringMap values)
@@ -224,7 +224,7 @@ int GetCheckpointNumber(StringMap values)
     {
         return StringToInt(sValue);
     }
-    return -1;
+    return 0;
 }
 
 int GetBonusNumber(StringMap values)
@@ -234,7 +234,7 @@ int GetBonusNumber(StringMap values)
     {
         return StringToInt(sValue);
     }
-    return -1;
+    return 0;
 }
 
 public int Native_GetStartZone(Handle plugin, int numParams)
@@ -252,9 +252,16 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
     int level = GetNativeCell(1);
 
     int iLevel;
-    g_imCheckpoint.GetValue(level, iLevel);
+    bool success = g_imCheckpoint.GetValue(level, iLevel);
 
-    return iLevel;
+    if (success)
+    {
+        return iLevel;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 public int Native_GetStageZone(Handle plugin, int numParams)
@@ -262,9 +269,16 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     int level = GetNativeCell(1);
 
     int iLevel;
-    g_imStage.GetValue(level, iLevel);
+    bool success = g_imStage.GetValue(level, iLevel);
 
-    return iLevel;
+    if (success)
+    {
+        return iLevel;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 public int Native_GetBonusZone(Handle plugin, int numParams)
@@ -272,7 +286,14 @@ public int Native_GetBonusZone(Handle plugin, int numParams)
     int level = GetNativeCell(1);
 
     int iLevel;
-    g_imBonus.GetValue(level, iLevel);
+    bool success = g_imBonus.GetValue(level, iLevel);
 
-    return iLevel;
+    if (success)
+    {
+        return iLevel;
+    }
+    else
+    {
+        return 0;
+    }
 }
