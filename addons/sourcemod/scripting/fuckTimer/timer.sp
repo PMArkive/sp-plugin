@@ -221,6 +221,45 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
                 Player[client].BlockJump = true;
             }
         }
+
+        if (GetZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
+        {
+            if (view_as<bool>(StringToInt(sValue)))
+            {
+                int iZone = 0;
+
+                if (Player[client].Stage > 1)
+                {
+                    iZone = fuckTimer_GetStageZone(Player[client].Stage);
+
+                    if (iZone > 0)
+                    {
+                        fuckZones_TeleportClientToZoneIndex(client, iZone);
+                        return;
+                    }
+                }
+                else if (Player[client].Bonus > 0)
+                {
+                    iZone = fuckTimer_GetStageZone(Player[client].Bonus);
+
+                    if (iZone > 0)
+                    {
+                        fuckZones_TeleportClientToZoneIndex(client, iZone);
+                        return;
+                    }
+                }
+                else
+                {
+                    iZone = fuckTimer_GetStartZone();
+
+                    if (iZone > 0)
+                    {
+                        fuckZones_TeleportClientToZoneIndex(client, iZone);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     // Fix for missing checkpoint entry in end zone
