@@ -46,8 +46,10 @@ public void OnPluginStart()
     RegConsoleCmd("sm_goback", Command_GoBack);
 
     RegConsoleCmd("sm_rs", Command_RestartStage);
+    RegConsoleCmd("sm_back", Command_RestartStage);
     RegConsoleCmd("sm_restartstage", Command_RestartStage);
-    RegConsoleCmd("sm_teleport", Command_RestartStage);
+
+    RegConsoleCmd("sm_teleport", Command_RestartStage); // Checkpoints?
 
     RegConsoleCmd("sm_b", Command_Bonus);
     RegConsoleCmd("sm_bonus", Command_Bonus);

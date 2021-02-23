@@ -15,6 +15,7 @@ enum struct PlayerData
     int Bonus;
 
     bool SetSpeed;
+    bool BlockJump;
 
     float MainTime;
 
@@ -29,6 +30,7 @@ enum struct PlayerData
         this.Bonus = 0;
 
         this.SetSpeed = false;
+        this.BlockJump = false;
 
         this.MainTime = 0.0;
 
@@ -154,10 +156,21 @@ public void OnClientPutInServer(int client)
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-    if (IsPlayerAlive(client) && Player[client].SetSpeed)
+    if (IsPlayerAlive(client))
     {
-        SetClientSpeed(client);
+        if (Player[client].SetSpeed)
+        {
+            SetClientSpeed(client);
+        }
+
+        if (Player[client].BlockJump)
+        {
+            buttons &= ~IN_JUMP;
+            return Plugin_Changed;
+        }
     }
+
+    return Plugin_Continue;
 }
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
@@ -198,6 +211,14 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
                 }
 
                 return;
+            }
+        }
+
+        if (GetZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
+        {
+            if (view_as<bool>(StringToInt(sValue)))
+            {
+                Player[client].BlockJump = true;
             }
         }
     }
@@ -337,6 +358,7 @@ public void fuckTimer_OnClientTeleport(int client, eZone type, int level)
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
     Player[client].SetSpeed = false;
+    Player[client].BlockJump = false;
 
     if (start)
     {

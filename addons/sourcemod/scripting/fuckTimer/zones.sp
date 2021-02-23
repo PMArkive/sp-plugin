@@ -123,6 +123,7 @@ public void fuckZones_OnEffectsReady()
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Bonus", "0");
 
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "TeleToStart", "0");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "AntiJump", "0");
 }
 
 public void OneZoneStartTouch(int client, int entity, StringMap values)
