@@ -11,14 +11,59 @@ GlobalForward g_fwOnEnteringZone = null;
 GlobalForward g_fwOnTouchZone = null;
 GlobalForward g_fwOnLeavingZone = null;
 
-int g_iStartZone = -1;
-int g_iEndZone = -1;
+enum struct Variables
+{
+    int StartZone;
+    int EndZone;
 
-IntMap g_imCheckpoint = null;
-IntMap g_imStage = null;
-IntMap g_imBonus = null;
+    IntMap Checkpoint;
+    IntMap Stage;
+    IntMap Bonus;
 
-float g_fTime = -1.0;
+    IntMap Validator;
+
+    void Reset()
+    {
+        this.StartZone = -1;
+        this.EndZone = -1;
+
+        delete this.Checkpoint;
+        delete this.Stage;
+        delete this.Bonus;
+
+        IntMapSnapshot imSnap = this.Validator.Snapshot();
+
+        for (int i = 0; i < imSnap.Length; i++)
+        {
+            int iIndex = imSnap.GetKey(i);
+
+            ArrayList alArray = null;
+
+            if (this.Validator.GetValue(iIndex, alArray))
+            {
+                delete alArray;
+            }
+        }
+
+        delete imSnap;
+
+        delete this.Validator;
+    }
+
+    void Init()
+    {
+        this.StartZone = -1;
+        this.EndZone = -1;
+
+        this.Checkpoint = new IntMap();
+        this.Stage = new IntMap();
+        this.Bonus = new IntMap();
+
+        this.Validator = new IntMap();
+    }
+}
+
+Variables Core;
 
 public Plugin myinfo =
 {
@@ -48,60 +93,71 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnMapStart()
 {
-    g_iStartZone = -1;
-    g_iEndZone = -1;
-
-    delete g_imCheckpoint;
-    g_imCheckpoint = new IntMap();
-
-    delete g_imStage;
-    g_imStage = new IntMap();
-
-    delete g_imBonus;
-    g_imBonus = new IntMap();
+    Core.Reset();
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
 
-    char sBuffer[12];
+    char sValue[12], sBuffer[12];
 
     if (StrContains(zone_name, "main0_start", false) != -1)
     {
-        g_iStartZone = entity;
+        Core.StartZone = entity;
 
-        g_imStage.SetValue(1, entity);
+        Core.Stage.SetValue(1, entity);
     }
     else if (StrContains(zone_name, "main0_end", false) != -1)
     {
-        g_iEndZone = entity;
+        Core.EndZone = entity;
     }
-    else if (StrContains(zone_name, "Stage", false) != -1 && GetfuckTimerZoneValue(smEffects, "Stage", sBuffer, sizeof(sBuffer)))
+    else if (StrContains(zone_name, "stage", false) != -1 && GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue)))
     {
-        int iStage = StringToInt(sBuffer);
+        int iStage = StringToInt(sValue);
 
         if (iStage > 0)
         {
-            g_imStage.SetValue(iStage, entity);
+            Core.Stage.SetValue(iStage, entity);
         }
     }
-    else if (StrContains(zone_name, "Checkpoint", false) != -1 && GetfuckTimerZoneValue(smEffects, "Checkpoint", sBuffer, sizeof(sBuffer)))
+    else if (StrContains(zone_name, "checkpoint", false) != -1 && GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue)))
     {
-        int iCheckpoint = StringToInt(sBuffer);
+        int iCheckpoint = StringToInt(sValue);
 
         if (iCheckpoint > 0)
         {
-            g_imCheckpoint.SetValue(iCheckpoint, entity);
+            Core.Checkpoint.SetValue(iCheckpoint, entity);
         }
     }
-    else if (StrContains(zone_name, "Bonus", false) != -1 && GetfuckTimerZoneValue(smEffects, "Bonus", sBuffer, sizeof(sBuffer)))
+    else if (StrContains(zone_name, "bonus", false) != -1 && GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
     {
-        int iBonus = StringToInt(sBuffer);
+        int iBonus = StringToInt(sValue);
 
         if (iBonus > 0)
         {
-            g_imBonus.SetValue(iBonus, entity);
+            Core.Bonus.SetValue(iBonus, entity);
+        }
+    }
+    else if (StrContains(zone_name, "validator", false) != -1 && GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) && GetfuckTimerZoneValue(smEffects, "Stage", sBuffer, sizeof(sBuffer)))
+    {
+        bool bValidator = view_as<bool>(StringToInt(sValue));
+
+        if (bValidator)
+        {
+            int iStage = StringToInt(sValue);
+
+            ArrayList alArray = null;
+
+            Core.Validator.GetValue(iStage, alArray);
+
+            if (alArray == null)
+            {
+                alArray = new ArrayList();
+                Core.Validator.SetValue(iStage, alArray);
+            }
+
+            alArray.Push(EntIndexToEntRef(entity));
         }
     }
 }
@@ -150,12 +206,6 @@ public void OnZoneTouch(int client, int entity, StringMap values)
 {
     char sName[MAX_ZONE_NAME_LENGTH];
     fuckZones_GetZoneName(entity, sName, sizeof(sName));
-
-    if (g_fTime == -1.0 || (GetGameTime() - g_fTime > 1.0))
-    {
-        PrintToChat(client, "OnZoneTouch - Name: %s", sName);
-        g_fTime = GetGameTime();
-    }
 
     Call_StartForward(g_fwOnTouchZone);
     Call_PushCell(client);
@@ -252,12 +302,12 @@ int GetBonusNumber(StringMap values)
 
 public int Native_GetStartZone(Handle plugin, int numParams)
 {
-    return g_iStartZone;
+    return Core.StartZone;
 }
 
 public int Native_GetEndZone(Handle plugin, int numParams)
 {
-    return g_iEndZone;
+    return Core.EndZone;
 }
 
 public int Native_GetCheckpointZone(Handle plugin, int numParams)
@@ -265,7 +315,7 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
     int level = GetNativeCell(1);
 
     int iLevel;
-    bool success = g_imCheckpoint.GetValue(level, iLevel);
+    bool success = Core.Checkpoint.GetValue(level, iLevel);
 
     if (success)
     {
@@ -282,7 +332,7 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     int level = GetNativeCell(1);
 
     int iLevel;
-    bool success = g_imStage.GetValue(level, iLevel);
+    bool success = Core.Stage.GetValue(level, iLevel);
 
     if (success)
     {
@@ -299,7 +349,7 @@ public int Native_GetBonusZone(Handle plugin, int numParams)
     int level = GetNativeCell(1);
 
     int iLevel;
-    bool success = g_imBonus.GetValue(level, iLevel);
+    bool success = Core.Bonus.GetValue(level, iLevel);
 
     if (success)
     {
