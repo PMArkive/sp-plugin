@@ -102,6 +102,8 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     char sValue[12], sBuffer[12];
 
+    bool bCheckpoint = false;
+
     if (StrContains(zone_name, "main0_start", false) != -1)
     {
         Core.StartZone = entity;
@@ -112,15 +114,6 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     {
         Core.EndZone = entity;
     }
-    else if (StrContains(zone_name, "stage", false) != -1 && GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue)))
-    {
-        int iStage = StringToInt(sValue);
-
-        if (iStage > 0)
-        {
-            Core.Stage.SetValue(iStage, entity);
-        }
-    }
     else if (StrContains(zone_name, "checkpoint", false) != -1 && GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue)))
     {
         int iCheckpoint = StringToInt(sValue);
@@ -128,6 +121,17 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
         if (iCheckpoint > 0)
         {
             Core.Checkpoint.SetValue(iCheckpoint, entity);
+
+            bCheckpoint = true;
+        }
+    }
+    else if (StrContains(zone_name, "stage", false) != -1 && GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue)))
+    {
+        int iStage = StringToInt(sValue);
+
+        if (iStage > 0)
+        {
+            Core.Stage.SetValue(iStage, entity);
         }
     }
     else if (StrContains(zone_name, "bonus", false) != -1 && GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
@@ -139,22 +143,28 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
             Core.Bonus.SetValue(iBonus, entity);
         }
     }
-    else if (StrContains(zone_name, "validator", false) != -1 && GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) && GetfuckTimerZoneValue(smEffects, "Stage", sBuffer, sizeof(sBuffer)))
+    
+    if (StrContains(zone_name, "validator", false) != -1 && GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) &&
+            (
+                bCheckpoint && GetfuckTimerZoneValue(smEffects, "Checkpoint", sBuffer, sizeof(sBuffer)) ||
+                !bCheckpoint && GetfuckTimerZoneValue(smEffects, "Stage", sBuffer, sizeof(sBuffer))
+            )
+        )
     {
         bool bValidator = view_as<bool>(StringToInt(sValue));
 
         if (bValidator)
         {
-            int iStage = StringToInt(sValue);
+            int iLevel = StringToInt(sBuffer);
 
             ArrayList alArray = null;
 
-            Core.Validator.GetValue(iStage, alArray);
+            Core.Validator.GetValue(iLevel, alArray);
 
             if (alArray == null)
             {
                 alArray = new ArrayList();
-                Core.Validator.SetValue(iStage, alArray);
+                Core.Validator.SetValue(iLevel, alArray);
             }
 
             alArray.Push(EntIndexToEntRef(entity));
