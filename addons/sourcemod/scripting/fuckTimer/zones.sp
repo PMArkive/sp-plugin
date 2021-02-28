@@ -98,6 +98,11 @@ public void OnMapStart()
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
+    if (Core.Stage == null)
+    {
+        Core.Init();
+    }
+    
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
 
     char sValue[12], sBuffer[12];
