@@ -260,6 +260,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
                 }
             }
         }
+
+        return;
     }
 
     // Fix for missing checkpoint entry in end zone
@@ -383,7 +385,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool 
         SetClientStartValues(client, bonus);
     }
     
-    if (stage > 0)
+    if (!misc && stage > 0)
     {
         Player[client].SetSpeed = true;
     }
