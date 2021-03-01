@@ -5,6 +5,7 @@
 
 enum eZone
 {
+    ZoneNone,
     ZoneStart = 0,
     ZoneEnd,
     ZoneCheckpoint,
@@ -21,6 +22,7 @@ native int fuckTimer_GetEndZone();
 native int fuckTimer_GetCheckpointZone(int level);
 native int fuckTimer_GetStageZone(int level);
 native int fuckTimer_GetBonusZone(int level);
+native int fuckTimer_GetValidatorCount(int level);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_zones_SetNTVOptional()

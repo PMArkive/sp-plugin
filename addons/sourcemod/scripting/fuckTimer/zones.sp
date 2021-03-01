@@ -5,6 +5,7 @@
 #include <intmap>
 #include <fuckZones>
 #include <fuckTimer_stocks>
+#include <fuckTimer_timer>
 #include <fuckTimer_zones>
 
 GlobalForward g_fwOnEnteringZone = null;
@@ -31,21 +32,24 @@ enum struct Variables
         delete this.Stage;
         delete this.Bonus;
 
-        IntMapSnapshot imSnap = this.Validator.Snapshot();
-
-        for (int i = 0; i < imSnap.Length; i++)
+        if (this.Validator != null)
         {
-            int iIndex = imSnap.GetKey(i);
+            IntMapSnapshot imSnap = this.Validator.Snapshot();
 
-            ArrayList alArray = null;
-
-            if (this.Validator.GetValue(iIndex, alArray))
+            for (int i = 0; i < imSnap.Length; i++)
             {
-                delete alArray;
-            }
-        }
+                int iIndex = imSnap.GetKey(i);
 
-        delete imSnap;
+                ArrayList alArray = null;
+
+                if (this.Validator.GetValue(iIndex, alArray))
+                {
+                    delete alArray;
+                }
+            }
+
+            delete imSnap;
+        }
 
         delete this.Validator;
     }
@@ -85,6 +89,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetCheckpointZone", Native_GetCheckpointZone);
     CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
     CreateNative("fuckTimer_GetBonusZone", Native_GetBonusZone);
+    CreateNative("fuckTimer_GetValidatorCount", Native_GetValidatorCount);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -102,65 +107,75 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     {
         Core.Init();
     }
-    
+
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
 
-    char sValue[12], sBuffer[12];
-
-    bool bCheckpoint = false;
+    char sValue[12];
 
     if (StrContains(zone_name, "main0_start", false) != -1)
     {
         Core.StartZone = entity;
-
         Core.Stage.SetValue(1, entity);
+        return;
     }
     else if (StrContains(zone_name, "main0_end", false) != -1)
     {
         Core.EndZone = entity;
+        return;
     }
-    else if (StrContains(zone_name, "checkpoint", false) != -1 && GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue)))
+
+    GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue));
+    int iCheckpoint = StringToInt(sValue);
+
+    GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue));
+    int iStage = StringToInt(sValue);
+
+    GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue));
+    int iBonus = StringToInt(sValue);
+
+
+    if (StrContains(zone_name, "checkpoint", false) != -1 && iCheckpoint > 0)
     {
-        int iCheckpoint = StringToInt(sValue);
-
-        if (iCheckpoint > 0)
-        {
-            Core.Checkpoint.SetValue(iCheckpoint, entity);
-
-            bCheckpoint = true;
-        }
+        Core.Checkpoint.SetValue(iCheckpoint, entity);
+        return;
     }
-    else if (StrContains(zone_name, "stage", false) != -1 && GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue)))
+    else if (StrContains(zone_name, "stage", false) != -1 && iStage > 0)
     {
-        int iStage = StringToInt(sValue);
-
-        if (iStage > 0)
-        {
-            Core.Stage.SetValue(iStage, entity);
-        }
+        Core.Stage.SetValue(iStage, entity);
+        return;
     }
-    else if (StrContains(zone_name, "bonus", false) != -1 && GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
+    else if (StrContains(zone_name, "bonus", false) != -1 && iBonus > 0)
     {
-        int iBonus = StringToInt(sValue);
-
-        if (iBonus > 0)
-        {
-            Core.Bonus.SetValue(iBonus, entity);
-        }
+        Core.Bonus.SetValue(iBonus, entity);
+        return;
     }
-    
+
     if (StrContains(zone_name, "validator", false) != -1 && GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) &&
             (
-                bCheckpoint && GetfuckTimerZoneValue(smEffects, "Checkpoint", sBuffer, sizeof(sBuffer)) ||
-                !bCheckpoint && GetfuckTimerZoneValue(smEffects, "Stage", sBuffer, sizeof(sBuffer))
+                iCheckpoint > 0 || iStage > 0
             )
         )
     {
+        PrintToServer("Yes");
         bool bValidator = view_as<bool>(StringToInt(sValue));
 
         if (bValidator)
         {
-            int iLevel = StringToInt(sBuffer);
+            int iLevel = 0;
+
+            if (iCheckpoint > 0)
+            {
+                iLevel = iCheckpoint;
+            }
+            else if (iStage > 0)
+            {
+                iLevel = iStage;
+            }
+            else
+            {
+                LogError("Validator zone detected without valid checkpoint/stage value.");
+                return;
+            }
 
             ArrayList alArray = null;
 
@@ -173,6 +188,8 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
             }
 
             alArray.Push(EntIndexToEntRef(entity));
+
+            return;
         }
     }
 }
@@ -194,6 +211,8 @@ public void fuckZones_OnEffectsReady()
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Bonus", "0");
 
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "TeleToStart", "0");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Checker", "0");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Validator", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "AntiJump", "0");
 }
 
@@ -374,4 +393,32 @@ public int Native_GetBonusZone(Handle plugin, int numParams)
     {
         return 0;
     }
+}
+
+public int Native_GetValidatorCount(Handle plugin, int numParams)
+{
+    if (fuckTimer_GetAmountOfStages() > 1)
+    {
+        ArrayList alArray = null;
+
+        Core.Validator.GetValue(GetNativeCell(1), alArray);
+
+        if (alArray != null)
+        {
+            return alArray.Length;
+        }
+    }
+    else
+    {
+        ArrayList alArray = null;
+
+        Core.Validator.GetValue(0, alArray);
+
+        if (alArray != null)
+        {
+            return alArray.Length;
+        }
+    }
+
+    return 0;
 }

@@ -73,6 +73,8 @@ public void OnGameFrame()
         int iStages = fuckTimer_GetAmountOfStages();
         int iCheckpoints = fuckTimer_GetAmountOfCheckpoints();
 
+        int iValidator = 0;
+
         if (iStages > 0)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
@@ -92,6 +94,8 @@ public void OnGameFrame()
             }
 
             FormatEx(sCPStage, sizeof(sCPStage), "Stage: %d/%d | Time: %s", iStage, iStages, sCPStageTime);
+
+            iValidator = fuckTimer_GetValidatorCount(iStage);
         }
         else if (iCheckpoints > 0)
         {
@@ -104,6 +108,8 @@ public void OnGameFrame()
 
             GetTimeBySeconds(fCPStageTime, sCPStageTime, sizeof(sCPStageTime));
             FormatEx(sCPStage, sizeof(sCPStage), "CP: %d/%d | Time: %s", iCheckpoint, iCheckpoints, sCPStageTime);
+
+            iValidator = fuckTimer_GetValidatorCount(iCheckpoint);
         }
         else
         {
@@ -117,8 +123,15 @@ public void OnGameFrame()
         {
             FormatEx(sCPStage, sizeof(sCPStage), "Bonus: %d/%d", iBonus, iMaxBonus);
         }
+
+        char sValidator[24];
+
+        if (iValidator > 0)
+        {
+            FormatEx(sValidator, sizeof(sValidator), "Validator: %d/%d", fuckTimer_GetClientValidator(client), iValidator);
+        }
         
-        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s\n Tier: %d%s", GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone);
+        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s\n Tier: %d%s\n %s", GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone, sValidator);
     }
 }
 

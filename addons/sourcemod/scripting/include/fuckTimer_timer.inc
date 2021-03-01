@@ -17,6 +17,8 @@ native int fuckTimer_GetClientCheckpoint(int client);
 native int fuckTimer_GetClientStage(int client);
 native int fuckTimer_GetClientBonus(int client);
 
+native int fuckTimer_GetClientValidator(int client);
+
 native int fuckTimer_GetAmountOfCheckpoints();
 native int fuckTimer_GetAmountOfStages();
 native int fuckTimer_GetAmountOfBonus();
@@ -31,6 +33,8 @@ public void __pl_fuckTimer_timer_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_GetClientCheckpoint");
     MarkNativeAsOptional("fuckTimer_GetClientStage");
     MarkNativeAsOptional("fuckTimer_GetClientBonus");
+
+    MarkNativeAsOptional("fuckTimer_GetClientValidator");
 
     MarkNativeAsOptional("fuckTimer_GetAmountOfCheckpoints");
     MarkNativeAsOptional("fuckTimer_GetAmountOfStages");

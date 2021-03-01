@@ -14,6 +14,8 @@ enum struct PlayerData
     int Stage;
     int Bonus;
 
+    int Validator;
+
     bool SetSpeed;
     bool BlockJump;
 
@@ -28,6 +30,8 @@ enum struct PlayerData
         this.Checkpoint = 0;
         this.Stage = 0;
         this.Bonus = 0;
+
+        this.Validator = 0;
 
         this.SetSpeed = false;
         this.BlockJump = false;
@@ -62,6 +66,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetClientCheckpoint", Native_GetClientCheckpoint);
     CreateNative("fuckTimer_GetClientStage", Native_GetClientStage);
     CreateNative("fuckTimer_GetClientBonus", Native_GetClientBonus);
+    CreateNative("fuckTimer_GetClientValidator", Native_GetClientValidator);
 
     CreateNative("fuckTimer_GetAmountOfCheckpoints", Native_GetAmountOfCheckpoints);
     CreateNative("fuckTimer_GetAmountOfStages", Native_GetAmountOfStages);
@@ -187,7 +192,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         StringMap smEffects = fuckZones_GetZoneEffects(zone);
 
         char sValue[4];
-        if (GetZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
+        if (GetfuckTimerZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
@@ -197,7 +202,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
             }
         }
         
-        if (GetZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
+        if (GetfuckTimerZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
@@ -214,7 +219,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
             }
         }
 
-        if (GetZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
+        if (GetfuckTimerZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
@@ -222,10 +227,34 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
             }
         }
 
-        if (GetZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
+        if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
+                Player[client].Validator++;
+            }
+        }
+
+        if (GetfuckTimerZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
+        {
+            if (view_as<bool>(StringToInt(sValue)))
+            {
+                int iValidator = 0;
+
+                if (Player[client].Checkpoint > 0)
+                {
+                    iValidator = fuckTimer_GetValidatorCount(Player[client].Checkpoint);
+                }
+                else if (Player[client].Stage > 0)
+                {
+                    iValidator = fuckTimer_GetValidatorCount(Player[client].Stage);
+                }
+
+                if (iValidator > 0 && Player[client].Validator >= iValidator)
+                {
+                    return;
+                }
+
                 int iZone = 0;
 
                 if (Player[client].Stage > 1)
@@ -248,15 +277,13 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
                         return;
                     }
                 }
-                else
-                {
-                    iZone = fuckTimer_GetStartZone();
 
-                    if (iZone > 0)
-                    {
-                        fuckZones_TeleportClientToZoneIndex(client, iZone);
-                        return;
-                    }
+                iZone = fuckTimer_GetStartZone();
+
+                if (iZone > 0)
+                {
+                    fuckZones_TeleportClientToZoneIndex(client, iZone);
+                    return;
                 }
             }
         }
@@ -273,6 +300,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     
     if (stage > 0)
     {
+        Player[client].Validator = 0;
         Player[client].SetSpeed = true;
 
         Player[client].Stage = stage;
@@ -529,6 +557,11 @@ public int Native_GetClientStage(Handle plugin, int numParams)
 public int Native_GetClientBonus(Handle plugin, int numParams)
 {
     return Player[GetNativeCell(1)].Bonus;
+}
+
+public int Native_GetClientValidator(Handle plugin, int numParams)
+{
+    return Player[GetNativeCell(1)].Validator;
 }
 
 public int Native_GetAmountOfCheckpoints(Handle plugin, int numParams)
