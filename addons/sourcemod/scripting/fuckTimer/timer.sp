@@ -17,7 +17,6 @@ enum struct PlayerData
     int Validator;
 
     bool SetSpeed;
-    bool BlockJump;
 
     float MainTime;
 
@@ -34,7 +33,6 @@ enum struct PlayerData
         this.Validator = 0;
 
         this.SetSpeed = false;
-        this.BlockJump = false;
 
         this.MainTime = 0.0;
 
@@ -49,6 +47,9 @@ PlayerData Player[MAXPLAYERS + 1];
 int g_iStages = 0;
 int g_iCheckpoints = 0;
 int g_iBonus = 0;
+
+ConVar g_cJumpImpulse = null;
+char  g_sJumpImpulse[12];
 
 public Plugin myinfo =
 {
@@ -84,6 +85,12 @@ public void OnMapStart()
     g_iStages = 0;
     g_iCheckpoints = 0;
     g_iBonus = 0;
+}
+
+public void OnConfigsExecuted()
+{
+    g_cJumpImpulse = FindConVar("sv_jump_impulse");
+    g_cJumpImpulse.GetString(g_sJumpImpulse, sizeof(g_sJumpImpulse));
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
@@ -167,12 +174,6 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
         {
             SetClientSpeed(client);
         }
-
-        if (Player[client].BlockJump)
-        {
-            buttons &= ~IN_JUMP;
-            return Plugin_Changed;
-        }
     }
 
     return Plugin_Continue;
@@ -223,7 +224,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
-                Player[client].BlockJump = true;
+                SendConVarValue(client, g_cJumpImpulse, "0");
             }
         }
 
@@ -427,7 +428,7 @@ public void fuckTimer_OnClientTeleport(int client, eZone type, int level)
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
     Player[client].SetSpeed = false;
-    Player[client].BlockJump = false;
+    SendConVarValue(client, g_cJumpImpulse, g_sJumpImpulse);
 
     if (start)
     {
