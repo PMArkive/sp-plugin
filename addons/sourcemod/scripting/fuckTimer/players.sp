@@ -3,16 +3,10 @@
 
 #include <sourcemod>
 #include <fuckZones>
-#include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
 #include <fuckTimer_zones>
 #include <fuckTimer_commands>
-
-char g_sBase[MAX_URL_LENGTH];
-char g_sKey[MAX_URL_LENGTH];
-
-HTTPClient g_hClient = null;
 
 enum struct PlayerData
 {
@@ -25,6 +19,8 @@ enum struct PlayerData
 }
 
 PlayerData Player[MAXPLAYERS + 1];
+
+HTTPClient g_httpClient = null;
 
 public Plugin myinfo =
 {
@@ -42,19 +38,7 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
-    if (!fuckTimer_GetBaseURL(g_sBase, sizeof(g_sBase)))
-    {
-        SetFailState("[Players.OnConfigsExecuted] Can't receive base url.");
-        return;
-    }
-
-    if (!fuckTimer_GetAPIKey(g_sKey, sizeof(g_sKey)))
-    {
-        SetFailState("[Players.OnConfigsExecuted] Can't receive api key.");
-        return;
-    }
-
-    g_hClient = new HTTPClient(g_sBase);
+    g_httpClient = fuckTimer_GetHTTPClient();
 
     for (int i = 1; i <= MaxClients; i++)
     {
@@ -72,16 +56,17 @@ public void OnClientPutInServer(int client)
         return;
     }
 
+    g_httpClient = fuckTimer_GetHTTPClient();
+
     Player[client].Reset();
 
     LogMessage("%N - SteamAccountID: %d", client, GetSteamAccountID(client));
 
-    CheckHTTPClient();
-
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
+    LogMessage("Endpoint: %s", sEndpoint);
     
-    g_hClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
+    g_httpClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
 }
 
 public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
@@ -103,7 +88,7 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
             return;
         }
 
-        LogError("[Players.GetPlayerData] Something went wrong. Status Code: %d, Error: %d", response.Status, error);
+        LogError("[Players.GetPlayerData] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
@@ -119,8 +104,6 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
 
 void PreparePlayerPostData(int client)
 {
-    CheckHTTPClient();
-
     char sName[MAX_NAME_LENGTH];
     GetClientName(client, sName, sizeof(sName));
 
@@ -132,7 +115,7 @@ void PreparePlayerPostData(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player");
 
-    g_hClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
+    g_httpClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;
 }
 
@@ -184,21 +167,5 @@ public void fuckTimer_OnClientRestart(int client)
     if (iZone > 0)
     {
         fuckZones_TeleportClientToZoneIndex(client, iZone);
-    }
-}
-
-void CheckHTTPClient()
-{
-    if (g_hClient == null)
-    {
-        g_hClient = new HTTPClient(g_sBase);
-
-        char sBuffer[128];
-
-        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", g_sKey);
-        g_hClient.SetHeader("Authorization", sBuffer);
-
-        fuckTimer_GetUserAgent(sBuffer, sizeof(sBuffer));
-        g_hClient.SetHeader("User-Agent", sBuffer);
     }
 }

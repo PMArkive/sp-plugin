@@ -3,16 +3,14 @@
 #endif
 #define _fuckTimer_core_included
 
-native bool fuckTimer_GetBaseURL(char[] url, int length);
-native bool fuckTimer_GetAPIKey(char[] key, int length);
-native void fuckTimer_GetUserAgent(char[] agent, int length);
+#include <ripext>
+
+native HTTPClient fuckTimer_GetHTTPClient();
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_core_SetNTVOptional()
 {
-    MarkNativeAsOptional("fuckTimer_GetBaseURL");
-    MarkNativeAsOptional("fuckTimer_GetAPIKey");
-    MarkNativeAsOptional("fuckTimer_GetUserAgent");
+    MarkNativeAsOptional("fuckTimer_GetHTTPClient");
 }
 #endif
 

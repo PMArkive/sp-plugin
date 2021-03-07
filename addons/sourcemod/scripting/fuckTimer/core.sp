@@ -3,11 +3,12 @@
 
 #include <sourcemod>
 #include <fuckTimer_stocks>
+#include <fuckTimer_core>
 
 ConVar g_cBaseURL = null;
 ConVar g_cAPIKey = null;
 
-char g_sUserAgent[128];
+HTTPClient g_httpClient = null;
 
 public Plugin myinfo =
 {
@@ -20,10 +21,7 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    CreateNative("fuckTimer_GetBaseURL", Native_GetBaseURL);
-    CreateNative("fuckTimer_GetAPIKey", Native_GetAPIKey);
-    CreateNative("fuckTimer_GetUserAgent", Native_GetUserAgent);
-    
+    CreateNative("fuckTimer_GetHTTPClient", Native_GetHTTPClient);
     RegPluginLibrary("fuckTimer_core");
 
     return APLRes_Success;
@@ -39,69 +37,56 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
-    char sMetaMod[12], sSourceMod[24];
-
-    ConVar cBuffer = FindConVar("metamod_version");
-
-    if (cBuffer != null)
+    if (g_httpClient == null)
     {
-        cBuffer.GetString(sMetaMod, sizeof(sMetaMod));
+        char sBase[MAX_URL_LENGTH];
+
+        g_cBaseURL.GetString(sBase, sizeof(sBase));
+
+        if (strlen(sBase) < 2)
+        {
+            SetFailState("[Core.OnConfigsExecuted] Can't receive base url.");
+            return;
+        }
+
+        g_httpClient = new HTTPClient(sBase);
+
+        char sKey[MAX_URL_LENGTH];
+        g_cAPIKey.GetString(sKey, sizeof(sKey));
+
+        if (strlen(sKey) < 2)
+        {
+            SetFailState("[Core.OnConfigsExecuted] Can't receive api key.");
+            return;
+        }
+
+        char sBuffer[128];
+
+        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sKey);
+        g_httpClient.SetHeader("Authorization", sBuffer);
+
+        char sMetaMod[12], sSourceMod[24];
+        ConVar cBuffer = FindConVar("metamod_version");
+
+        if (cBuffer != null)
+        {
+            cBuffer.GetString(sMetaMod, sizeof(sMetaMod));
+        }
+
+        cBuffer = FindConVar("sourcemod_version");
+
+        if (cBuffer != null)
+        {
+            cBuffer.GetString(sSourceMod, sizeof(sSourceMod));
+        }
+
+        char sUserAgent[128];
+        FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
+        g_httpClient.SetHeader("User-Agent", sUserAgent);
     }
-
-    cBuffer = FindConVar("sourcemod_version");
-
-    if (cBuffer != null)
-    {
-        cBuffer.GetString(sSourceMod, sizeof(sSourceMod));
-    }
-
-    FormatEx(g_sUserAgent, sizeof(g_sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
 }
 
-public int Native_GetBaseURL(Handle plugin, int numParams)
+public any Native_GetHTTPClient(Handle plugin, int numParams)
 {
-    int iLength = GetNativeCell(2);
-    char[] sURL = new char[iLength];
-
-    g_cBaseURL.GetString(sURL, iLength);
-
-    if (strlen(sURL) > MIN_BASE_URL_LENGTH)
-    {
-        int iCode = SetNativeString(1, sURL, iLength);
-
-        return (iCode == SP_ERROR_NONE);
-    }
-    return false;
-}
-
-public int Native_GetAPIKey(Handle plugin, int numParams)
-{
-    int iLength = GetNativeCell(2);
-    char[] sKey = new char[iLength];
-
-    g_cAPIKey.GetString(sKey, iLength);
-
-    if (strlen(sKey) > MIN_API_KEY_LENGTH)
-    {
-        int iCode = SetNativeString(1, sKey, iLength);
-
-        return (iCode == SP_ERROR_NONE);
-    }
-    return false;
-}
-
-public int Native_GetUserAgent(Handle plugin, int numParams)
-{
-    int iLength = GetNativeCell(2);
-    char[] sUserAgent = new char[iLength];
-
-    strcopy(sUserAgent, iLength, g_sUserAgent);
-
-    if (strlen(sUserAgent) > 1)
-    {
-        int iCode = SetNativeString(1, sUserAgent, iLength);
-
-        return (iCode == SP_ERROR_NONE);
-    }
-    return false;
+    return g_httpClient;
 }

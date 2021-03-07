@@ -7,10 +7,7 @@
 #include <fuckTimer_core>
 #include <fuckTimer_downloader>
 
-char g_sBase[MAX_URL_LENGTH];
-char g_sKey[MAX_URL_LENGTH];
-
-HTTPClient g_hClient = null;
+HTTPClient g_httpClient = null;
 
 enum struct MapData {
     int Id;
@@ -46,18 +43,6 @@ public void fuckTimer_OnZoneDownload(const char[] map, bool success)
         return;
     }
 
-    if (!fuckTimer_GetBaseURL(g_sBase, sizeof(g_sBase)))
-    {
-        SetFailState("[Maps.fuckTimer_OnZoneDownload] Can't receive base url.");
-        return;
-    }
-
-    if (!fuckTimer_GetAPIKey(g_sKey, sizeof(g_sKey)))
-    {
-        SetFailState("[Maps.fuckTimer_OnZoneDownload] Can't receive api key.");
-        return;
-    }
-
     LoadMapData(map);
 }
 
@@ -69,9 +54,9 @@ void LoadMapData(const char[] map)
     DataPack pack = new DataPack();
     pack.WriteString(map);
 
-    CheckHTTPClient();
+    g_httpClient = fuckTimer_GetHTTPClient();
 
-    g_hClient.Get(sEndpoint, GetMapData, pack);
+    g_httpClient.Get(sEndpoint, GetMapData, pack);
 }
 
 public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
@@ -92,7 +77,7 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
             return;
         }
 
-        LogError("[Maps.GetMapData] Something went wrong. Status Code: %d, Error: %d", response.Status, error);
+        LogError("[Maps.GetMapData] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
@@ -110,7 +95,7 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
 
 void PrepareMapPostData(const char[] map)
 {
-    CheckHTTPClient();
+    g_httpClient = fuckTimer_GetHTTPClient();
 
     int iTier = GetMapTier(map);
 
@@ -125,7 +110,7 @@ void PrepareMapPostData(const char[] map)
     DataPack pack = new DataPack();
     pack.WriteString(map);
 
-    g_hClient.Post(sEndpoint, jMap, PostMapData, pack);
+    g_httpClient.Post(sEndpoint, jMap, PostMapData, pack);
     delete jMap;
 }
 
@@ -199,22 +184,6 @@ int GetMapTier(const char[] map)
     delete kv;
 
     return iTier;
-}
-
-void CheckHTTPClient()
-{
-    if (g_hClient == null)
-    {
-        g_hClient = new HTTPClient(g_sBase);
-
-        char sBuffer[128];
-
-        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", g_sKey);
-        g_hClient.SetHeader("Authorization", sBuffer);
-
-        fuckTimer_GetUserAgent(sBuffer, sizeof(sBuffer));
-        g_hClient.SetHeader("User-Agent", sBuffer);
-    }
 }
 
 public int Native_GetMapTier(Handle plugin, int numParams)
