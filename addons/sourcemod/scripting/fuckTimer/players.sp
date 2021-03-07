@@ -60,12 +60,8 @@ public void OnClientPutInServer(int client)
 
     Player[client].Reset();
 
-    LogMessage("%N - SteamAccountID: %d", client, GetSteamAccountID(client));
-
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
-    LogMessage("Endpoint: %s", sEndpoint);
-    
     g_httpClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
 }
 
