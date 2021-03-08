@@ -17,6 +17,9 @@ enum struct MapData {
 
 MapData Map;
 
+bool g_bAPI = false;
+bool g_bZones = false;
+
 public Plugin myinfo =
 {
     name = FUCKTIMER_PLUGIN_NAME ... "Maps",
@@ -35,6 +38,15 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
+public void fuckTimer_OnAPIReady()
+{
+    g_bAPI = true;
+
+    char sMap[32];
+    fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
+    ArePluginsReady(sMap);
+}
+
 public void fuckTimer_OnZoneDownload(const char[] map, bool success)
 {
     if (!success)
@@ -43,7 +55,20 @@ public void fuckTimer_OnZoneDownload(const char[] map, bool success)
         return;
     }
 
-    LoadMapData(map);
+    g_bZones = true;
+
+    ArePluginsReady(map);
+}
+
+void ArePluginsReady(const char[] map)
+{
+    if (g_bAPI && g_bZones)
+    {
+        LoadMapData(map);
+
+        g_bAPI = false;
+        g_bZones = false;
+    }
 }
 
 void LoadMapData(const char[] map)
