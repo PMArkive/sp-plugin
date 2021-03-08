@@ -60,6 +60,12 @@ public void OnClientPutInServer(int client)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
+
+    if (g_httpClient == null)
+    {
+        g_httpClient = fuckTimer_GetHTTPClient();
+    }
+
     g_httpClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
 }
 
