@@ -36,7 +36,7 @@ public void OnPluginStart()
     HookEvent("player_spawn", Event_PlayerSpawn);
 }
 
-public void OnConfigsExecuted()
+public void fuckTimer_OnAPIReady()
 {
     g_httpClient = fuckTimer_GetHTTPClient();
 
@@ -55,8 +55,6 @@ public void OnClientPutInServer(int client)
     {
         return;
     }
-
-    g_httpClient = fuckTimer_GetHTTPClient();
 
     Player[client].Reset();
 
