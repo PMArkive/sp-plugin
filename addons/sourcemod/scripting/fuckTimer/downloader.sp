@@ -7,7 +7,7 @@
 
 char g_sName[32];
 
-HTTPClient g_hClient = null;
+HTTPClient g_httpClient = null;
 
 GlobalForward g_fwOnZoneDownload = null;
 
@@ -63,9 +63,9 @@ public void OnMapStart()
 
 void CheckHTTPClient()
 {
-    if (g_hClient == null)
+    if (g_httpClient == null)
     {
-        g_hClient = new HTTPClient(FUCKTIMER_BASE_CLOUD_URL);
+        g_httpClient = new HTTPClient(FUCKTIMER_BASE_CLOUD_URL);
     }
 }
 
@@ -91,7 +91,7 @@ public void Frame_DownloadZone()
 
     DataPack pack = new DataPack();
     pack.WriteString(sMap);
-    g_hClient.DownloadFile(sCloudPath, sFile, OnZoneDownload, pack);
+    g_httpClient.DownloadFile(sCloudPath, sFile, OnZoneDownload, pack);
 }
 
 public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
@@ -120,7 +120,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         pack.WriteString(sMap);
         pack.WriteCell(bExist);
         
-        g_hClient.DownloadFile(sCloudPath, sFile, OnStripperGlobalDownload, pack);
+        g_httpClient.DownloadFile(sCloudPath, sFile, OnStripperGlobalDownload, pack);
 
         CallZoneDownload(sMap, true);
     }
@@ -195,7 +195,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
     pack.WriteCell(bExist);
     pack.WriteCell(bMapExist);
     
-    g_hClient.DownloadFile(sCloudPath, sFile, OnStripperMapDownload, pack);
+    g_httpClient.DownloadFile(sCloudPath, sFile, OnStripperMapDownload, pack);
 }
 
 public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[] error)
