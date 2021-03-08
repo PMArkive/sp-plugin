@@ -5,6 +5,8 @@
 
 #include <ripext>
 
+forward void fuckTimer_OnAPIReady();
+
 native HTTPClient fuckTimer_GetHTTPClient();
 
 #if !defined REQUIRE_PLUGIN

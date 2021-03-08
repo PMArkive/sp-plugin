@@ -10,6 +10,8 @@ ConVar g_cAPIKey = null;
 
 HTTPClient g_httpClient = null;
 
+GlobalForward g_fwOnAPIReady = null;
+
 public Plugin myinfo =
 {
     name = FUCKTIMER_PLUGIN_NAME ... "Core",
@@ -21,7 +23,10 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    g_fwOnAPIReady = new GlobalForward("fuckTimer_OnAPIReady", ET_Ignore);
+
     CreateNative("fuckTimer_GetHTTPClient", Native_GetHTTPClient);
+
     RegPluginLibrary("fuckTimer_core");
 
     return APLRes_Success;
@@ -84,6 +89,9 @@ public void OnConfigsExecuted()
         FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
         g_httpClient.SetHeader("User-Agent", sUserAgent);
     }
+
+    Call_StartForward(g_fwOnAPIReady);
+    Call_Finish();
 }
 
 public any Native_GetHTTPClient(Handle plugin, int numParams)
