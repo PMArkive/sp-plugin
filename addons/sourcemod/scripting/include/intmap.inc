@@ -23,7 +23,7 @@ methodmap IntMapSnapshot < Handle
     {
         if (index < 0 || index >= this.Length)
         {
-            ThrowError("Index out of range");
+            ThrowError("Index is out of range. (Index: %d, Count: %d)", index, this.Length);
         }
         
         char buffer[255];
@@ -48,8 +48,8 @@ methodmap IntMap < Handle
     // @return           True on success, false on failure.
     public bool SetValue(int key, any value, bool replace = true)
     {
-        char buffer[255];
-        IntToString(key, buffer, sizeof(buffer));
+        char buffer[6];
+        Keyize(key, buffer);
         return view_as<StringMap>(this).SetValue(buffer, value, replace);
     }
     
@@ -62,8 +62,8 @@ methodmap IntMap < Handle
     // @return           True on success, false on failure.
     public bool SetArray(int key, const any[] array, int num_items, bool replace = true)
     {
-        char buffer[255];
-        IntToString(key, buffer, sizeof(buffer));
+        char buffer[6];
+        Keyize(key, buffer);
         return view_as<StringMap>(this).SetArray(buffer, array, num_items, replace);
     }
     
@@ -75,8 +75,8 @@ methodmap IntMap < Handle
     // @return           True on success, false on failure.
     public bool SetString(int key, const char[] value, bool replace = true)
     {
-        char buffer[255];
-        IntToString(key, buffer, sizeof(buffer));
+        char buffer[6];
+        Keyize(key, buffer);
         return view_as<StringMap>(this).SetString(buffer, value, replace);
     }
     
@@ -88,8 +88,8 @@ methodmap IntMap < Handle
     //                   as an array or string (not a value).
     public bool GetValue(int key, any& value)
     {
-        char buffer[255];
-        IntToString(key, buffer, sizeof(buffer));
+        char buffer[6];
+        Keyize(key, buffer);
         return view_as<StringMap>(this).GetValue(buffer, value);
     }
     
@@ -103,8 +103,8 @@ methodmap IntMap < Handle
     //                   as a value or string (not an array).
     public bool GetArray(int key, any[] array, int max_size, int& size = 0)
     {
-        char buffer[255];
-        IntToString(key, buffer, sizeof(buffer));
+        char buffer[6];
+        Keyize(key, buffer);
         return view_as<StringMap>(this).GetArray(buffer, array, max_size, size);
     }
     
@@ -118,8 +118,8 @@ methodmap IntMap < Handle
     //                   as a value or array (not a string).
     public bool GetString(int key, char[] value, int max_size, int& size = 0)
     {
-        char buffer[255];
-        IntToString(key, buffer, sizeof(buffer));
+        char buffer[6];
+        Keyize(key, buffer);
         return view_as<StringMap>(this).GetString(buffer, value, max_size, size);
     }
     
@@ -129,8 +129,8 @@ methodmap IntMap < Handle
     // @return           True on success, false if the value was never set.
     public bool Remove(int key)
     {
-        char buffer[255];
-        IntToString(key, buffer, sizeof(buffer));
+        char buffer[6];
+        Keyize(key, buffer);
         return view_as<StringMap>(this).Remove(buffer);
     }
     
@@ -154,4 +154,14 @@ methodmap IntMap < Handle
             return view_as<StringMap>(this).Size;
         }
     }
+}
+
+stock void Keyize(any key, char buffer[6]) 
+{
+    buffer[0] = ((key >>> 28) & 0x7F) | 0x80; 
+    buffer[1] = ((key >>> 21) & 0x7F) | 0x80; 
+    buffer[2] = ((key >>> 14) & 0x7F) | 0x80; 
+    buffer[3] = ((key >>> 7) & 0x7F) | 0x80;
+    buffer[4] = (key & 0x7F) | 0x80;
+    buffer[5] = 0x00;
 }
