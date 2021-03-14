@@ -7,6 +7,8 @@
 #include <fuckTimer_stocks>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
+#include <fuckTimer_styles>
+#include <fuckTimer_players>
 
 GlobalForward g_fwOnClientRestart = null;
 GlobalForward g_fwOnClientTeleport = null;
@@ -56,11 +58,14 @@ public void OnPluginStart()
 
     RegConsoleCmd("sm_s", Command_Stage);
     RegConsoleCmd("sm_stage", Command_Stage);
+
+    RegConsoleCmd("sm_style", Command_Styles);
+    RegConsoleCmd("sm_styles", Command_Styles);
 }
 
 public Action Command_Start(int client, int args)
 {
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -81,7 +86,7 @@ public Action Command_Start(int client, int args)
 
 public Action Command_Stop(int client, int args)
 {
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -93,7 +98,7 @@ public Action Command_Stop(int client, int args)
 
 public Action Command_End(int client, int args)
 {
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -114,7 +119,7 @@ public Action Command_End(int client, int args)
 
 public Action Command_Restart(int client, int args)
 {
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -128,7 +133,7 @@ public Action Command_Restart(int client, int args)
 
 public Action Command_GoBack(int client, int args)
 {
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -180,7 +185,7 @@ public Action Command_GoBack(int client, int args)
 
 public Action Command_RestartStage(int client, int args)
 {
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -226,7 +231,7 @@ public Action Command_Bonus(int client, int args)
         return Plugin_Handled;
     }
 
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -293,7 +298,7 @@ public Action Command_Stage(int client, int args)
         return Plugin_Handled;
     }
 
-    if (!fuckTimer_IsClientValid(client, true, true))
+    if ((!fuckTimer_IsClientValid(client, true, true)))
     {
         return Plugin_Handled;
     }
@@ -351,6 +356,64 @@ public Action Command_Stage(int client, int args)
     }
 
     return Plugin_Handled;
+}
+
+public Action Command_Styles(int client, int args)
+{
+    if ((!fuckTimer_IsClientValid(client, true, true)))
+    {
+        return Plugin_Handled;
+    }
+
+    IntMap imStyles = fuckTimer_GetStyles();
+
+    if (imStyles.Size < 2)
+    {
+        // TODO: Message?
+        return Plugin_Handled;
+    }
+
+    // TODO: Add translations
+    Menu menu = new Menu(Menu_Styles);
+    menu.SetTitle("Select style:");
+
+    Style style;
+    char sBuffer[8];
+    for (int i = 1; i <= imStyles.Size; i++)
+    {
+        imStyles.GetArray(i, style, sizeof(style));
+        IntToString(style.Id, sBuffer, sizeof(sBuffer));
+        menu.AddItem(sBuffer, style.Name);
+    }
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public int Menu_Styles(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            Styles style = view_as<Styles>(StringToInt(sParam));
+
+            char sStyle[MAX_STYLE_NAME_LENGTH];
+            fuckTimer_GetStyleName(style, sStyle, sizeof(sStyle));
+            PrintToChat(client, "Set style to %s (Id: %d)", sStyle, style);
+
+            fuckTimer_SetClientStyle(client, style);
+            ClientRestart(client);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
 }
 
 public int Native_RestartClient(Handle plugin, int numParams)
