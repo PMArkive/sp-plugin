@@ -23,6 +23,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    CreateNative("fuckTimer_GetStyleName", Native_GetStyleName);
+
     RegPluginLibrary("fuckTimer_styles");
 
     return APLRes_Success;
@@ -80,4 +82,21 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
     }
     
     delete jsonArray;
+}
+
+public int Native_GetStyleName(Handle plugin, int numParams)
+{
+    int style = GetNativeCell(1);
+    int length = GetNativeCell(3);
+
+    char[] name = new char[length];
+
+    bool success = g_imStyles.GetString(style, name, length);
+
+    if (success && SetNativeString(2, name, length) == SP_ERROR_NONE)
+    {
+        return true;
+    }
+
+    return false;
 }
