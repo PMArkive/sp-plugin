@@ -225,16 +225,6 @@ Styles SetPlayerStyle(int client, Styles style)
     Core.PlayerStyle.Set(client, sBuffer);
 }
 
-void Keyize(any key, char buffer[6]) 
-{
-    buffer[0] = ((key >>> 28) & 0x7F) | 0x80; 
-    buffer[1] = ((key >>> 21) & 0x7F) | 0x80; 
-    buffer[2] = ((key >>> 14) & 0x7F) | 0x80; 
-    buffer[3] = ((key >>> 7) & 0x7F) | 0x80;
-    buffer[4] = (key & 0x7F) | 0x80;
-    buffer[5] = 0x00;
-}
-
 public any Native_GetPlayerStyle(Handle plugin, int numParams)
 {
     return GetPlayerStyle(GetNativeCell(1));

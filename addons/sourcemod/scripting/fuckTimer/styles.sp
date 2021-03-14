@@ -24,6 +24,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     CreateNative("fuckTimer_GetStyleName", Native_GetStyleName);
+    CreateNative("fuckTimer_GetStyles", Native_GetStyles);
 
     RegPluginLibrary("fuckTimer_styles");
 
@@ -99,4 +100,9 @@ public int Native_GetStyleName(Handle plugin, int numParams)
     }
 
     return false;
+}
+
+public any Native_GetStyles(Handle plugin, int numParams)
+{
+    return g_imStyles;
 }

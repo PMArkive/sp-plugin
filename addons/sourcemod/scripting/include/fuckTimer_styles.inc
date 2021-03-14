@@ -5,6 +5,8 @@
 
 #define MAX_STYLE_NAME_LENGTH 32
 
+#include <intmap>
+
 enum struct Style {
     int Id;
     char Name[MAX_STYLE_NAME_LENGTH];
@@ -16,10 +18,14 @@ enum Styles {
     StyleSideways
 }
 
+native bool fuckTimer_GetStyleName(int style, char[] name, int length);
+native IntMap fuckTimer_GetStyles();
+
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_styles_SetNTVOptional()
 {
-    // MarkNativeAsOptional("");
+    MarkNativeAsOptional("fuckTimer_GetStyleName");
+    MarkNativeAsOptional("fuckTimer_GetStyles");
 }
 #endif
 
