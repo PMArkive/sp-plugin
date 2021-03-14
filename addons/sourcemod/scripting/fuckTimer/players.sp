@@ -2,25 +2,33 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <clientprefs>
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
 #include <fuckTimer_zones>
+#include <fuckTimer_styles>
 #include <fuckTimer_commands>
 
 enum struct PlayerData
 {
     bool IsActive;
 
+    Styles Style;
+
     void Reset()
     {
         this.IsActive = false;
     }
 }
-
 PlayerData Player[MAXPLAYERS + 1];
 
-HTTPClient g_httpClient = null;
+enum struct PluginData
+{
+    Cookie PlayerStyle;
+    HTTPClient HTTPClient;
+}
+PluginData Core;
 
 public Plugin myinfo =
 {
@@ -31,14 +39,36 @@ public Plugin myinfo =
     url = FUCKTIMER_PLUGIN_URL
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    CreateNative("fuckTimer_GetPlayerStyle", Native_GetPlayerStyle);
+    CreateNative("fuckTimer_SetPlayerStyle", Native_SetPlayerStyle);
+
+    RegPluginLibrary("fuckTimer_players");
+
+    return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
+    Core.PlayerStyle = new Cookie("fuckTimer_player_style", "Cookie for the current/last used player style", CookieAccess_Private);
+
     HookEvent("player_spawn", Event_PlayerSpawn);
+
+    fuckTimer_LoopClients(client, true, true)
+    {
+        if (!AreClientCookiesCached(client))
+        {
+            continue;
+        }
+
+        OnClientCookiesCached(client);
+    }
 }
 
 public void fuckTimer_OnAPIReady()
 {
-    g_httpClient = fuckTimer_GetHTTPClient();
+    Core.HTTPClient = fuckTimer_GetHTTPClient();
 
     for (int i = 1; i <= MaxClients; i++)
     {
@@ -46,6 +76,26 @@ public void fuckTimer_OnAPIReady()
         {
             OnClientPutInServer(i);
         }
+    }
+}
+
+void OnClientCookiesCached(int client)
+{
+    Player[client].Style = GetPlayerStyle(client);
+
+    if (Player[client].Style < StyleNormal)
+    {
+        SetPlayerStyle(client, StyleNormal);
+    }
+}
+
+public void fuckTimer_OnClientRestart(int client)
+{
+    int iZone = fuckTimer_GetStartZone();
+
+    if (iZone > 0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, iZone);
     }
 }
 
@@ -61,12 +111,12 @@ public void OnClientPutInServer(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
 
-    if (g_httpClient == null)
+    if (Core.HTTPClient == null)
     {
-        g_httpClient = fuckTimer_GetHTTPClient();
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
     }
 
-    g_httpClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
+    Core.HTTPClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
 }
 
 public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
@@ -115,7 +165,7 @@ void PreparePlayerPostData(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player");
 
-    g_httpClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
+    Core.HTTPClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;
 }
 
@@ -160,12 +210,37 @@ public void Frame_PlayerSpawn(int userid)
     }
 }
 
-public void fuckTimer_OnClientRestart(int client)
+Styles GetPlayerStyle(int client)
 {
-    int iZone = fuckTimer_GetStartZone();
+    char sBuffer[12];
+    Core.PlayerStyle.Get(client, sBuffer, sizeof(sBuffer));
 
-    if (iZone > 0)
-    {
-        fuckZones_TeleportClientToZoneIndex(client, iZone);
-    }
+    return view_as<Styles>(StringToInt(sBuffer));
+}
+
+Styles SetPlayerStyle(int client, Styles style)
+{
+    char sBuffer[6];
+    Keyize(style, sBuffer);
+    Core.PlayerStyle.Set(client, sBuffer);
+}
+
+void Keyize(any key, char buffer[6]) 
+{
+    buffer[0] = ((key >>> 28) & 0x7F) | 0x80; 
+    buffer[1] = ((key >>> 21) & 0x7F) | 0x80; 
+    buffer[2] = ((key >>> 14) & 0x7F) | 0x80; 
+    buffer[3] = ((key >>> 7) & 0x7F) | 0x80;
+    buffer[4] = (key & 0x7F) | 0x80;
+    buffer[5] = 0x00;
+}
+
+public any Native_GetPlayerStyle(Handle plugin, int numParams)
+{
+    return GetPlayerStyle(GetNativeCell(1));
+
+}
+public any Native_SetPlayerStyle(Handle plugin, int numParams)
+{
+    SetPlayerStyle(GetNativeCell(1), view_as<Styles>(GetNativeCell(2)));
 }
