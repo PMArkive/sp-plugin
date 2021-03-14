@@ -8,6 +8,8 @@
 #include <fuckTimer_maps>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
+#include <fuckTimer_styles>
+#include <fuckTimer_players>
 
 enum struct PlayerData
 {
@@ -128,10 +130,15 @@ public void OnGameFrame()
 
         if (iValidator > 0)
         {
-            FormatEx(sValidator, sizeof(sValidator), "Validator: %d/%d", fuckTimer_GetClientValidator(client), iValidator);
+            FormatEx(sValidator, sizeof(sValidator), "| Validator: %d/%d", fuckTimer_GetClientValidator(client), iValidator);
         }
+
+        Styles style = fuckTimer_GetClientStyle(client);
+
+        char sStyle[MAX_STYLE_NAME_LENGTH];
+        fuckTimer_GetStyleName(style, sStyle, sizeof(sStyle));
         
-        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s\n Tier: %d%s\n %s", GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone, sValidator);
+        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s\n Tier: %d%s\n Style: %s %s", GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone, sStyle, sValidator);
     }
 }
 

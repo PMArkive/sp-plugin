@@ -19,6 +19,8 @@ enum struct PlayerData
     void Reset()
     {
         this.IsActive = false;
+
+        this.Style = view_as<Styles>(0);
     }
 }
 PlayerData Player[MAXPLAYERS + 1];
@@ -41,8 +43,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    CreateNative("fuckTimer_GetPlayerStyle", Native_GetPlayerStyle);
-    CreateNative("fuckTimer_SetPlayerStyle", Native_SetPlayerStyle);
+    CreateNative("fuckTimer_GetClientStyle", Native_GetClientStyle);
+    CreateNative("fuckTimer_SetClientStyle", Native_SetClientStyle);
 
     RegPluginLibrary("fuckTimer_players");
 
@@ -81,11 +83,11 @@ public void fuckTimer_OnAPIReady()
 
 void OnClientCookiesCached(int client)
 {
-    Player[client].Style = GetPlayerStyle(client);
+    Player[client].Style = GetClientStyle(client);
 
     if (Player[client].Style < StyleNormal)
     {
-        SetPlayerStyle(client, StyleNormal);
+        SetClientStyle(client, StyleNormal);
     }
 }
 
@@ -201,6 +203,11 @@ public void Frame_PlayerSpawn(int userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
+        if (GetClientStyle(client) < StyleNormal)
+        {
+            SetClientStyle(client, StyleNormal);
+        }
+
         int iZone = fuckTimer_GetStartZone();
 
         if (iZone > 0)
@@ -210,27 +217,26 @@ public void Frame_PlayerSpawn(int userid)
     }
 }
 
-Styles GetPlayerStyle(int client)
+Styles GetClientStyle(int client)
 {
-    char sBuffer[12];
-    Core.PlayerStyle.Get(client, sBuffer, sizeof(sBuffer));
-
-    return view_as<Styles>(StringToInt(sBuffer));
+    return Player[client].Style;
 }
 
-Styles SetPlayerStyle(int client, Styles style)
+Styles SetClientStyle(int client, Styles style)
 {
+    Player[client].Style = style;
+
     char sBuffer[6];
     Keyize(style, sBuffer);
     Core.PlayerStyle.Set(client, sBuffer);
 }
 
-public any Native_GetPlayerStyle(Handle plugin, int numParams)
+public any Native_GetClientStyle(Handle plugin, int numParams)
 {
-    return GetPlayerStyle(GetNativeCell(1));
+    return GetClientStyle(GetNativeCell(1));
 
 }
-public any Native_SetPlayerStyle(Handle plugin, int numParams)
+public any Native_SetClientStyle(Handle plugin, int numParams)
 {
-    SetPlayerStyle(GetNativeCell(1), view_as<Styles>(GetNativeCell(2)));
+    SetClientStyle(GetNativeCell(1), view_as<Styles>(GetNativeCell(2)));
 }

@@ -18,7 +18,7 @@ enum Styles {
     StyleSideways
 }
 
-native bool fuckTimer_GetStyleName(int style, char[] name, int length);
+native bool fuckTimer_GetStyleName(Styles style, char[] name, int length);
 native IntMap fuckTimer_GetStyles();
 
 #if !defined REQUIRE_PLUGIN

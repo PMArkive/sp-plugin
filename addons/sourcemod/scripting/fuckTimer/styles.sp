@@ -87,14 +87,13 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
 
 public int Native_GetStyleName(Handle plugin, int numParams)
 {
-    int style = GetNativeCell(1);
-    int length = GetNativeCell(3);
+    int iStyle = GetNativeCell(1);
+    int iLength = GetNativeCell(3);
 
-    char[] name = new char[length];
+    Style style;
+    bool success = g_imStyles.GetArray(iStyle, style, sizeof(style));
 
-    bool success = g_imStyles.GetString(style, name, length);
-
-    if (success && SetNativeString(2, name, length) == SP_ERROR_NONE)
+    if (success && SetNativeString(2, style.Name, iLength) == SP_ERROR_NONE)
     {
         return true;
     }

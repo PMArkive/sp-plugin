@@ -3,14 +3,14 @@
 #endif
 #define _fuckTimer_players_included
 
-native Styles fuckTimer_GetPlayerStyle(int client);
-native void fuckTimer_SetPlayerStyle(int client, Styles style);
+native Styles fuckTimer_GetClientStyle(int client);
+native void fuckTimer_SetClientStyle(int client, Styles style);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_players_SetNTVOptional()
 {
-    MarkNativeAsOptional("fuckTimer_GetPlayerStyle");
-    MarkNativeAsOptional("fuckTimer_SetPlayerStyle");
+    MarkNativeAsOptional("fuckTimer_GetClientStyle");
+    MarkNativeAsOptional("fuckTimer_SetClientStyle");
 }
 #endif
 
