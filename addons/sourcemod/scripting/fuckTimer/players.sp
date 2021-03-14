@@ -83,7 +83,10 @@ public void fuckTimer_OnAPIReady()
 
 void OnClientCookiesCached(int client)
 {
-    Player[client].Style = GetClientStyle(client);
+    char sBuffer[12];
+    Core.PlayerStyle.Get(client, sBuffer, sizeof(sBuffer));
+
+    Player[client].Style = view_as<Styles>(StringToInt(sBuffer));
 
     if (Player[client].Style < StyleNormal)
     {
@@ -109,6 +112,11 @@ public void OnClientPutInServer(int client)
     }
 
     Player[client].Reset();
+
+    if (AreClientCookiesCached(client))
+    {
+        OnClientCookiesCached(client);
+    }
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
@@ -203,7 +211,7 @@ public void Frame_PlayerSpawn(int userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
-        if (GetClientStyle(client) < StyleNormal)
+        if (AreClientCookiesCached(client) && GetClientStyle(client) < StyleNormal)
         {
             SetClientStyle(client, StyleNormal);
         }
@@ -226,8 +234,8 @@ Styles SetClientStyle(int client, Styles style)
 {
     Player[client].Style = style;
 
-    char sBuffer[6];
-    Keyize(style, sBuffer);
+    char sBuffer[12];
+    IntToString(view_as<int>(style), sBuffer, sizeof(sBuffer));
     Core.PlayerStyle.Set(client, sBuffer);
 }
 
