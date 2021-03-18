@@ -11,6 +11,9 @@
 #include <fuckTimer_styles>
 #include <fuckTimer_commands>
 
+#define MAX_DOT -0.75
+#define LOW_GRAV 0.5
+
 enum struct PlayerData
 {
     bool IsActive;
@@ -256,6 +259,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
         }
         else if (Player[client].Style == StyleBackwards)
         {
+            // https://github.com/InfluxTimer/sm-timer/blob/28247c1d374402d529987f01281e5cb21849c495/addons/sourcemod/scripting/influx_style_backwards.sp#L69
             float fEyeAngle[3];
             GetClientEyeAngles(client, fEyeAngle);
             fEyeAngle[0] = Cosine(DegToRad(fEyeAngle[1]));
@@ -272,13 +276,20 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 
             float fValue = GetVectorDotProduct(fEyeAngle, fVelocity);
 
-            if (fValue > -0.75)
+            if (fValue > MAX_DOT)
             {
                 vel[0] = 0.0;
                 vel[1] = 0.0;
                 vel[2] = 0.0;
                 
                 return Plugin_Changed;
+            }
+        }
+        else if (Player[client].Style == StyleLowGravity)
+        {
+            if (GetEntityGravity(client) != LOW_GRAV)
+            {
+                SetEntityGravity(client, LOW_GRAV);
             }
         }
     }
@@ -294,6 +305,11 @@ Styles GetClientStyle(int client)
 Styles SetClientStyle(int client, Styles style)
 {
     Player[client].Style = style;
+
+    if (style != StyleLowGravity)
+    {
+        SetEntityGravity(client, 1.0);
+    }
 
     char sBuffer[12];
     IntToString(view_as<int>(style), sBuffer, sizeof(sBuffer));
