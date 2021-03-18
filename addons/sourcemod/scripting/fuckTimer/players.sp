@@ -254,6 +254,29 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
                 return Plugin_Changed;
             }
         }
+        else if (Player[client].Style == StyleBackwards)
+        {
+            float fEyeAngle[3];
+            GetClientEyeAngles(client, fEyeAngle);
+            fEyeAngle[0] = Cosine(DegToRad(fEyeAngle[1]));
+            fEyeAngle[1] = Sine(DegToRad(fEyeAngle[1]));
+            fEyeAngle[2] = 0.0;
+
+            float fVelocity[3];
+            GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
+            fVelocity[2] = 0.0;
+
+            float fLen = SquareRoot(fVelocity[0] * fVelocity[0] + fVelocity[1] * fVelocity[1]);
+            fVelocity[0] /= fLen;
+            fVelocity[1] /= fLen;
+
+            float fValue = GetVectorDotProduct(fEyeAngle, fVelocity);
+
+            if (fValue > -0.75)
+            {
+                fuckTimer_ResetClientTimer(client);
+            }
+        }
     }
 
     return Plugin_Continue;
