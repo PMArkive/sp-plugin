@@ -274,7 +274,11 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 
             if (fValue > -0.75)
             {
-                fuckTimer_ResetClientTimer(client);
+                vel[0] = 0.0;
+                vel[1] = 0.0;
+                vel[2] = 0.0;
+                
+                return Plugin_Changed;
             }
         }
     }
