@@ -15,7 +15,10 @@ enum struct Style {
 
 enum Styles {
     StyleNormal = 1,
-    StyleSideways
+    StyleSideways,
+    StyleHSW,
+    StyleBackwards,
+    StyleLowGravity
 }
 
 native bool fuckTimer_GetStyleName(Styles style, char[] name, int length);

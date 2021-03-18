@@ -6,6 +6,7 @@
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_core>
+#include <fuckTimer_timer>
 #include <fuckTimer_zones>
 #include <fuckTimer_styles>
 #include <fuckTimer_commands>
@@ -223,6 +224,39 @@ public void Frame_PlayerSpawn(int userid)
             fuckZones_TeleportClientToZoneIndex(client, iZone);
         }
     }
+}
+
+public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
+{
+    if (IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client)) // TODO: Add check if player is in stage zone
+    {
+        if (Player[client].Style == StyleSideways)
+        {
+            if (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)
+            {
+                buttons &= IN_MOVERIGHT;
+                buttons &= IN_MOVELEFT;
+
+                vel[1] = 0.0;
+
+                return Plugin_Changed;
+            }
+        }
+        else if (Player[client].Style == StyleHSW)
+        {
+            if (!(buttons & IN_FORWARD) && !(buttons & IN_BACK) && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
+            {
+                buttons &= IN_MOVERIGHT;
+                buttons &= IN_MOVELEFT;
+
+                vel[1] = 0.0;
+                
+                return Plugin_Changed;
+            }
+        }
+    }
+
+    return Plugin_Continue;
 }
 
 Styles GetClientStyle(int client)

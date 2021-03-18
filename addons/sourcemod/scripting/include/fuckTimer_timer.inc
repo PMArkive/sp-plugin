@@ -12,6 +12,7 @@ enum TimeType
 };
 
 native float fuckTimer_GetClientTime(int client, TimeType type, int level = 0);
+native bool fuckTimer_IsClientTimeRunning(int client);
 
 native int fuckTimer_GetClientCheckpoint(int client);
 native int fuckTimer_GetClientStage(int client);
@@ -29,6 +30,7 @@ native int fuckTimer_ResetClientTimer(int client);
 public void __pl_fuckTimer_timer_SetNTVOptional()
 {
     MarkNativeAsOptional("fuckTimer_GetClientTime");
+    MarkNativeAsOptional("fuckTimer_IsClientTimeRunning");
 
     MarkNativeAsOptional("fuckTimer_GetClientCheckpoint");
     MarkNativeAsOptional("fuckTimer_GetClientStage");

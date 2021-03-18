@@ -62,6 +62,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
+    CreateNative("fuckTimer_IsClientTimeRunning", Native_IsClientTimeRunning);
 
     CreateNative("fuckTimer_GetClientCheckpoint", Native_GetClientCheckpoint);
     CreateNative("fuckTimer_GetClientStage", Native_GetClientStage);
@@ -168,7 +169,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
             SetClientSpeed(client);
         }
 
-        if (Player[client].BlockJump)
+        if (Player[client].BlockJump && buttons & IN_JUMP)
         {
             buttons &= ~IN_JUMP;
             return Plugin_Changed;
@@ -542,6 +543,30 @@ public any Native_GetClientTime(Handle plugin, int numParams)
     }
 
     return 0.0;
+}
+
+public int Native_IsClientTimeRunning(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+
+    if (Player[client].MainTime > 0.0)
+    {
+        return true;
+    }
+    else if (Player[client].CheckpointTimes != null)
+    {
+        return true;
+    }
+    else if (Player[client].StageTimes != null)
+    {
+        return true;
+    }
+    else if (Player[client].BonusTimes != null)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 public int Native_GetClientCheckpoint(Handle plugin, int numParams)
