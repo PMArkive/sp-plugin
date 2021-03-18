@@ -17,12 +17,14 @@
 enum struct PlayerData
 {
     bool IsActive;
+    bool InStage;
 
     Styles Style;
 
     void Reset()
     {
         this.IsActive = false;
+        this.InStage = false;
 
         this.Style = view_as<Styles>(0);
     }
@@ -231,14 +233,14 @@ public void Frame_PlayerSpawn(int userid)
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-    if (IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client)) // TODO: Add check if player is in stage zone
+    if (IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
     {
         if (Player[client].Style == StyleSideways)
         {
             if (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)
             {
-                buttons &= IN_MOVERIGHT;
-                buttons &= IN_MOVELEFT;
+                buttons &= ~IN_MOVERIGHT;
+                buttons &= ~IN_MOVELEFT;
 
                 vel[1] = 0.0;
 
@@ -249,8 +251,8 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
         {
             if (!(buttons & IN_FORWARD) && !(buttons & IN_BACK) && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
             {
-                buttons &= IN_MOVERIGHT;
-                buttons &= IN_MOVELEFT;
+                buttons &= ~IN_MOVERIGHT;
+                buttons &= ~IN_MOVELEFT;
 
                 vel[1] = 0.0;
                 
@@ -295,6 +297,22 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     }
 
     return Plugin_Continue;
+}
+
+public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+{
+    if (!misc && stage > 0)
+    {
+        Player[client].InStage = true;
+    }
+}
+
+public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+{
+    if (!misc && stage > 0)
+    {
+        Player[client].InStage = false;
+    }
 }
 
 Styles GetClientStyle(int client)
