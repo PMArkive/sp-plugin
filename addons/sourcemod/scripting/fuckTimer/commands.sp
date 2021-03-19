@@ -65,7 +65,7 @@ public void OnPluginStart()
 
 public Action Command_Start(int client, int args)
 {
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -86,7 +86,7 @@ public Action Command_Start(int client, int args)
 
 public Action Command_Stop(int client, int args)
 {
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -98,7 +98,7 @@ public Action Command_Stop(int client, int args)
 
 public Action Command_End(int client, int args)
 {
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -119,7 +119,7 @@ public Action Command_End(int client, int args)
 
 public Action Command_Restart(int client, int args)
 {
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -133,7 +133,7 @@ public Action Command_Restart(int client, int args)
 
 public Action Command_GoBack(int client, int args)
 {
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -185,7 +185,7 @@ public Action Command_GoBack(int client, int args)
 
 public Action Command_RestartStage(int client, int args)
 {
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -231,7 +231,7 @@ public Action Command_Bonus(int client, int args)
         return Plugin_Handled;
     }
 
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -298,7 +298,7 @@ public Action Command_Stage(int client, int args)
         return Plugin_Handled;
     }
 
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
@@ -360,7 +360,7 @@ public Action Command_Stage(int client, int args)
 
 public Action Command_Styles(int client, int args)
 {
-    if ((!fuckTimer_IsClientValid(client, true, true)))
+    if (!fuckTimer_IsClientValid(client, true, true))
     {
         return Plugin_Handled;
     }
