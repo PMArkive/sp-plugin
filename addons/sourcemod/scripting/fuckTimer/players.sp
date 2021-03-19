@@ -13,6 +13,7 @@
 
 #define MAX_DOT -0.75
 #define LOW_GRAV 0.5
+#define SLOW_MOTION 0.5
 
 enum struct PlayerData
 {
@@ -294,6 +295,13 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
                 SetEntityGravity(client, LOW_GRAV);
             }
         }
+        else if (Player[client].Style == StyleSlowMotion)
+        {
+            if (GetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue") != SLOW_MOTION)
+            {
+                SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", SLOW_MOTION);
+            }
+        }
     }
 
     return Plugin_Continue;
@@ -327,6 +335,10 @@ Styles SetClientStyle(int client, Styles style)
     if (style != StyleLowGravity)
     {
         SetEntityGravity(client, 1.0);
+    }
+    else if (style != StyleSlowMotion)
+    {
+        SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
     }
 
     char sBuffer[12];

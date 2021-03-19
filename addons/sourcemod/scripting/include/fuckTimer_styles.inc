@@ -18,7 +18,8 @@ enum Styles {
     StyleSideways,
     StyleHSW,
     StyleBackwards,
-    StyleLowGravity
+    StyleLowGravity,
+    StyleSlowMotion
 }
 
 native bool fuckTimer_GetStyleName(Styles style, char[] name, int length);
