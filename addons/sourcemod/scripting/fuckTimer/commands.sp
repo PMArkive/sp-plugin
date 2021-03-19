@@ -61,6 +61,8 @@ public void OnPluginStart()
 
     RegConsoleCmd("sm_style", Command_Styles);
     RegConsoleCmd("sm_styles", Command_Styles);
+
+    RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref);
 }
 
 public Action Command_Start(int client, int args)
@@ -408,6 +410,60 @@ public int Menu_Styles(Menu menu, MenuAction action, int client, int param)
 
             fuckTimer_SetClientStyle(client, style);
             ClientRestart(client);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+public Action Command_InvalidKeyPref(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    // TODO: Add translations
+    Menu menu = new Menu(Menu_InvalidKeyPref);
+    menu.SetTitle("Select invalid key preference:");
+
+    char sBuffer[32];
+    Format(sBuffer, sizeof(sBuffer), "[%s] Block Keys", fuckTimer_GetClientInvalidKeyPref(client) == IKBlock ? "X" : " ");
+    menu.AddItem("0", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] Stop Timer", fuckTimer_GetClientInvalidKeyPref(client) == IKStop ? "X" : " ");
+    menu.AddItem("1", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] Teleport to Start Zone", fuckTimer_GetClientInvalidKeyPref(client) == IKRestart ? "X" : " ");
+    menu.AddItem("2", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] Set style to normal", fuckTimer_GetClientInvalidKeyPref(client) == IKNormal ? "X" : " ");
+    menu.AddItem("3", sBuffer);
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public int Menu_InvalidKeyPref(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            fuckTimer_SetClientInvalidKeyPref(client, view_as<eInvalidKeyPref>(StringToInt(sParam)));
+            
+            if (fuckTimer_IsClientTimeRunning(client))
+            {
+                ClientRestart(client);
+            }
+
+            Command_InvalidKeyPref(client, 0);
         }
     }
     else if (action == MenuAction_End)
