@@ -1,5 +1,7 @@
 name: Compile with SourceMod
 
+on: push
+
 jobs:
   build:
     runs-on: ubuntu-latest
