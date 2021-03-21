@@ -158,10 +158,11 @@ methodmap IntMap < Handle
 
 stock void Keyize(any key, char buffer[6]) 
 {
-    buffer[0] = ((key >>> 28) & 0x7F) | 0x80; 
-    buffer[1] = ((key >>> 21) & 0x7F) | 0x80; 
-    buffer[2] = ((key >>> 14) & 0x7F) | 0x80; 
-    buffer[3] = ((key >>> 7) & 0x7F) | 0x80;
-    buffer[4] = (key & 0x7F) | 0x80;
+    int i = key;
+    buffer[0] = ((i >>> 28) & 0x7F) | 0x80; 
+    buffer[1] = ((i >>> 21) & 0x7F) | 0x80; 
+    buffer[2] = ((i >>> 14) & 0x7F) | 0x80; 
+    buffer[3] = ((i >>> 7) & 0x7F) | 0x80;
+    buffer[4] = (i & 0x7F) | 0x80;
     buffer[5] = 0x00;
 }
