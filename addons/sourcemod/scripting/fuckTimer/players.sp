@@ -258,19 +258,13 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 {
     if (IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
     {
-        if (Player[client].Style == StyleSideways)
+        if (Player[client].Style == StyleSideways && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
         {
-            if (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)
-            {
-                return OnInvalidKeyPressure(client, vel, buttons);
-            }
+            return OnInvalidKeyPressure(client, vel, buttons);
         }
-        else if (Player[client].Style == StyleHSW)
+        else if (Player[client].Style == StyleHSW && (!(buttons & IN_FORWARD) && !(buttons & IN_BACK) && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)))
         {
-            if (!(buttons & IN_FORWARD) && !(buttons & IN_BACK) && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
-            {
-                return OnInvalidKeyPressure(client, vel, buttons);
-            }
+            return OnInvalidKeyPressure(client, vel, buttons);
         }
         else if (Player[client].Style == StyleBackwards)
         {
