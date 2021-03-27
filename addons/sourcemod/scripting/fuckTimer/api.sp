@@ -3,10 +3,10 @@
 
 #include <sourcemod>
 #include <fuckTimer_stocks>
-#include <fuckTimer_core>
+#include <fuckTimer_api>
 
-ConVar g_cBaseURL = null;
-ConVar g_cAPIKey = null;
+ConVar g_cUrl = null;
+ConVar g_cKey = null;
 
 HTTPClient g_httpClient = null;
 
@@ -14,7 +14,7 @@ GlobalForward g_fwOnAPIReady = null;
 
 public Plugin myinfo =
 {
-    name = FUCKTIMER_PLUGIN_NAME ... "Core",
+    name = FUCKTIMER_PLUGIN_NAME ... "API",
     author = FUCKTIMER_PLUGIN_AUTHOR,
     description = FUCKTIMER_PLUGIN_DESCRIPTION,
     version = FUCKTIMER_PLUGIN_VERSION,
@@ -27,16 +27,16 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_GetHTTPClient", Native_GetHTTPClient);
 
-    RegPluginLibrary("fuckTimer_core");
+    RegPluginLibrary("fuckTimer_api");
 
     return APLRes_Success;
 }
 
 public void OnPluginStart()
 {
-    fuckTimer_StartConfig("core");
-    g_cBaseURL = AutoExecConfig_CreateConVar("core_base_url", "", "Base URL to the REST API. (example: https://api.domain.tld or https://domain.tld/api - Without ending (back)slash!)");
-    g_cAPIKey = AutoExecConfig_CreateConVar("core_api_key", "", "Your API Key to get access to the REST API. Key must be at least 12 chars length.");
+    fuckTimer_StartConfig("api");
+    g_cUrl = AutoExecConfig_CreateConVar("api_url", "", "API URL to the REST API. (example: https://api.domain.tld or https://domain.tld/api - Without ending (back)slash!)");
+    g_cKey = AutoExecConfig_CreateConVar("api_key", "", "Your API Key to get access to the REST API. Key must be at least 12 chars length.");
     fuckTimer_EndConfig();
 }
 
@@ -44,24 +44,24 @@ public void OnConfigsExecuted()
 {
     if (g_httpClient == null)
     {
-        char sBase[MAX_URL_LENGTH];
+        char sAPI[MAX_URL_LENGTH];
 
-        g_cBaseURL.GetString(sBase, sizeof(sBase));
+        g_cUrl.GetString(sAPI, sizeof(sAPI));
 
-        if (strlen(sBase) < 2)
+        if (strlen(sAPI) < 2)
         {
-            SetFailState("[Core.OnConfigsExecuted] Can't receive base url.");
+            SetFailState("[API.OnConfigsExecuted] Can't receive api url.");
             return;
         }
 
-        g_httpClient = new HTTPClient(sBase);
+        g_httpClient = new HTTPClient(sAPI);
 
         char sKey[MAX_URL_LENGTH];
-        g_cAPIKey.GetString(sKey, sizeof(sKey));
+        g_cKey.GetString(sKey, sizeof(sKey));
 
         if (strlen(sKey) < 2)
         {
-            SetFailState("[Core.OnConfigsExecuted] Can't receive api key.");
+            SetFailState("[API.OnConfigsExecuted] Can't receive api key.");
             return;
         }
 

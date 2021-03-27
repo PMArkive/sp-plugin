@@ -5,7 +5,7 @@
 #include <clientprefs>
 #include <fuckZones>
 #include <fuckTimer_stocks>
-#include <fuckTimer_core>
+#include <fuckTimer_api>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
 #include <fuckTimer_players>

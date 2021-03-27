@@ -4,7 +4,7 @@
 #include <sourcemod>
 #include <ripext>
 #include <fuckTimer_stocks>
-#include <fuckTimer_core>
+#include <fuckTimer_api>
 #include <fuckTimer_downloader>
 
 HTTPClient g_httpClient = null;

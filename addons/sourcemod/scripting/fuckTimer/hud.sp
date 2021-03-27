@@ -4,7 +4,6 @@
 #include <sourcemod>
 #include <fuckZones>
 #include <fuckTimer_stocks>
-#include <fuckTimer_core>
 #include <fuckTimer_maps>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
@@ -138,7 +137,7 @@ public void OnGameFrame()
         char sStyle[MAX_STYLE_NAME_LENGTH];
         fuckTimer_GetStyleName(style, sStyle, sizeof(sStyle));
         
-        PrintCSGOHUDText(client, " Speed: %.0f | %s\n %s\n Tier: %d%s\n Style: %s %s", GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone, sStyle, sValidator);
+        PrintCSGOHUDText(client, "<font class='fontSize-sm'> Speed: %.0f | %s\n %s\n Tier: %d%s\n Style: %s %s\n Speed: %.0f | %s\n %s\n Tier: %d%s\n Style: %s %s</font>", GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone, sStyle, sValidator, GetClientSpeed(client), sTime, sCPStage, fuckTimer_GetMapTier(), sZone, sStyle, sValidator);
     }
 }
 
