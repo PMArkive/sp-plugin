@@ -8,12 +8,12 @@
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
 
-GlobalForward g_fwOnEnteringZone = null;
-GlobalForward g_fwOnTouchZone = null;
-GlobalForward g_fwOnLeavingZone = null;
-
 enum struct Variables
 {
+    GlobalForward OnEnteringZone;
+    GlobalForward OnTouchZone;
+    GlobalForward OnLeavingZone;
+
     int StartZone;
     int EndZone;
 
@@ -66,7 +66,6 @@ enum struct Variables
         this.Validator = new IntMap();
     }
 }
-
 Variables Core;
 
 public Plugin myinfo =
@@ -80,9 +79,9 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    g_fwOnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    g_fwOnTouchZone = new GlobalForward("fuckTimer_OnTouchZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    g_fwOnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnTouchZone = new GlobalForward("fuckTimer_OnTouchZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_GetStartZone", Native_GetStartZone);
     CreateNative("fuckTimer_GetEndZone", Native_GetEndZone);
@@ -223,7 +222,7 @@ public void OneZoneStartTouch(int client, int entity, StringMap values)
 
     PrintToChat(client, "OneZoneStartTouch - Name: %s", sName);
 
-    Call_StartForward(g_fwOnEnteringZone);
+    Call_StartForward(Core.OnEnteringZone);
     Call_PushCell(client);
     Call_PushCell(entity);
     Call_PushString(sName);
@@ -241,7 +240,7 @@ public void OnZoneTouch(int client, int entity, StringMap values)
     char sName[MAX_ZONE_NAME_LENGTH];
     fuckZones_GetZoneName(entity, sName, sizeof(sName));
 
-    Call_StartForward(g_fwOnTouchZone);
+    Call_StartForward(Core.OnTouchZone);
     Call_PushCell(client);
     Call_PushCell(entity);
     Call_PushString(sName);
@@ -261,7 +260,7 @@ public void OnZoneEndTouch(int client, int entity, StringMap values)
 
     PrintToChat(client, "OnZoneEndTouch - Name: %s", sName);
 
-    Call_StartForward(g_fwOnLeavingZone);
+    Call_StartForward(Core.OnLeavingZone);
     Call_PushCell(client);
     Call_PushCell(entity);
     Call_PushString(sName);

@@ -8,9 +8,13 @@
 #include <fuckTimer_api>
 #include <fuckTimer_styles>
 
-HTTPClient g_httpClient = null;
+enum struct PluginData
+{
+    HTTPClient HTTPClient;
 
-IntMap g_imStyles = null;
+    IntMap Styles;
+}
+PluginData Core;
 
 public Plugin myinfo =
 {
@@ -33,7 +37,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void fuckTimer_OnAPIReady()
 {
-    g_httpClient = fuckTimer_GetHTTPClient();
+    Core.HTTPClient = fuckTimer_GetHTTPClient();
 
     LoadStyles();
 }
@@ -43,7 +47,7 @@ void LoadStyles()
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Style");
 
-    g_httpClient.Get(sEndpoint, GetAllStyles);
+    Core.HTTPClient.Get(sEndpoint, GetAllStyles);
 }
 
 public void GetAllStyles(HTTPResponse response, any value, const char[] error)
@@ -62,7 +66,7 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
         return;
     }
 
-    g_imStyles = new IntMap();
+    Core.Styles = new IntMap();
 
     JSONObject jsonObject = null;
     Style style;
@@ -77,7 +81,7 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
 
         LogMessage("[Styles.GetAllStyles] Style: %s (Id: %d, IsActive: %d)", style.Name, style.Id, style.IsActive);
 
-        g_imStyles.SetArray(style.Id, style, sizeof(style));
+        Core.Styles.SetArray(style.Id, style, sizeof(style));
 
         delete jsonObject;
     }
@@ -91,7 +95,7 @@ public int Native_GetStyleName(Handle plugin, int numParams)
     int iLength = GetNativeCell(3);
 
     Style style;
-    bool success = g_imStyles.GetArray(iStyle, style, sizeof(style));
+    bool success = Core.Styles.GetArray(iStyle, style, sizeof(style));
 
     if (success && SetNativeString(2, style.Name, iLength) == SP_ERROR_NONE)
     {
@@ -103,5 +107,5 @@ public int Native_GetStyleName(Handle plugin, int numParams)
 
 public any Native_GetStyles(Handle plugin, int numParams)
 {
-    return g_imStyles;
+    return Core.Styles;
 }

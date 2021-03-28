@@ -5,11 +5,15 @@
 #include <ripext>
 #include <fuckTimer_stocks>
 
-char g_sName[32];
+enum struct PluginData
+{
+    GlobalForward OnZoneDownload;
+    
+    HTTPClient HTTPClient;
 
-HTTPClient g_httpClient = null;
-
-GlobalForward g_fwOnZoneDownload = null;
+    char Name[32];
+}
+PluginData Core;
 
 public Plugin myinfo =
 {
@@ -22,7 +26,7 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    g_fwOnZoneDownload = new GlobalForward("fuckTimer_OnZoneDownload", ET_Ignore, Param_String, Param_Cell);
+    Core.OnZoneDownload = new GlobalForward("fuckTimer_OnZoneDownload", ET_Ignore, Param_String, Param_Cell);
 
     RegPluginLibrary("fuckTimer_downloader");
 
@@ -38,9 +42,9 @@ public void OnMapStart()
     while (MorePlugins(hIter))
     {
         hPlugin = ReadPlugin(hIter);
-        GetPluginFilename(hPlugin, g_sName, sizeof(g_sName));
+        GetPluginFilename(hPlugin, Core.Name, sizeof(Core.Name));
 
-        if (StrContains(g_sName, "fuckZones.smx") != -1)
+        if (StrContains(Core.Name, "fuckZones.smx") != -1)
         {
             bFound = true;
             break;
@@ -56,16 +60,16 @@ public void OnMapStart()
     delete hIter;
     delete hPlugin;
 
-    ServerCommand("sm plugins unload %s", g_sName);
+    ServerCommand("sm plugins unload %s", Core.Name);
 
     RequestFrame(Frame_DownloadZone);
 }
 
 void CheckHTTPClient()
 {
-    if (g_httpClient == null)
+    if (Core.HTTPClient == null)
     {
-        g_httpClient = new HTTPClient(FUCKTIMER_BASE_CLOUD_URL);
+        Core.HTTPClient = new HTTPClient(FUCKTIMER_BASE_CLOUD_URL);
     }
 }
 
@@ -91,7 +95,7 @@ public void Frame_DownloadZone()
 
     DataPack pack = new DataPack();
     pack.WriteString(sMap);
-    g_httpClient.DownloadFile(sCloudPath, sFile, OnZoneDownload, pack);
+    Core.HTTPClient.DownloadFile(sCloudPath, sFile, OnZoneDownload, pack);
 }
 
 public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
@@ -120,7 +124,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         pack.WriteString(sMap);
         pack.WriteCell(bExist);
         
-        g_httpClient.DownloadFile(sCloudPath, sFile, OnStripperGlobalDownload, pack);
+        Core.HTTPClient.DownloadFile(sCloudPath, sFile, OnStripperGlobalDownload, pack);
 
         CallZoneDownload(sMap, true);
     }
@@ -195,7 +199,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
     pack.WriteCell(bExist);
     pack.WriteCell(bMapExist);
     
-    g_httpClient.DownloadFile(sCloudPath, sFile, OnStripperMapDownload, pack);
+    Core.HTTPClient.DownloadFile(sCloudPath, sFile, OnStripperMapDownload, pack);
 }
 
 public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[] error)
@@ -243,12 +247,12 @@ public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[]
         return;
     }
 
-    ServerCommand("sm plugins load %s", g_sName);
+    ServerCommand("sm plugins load %s", Core.Name);
 }
 
 void CallZoneDownload(const char[] map, bool success)
 {
-    Call_StartForward(g_fwOnZoneDownload);
+    Call_StartForward(Core.OnZoneDownload);
     Call_PushString(map);
     Call_PushCell(success);
     Call_Finish();

@@ -10,8 +10,12 @@
 #include <fuckTimer_styles>
 #include <fuckTimer_players>
 
-GlobalForward g_fwOnClientRestart = null;
-GlobalForward g_fwOnClientTeleport = null;
+enum struct PluginData
+{
+    GlobalForward OnClientRestart;
+    GlobalForward OnClientTeleport;
+}
+PluginData Core;
 
 public Plugin myinfo =
 {
@@ -24,8 +28,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    g_fwOnClientRestart = new GlobalForward("fuckTimer_OnClientRestart", ET_Ignore, Param_Cell);
-    g_fwOnClientTeleport = new GlobalForward("fuckTimer_OnClientTeleport", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnClientRestart = new GlobalForward("fuckTimer_OnClientRestart", ET_Ignore, Param_Cell);
+    Core.OnClientTeleport = new GlobalForward("fuckTimer_OnClientTeleport", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_RestartClient", Native_RestartClient);
 
@@ -481,14 +485,14 @@ public int Native_RestartClient(Handle plugin, int numParams)
 
 void ClientRestart(int client)
 {
-    Call_StartForward(g_fwOnClientRestart);
+    Call_StartForward(Core.OnClientRestart);
     Call_PushCell(client);
     Call_Finish();
 }
 
 void ClientTeleport(int client, eZone type, int level)
 {
-    Call_StartForward(g_fwOnClientTeleport);
+    Call_StartForward(Core.OnClientTeleport);
     Call_PushCell(client);
     Call_PushCell(type);
     Call_PushCell(level);

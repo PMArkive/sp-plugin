@@ -7,18 +7,21 @@
 #include <fuckTimer_api>
 #include <fuckTimer_downloader>
 
-HTTPClient g_httpClient = null;
-
 enum struct MapData {
     int Id;
     int Tier;
     bool IsActive;
 }
-
 MapData Map;
 
-bool g_bAPI = false;
-bool g_bZones = false;
+enum struct PluginData
+{
+    HTTPClient HTTPClient;
+
+    bool API;
+    bool Zones;
+}
+PluginData Core;
 
 public Plugin myinfo =
 {
@@ -40,7 +43,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void fuckTimer_OnAPIReady()
 {
-    g_bAPI = true;
+    Core.API = true;
 
     char sMap[32];
     fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
@@ -55,19 +58,19 @@ public void fuckTimer_OnZoneDownload(const char[] map, bool success)
         return;
     }
 
-    g_bZones = true;
+    Core.Zones = true;
 
     ArePluginsReady(map);
 }
 
 void ArePluginsReady(const char[] map)
 {
-    if (g_bAPI && g_bZones)
+    if (Core.API && Core.Zones)
     {
         LoadMapData(map);
 
-        g_bAPI = false;
-        g_bZones = false;
+        Core.API = false;
+        Core.Zones = false;
     }
 }
 
@@ -79,9 +82,9 @@ void LoadMapData(const char[] map)
     DataPack pack = new DataPack();
     pack.WriteString(map);
 
-    g_httpClient = fuckTimer_GetHTTPClient();
+    Core.HTTPClient = fuckTimer_GetHTTPClient();
 
-    g_httpClient.Get(sEndpoint, GetMapData, pack);
+    Core.HTTPClient.Get(sEndpoint, GetMapData, pack);
 }
 
 public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
@@ -120,7 +123,7 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
 
 void PrepareMapPostData(const char[] map)
 {
-    g_httpClient = fuckTimer_GetHTTPClient();
+    Core.HTTPClient = fuckTimer_GetHTTPClient();
 
     int iTier = GetMapTier(map);
 
@@ -135,7 +138,7 @@ void PrepareMapPostData(const char[] map)
     DataPack pack = new DataPack();
     pack.WriteString(map);
 
-    g_httpClient.Post(sEndpoint, jMap, PostMapData, pack);
+    Core.HTTPClient.Post(sEndpoint, jMap, PostMapData, pack);
     delete jMap;
 }
 

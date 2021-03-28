@@ -46,9 +46,13 @@ enum struct PlayerData
 
 PlayerData Player[MAXPLAYERS + 1];
 
-int g_iStages = 0;
-int g_iCheckpoints = 0;
-int g_iBonus = 0;
+enum struct PluginData
+{
+    int Stages;
+    int Checkpoints;
+    int Bonus;
+}
+PluginData Core;
 
 public Plugin myinfo =
 {
@@ -82,9 +86,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnMapStart()
 {
-    g_iStages = 0;
-    g_iCheckpoints = 0;
-    g_iBonus = 0;
+    Core.Stages = 0;
+    Core.Checkpoints = 0;
+    Core.Bonus = 0;
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
@@ -114,9 +118,9 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
                 iStage = StringToInt(sValue);
 
-                if (iStage > 0 && iStage > g_iStages)
+                if (iStage > 0 && iStage > Core.Stages)
                 {
-                    g_iStages = iStage;
+                    Core.Stages = iStage;
                 }
 
                 iStage = 0;
@@ -128,9 +132,9 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
                 iCheckpoint = StringToInt(sValue);
 
-                if (iCheckpoint > 0 && iCheckpoint > g_iCheckpoints)
+                if (iCheckpoint > 0 && iCheckpoint > Core.Checkpoints)
                 {
-                    g_iCheckpoints = iCheckpoint;
+                    Core.Checkpoints = iCheckpoint;
                 }
 
                 iCheckpoint = 0;
@@ -142,9 +146,9 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
                 iBonus = StringToInt(sValue);
 
-                if (iBonus > 0 && iBonus > g_iBonus)
+                if (iBonus > 0 && iBonus > Core.Bonus)
                 {
-                    g_iBonus = iBonus;
+                    Core.Bonus = iBonus;
                 }
 
                 iBonus = 0;
@@ -438,14 +442,14 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
         {
             Player[client].MainTime = GetGameTime();
 
-            if (g_iStages > 0)
+            if (Core.Stages > 0)
             {
                 Player[client].StageTimes = new IntMap();
                 Player[client].StageTimes.SetValue(1, GetGameTime());
                 Player[client].Stage = 1;
             }
 
-            if (g_iCheckpoints > 0)
+            if (Core.Checkpoints > 0)
             {
                 Player[client].CheckpointTimes = new IntMap();
                 Player[client].CheckpointTimes.SetValue(1, GetGameTime());
@@ -491,11 +495,11 @@ void SetClientStartValues(int client, int bonus)
     {
         Player[client].Bonus = bonus;
     }
-    else if (g_iStages > 0)
+    else if (Core.Stages > 0)
     {
         Player[client].Stage = 1;
     }
-    else if (g_iCheckpoints > 0)
+    else if (Core.Checkpoints > 0)
     {
         Player[client].Checkpoint = 1;
     }
@@ -591,17 +595,17 @@ public int Native_GetClientValidator(Handle plugin, int numParams)
 
 public int Native_GetAmountOfCheckpoints(Handle plugin, int numParams)
 {
-    return g_iCheckpoints;
+    return Core.Checkpoints;
 }
 
 public int Native_GetAmountOfStages(Handle plugin, int numParams)
 {
-    return g_iStages;
+    return Core.Stages;
 }
 
 public int Native_GetAmountOfBonus(Handle plugin, int numParams)
 {
-    return g_iBonus;
+    return Core.Bonus;
 }
 
 public int Native_ResetClientTimer(Handle plugin, int numParams)
