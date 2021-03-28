@@ -2,7 +2,6 @@
 #pragma newdecls required
 
 #include <sourcemod>
-#include <clientprefs>
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
@@ -71,34 +70,12 @@ public void OnPluginStart()
 {
     HookEvent("player_spawn", Event_PlayerSpawn);
 
-    bool bSkip = true;
-
-    if (fuckTimer_GetHTTPClient() != null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-        bSkip = false;
-    }
-
-    if (!bSkip)
-    {
-        fuckTimer_LoopClients(client, true, true)
-        {
-            OnClientPutInServer(client);
-        }
-    }
+    GetHTTPClient();
 }
 
 public void fuckTimer_OnAPIReady()
 {
-    Core.HTTPClient = fuckTimer_GetHTTPClient();
-
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        if (IsClientInGame(i))
-        {
-            OnClientPutInServer(i);
-        }
-    }
+    GetHTTPClient();
 }
 
 public void fuckTimer_OnClientRestart(int client)
@@ -121,7 +98,7 @@ public void OnClientPutInServer(int client)
     Player[client].Reset();
 
     char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/Id/%d", GetSteamAccountID(client));
 
     if (Core.HTTPClient == null)
     {
@@ -210,8 +187,6 @@ void LoadPlayerSetting(int client, const char[] setting)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d/Setting/%s", GetSteamAccountID(client), setting);
 
-    PrintToServer(sEndpoint);
-
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(client));
     pack.WriteString(setting);
@@ -264,6 +239,8 @@ public void GetPlayerSetting(HTTPResponse response, DataPack pack, const char[] 
     {
         Player[client].InvalidKeyPref = view_as<eInvalidKeyPref>(StringToInt(sValue));
     }
+
+    LogMessage("[Players.GetPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
 }
 
 void PreparePlayerPostSetting(int client, const char[] setting)
@@ -340,11 +317,6 @@ public void Frame_PlayerSpawn(int userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
-        if (GetClientStyle(client) < StyleNormal)
-        {
-            SetClientStyle(client, StyleNormal);
-        }
-
         int iZone = fuckTimer_GetStartZone();
 
         if (iZone > 0)
@@ -446,7 +418,8 @@ Styles SetClientStyle(int client, Styles style)
 
     char sBuffer[12];
     IntToString(view_as<int>(style), sBuffer, sizeof(sBuffer));
-    // #warning Add RESTapi call
+    
+    SetPlayerSetting(client, "Style", sBuffer);
 }
 
 eInvalidKeyPref GetClientInvalidKeyPref(int client)
@@ -460,7 +433,54 @@ eInvalidKeyPref SetClientInvalidKeyPref(int client, eInvalidKeyPref preference)
 
     char sBuffer[12];
     IntToString(view_as<int>(eInvalidKeyPref), sBuffer, sizeof(sBuffer));
-    // #warning Add RESTapi call
+    
+    SetPlayerSetting(client, "InvalidKeyPref", sBuffer);
+}
+
+void SetPlayerSetting(int client, const char[] setting, const char[] value)
+{
+    JSONObject jSetting = new JSONObject();
+    jSetting.SetString("Value", value);
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d/Setting/%s", GetSteamAccountID(client), setting);
+
+    DataPack pack = new DataPack();
+    pack.WriteCell(GetClientUserId(client));
+    pack.WriteString(setting);
+    pack.WriteString(value);
+    Core.HTTPClient.Patch(sEndpoint, jSetting, PatchPlayerSetting, pack);
+
+    delete jSetting;
+}
+
+public void PatchPlayerSetting(HTTPResponse response, DataPack pack, const char[] error)
+{
+    pack.Reset();
+
+    int client = GetClientOfUserId(pack.ReadCell());
+
+    char sSetting[MAX_SETTING_LENGTH];
+    pack.ReadString(sSetting, sizeof(sSetting));
+
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+    pack.ReadString(sValue, sizeof(sValue));
+
+    delete pack;
+
+    if (client < 1)
+    {
+        LogError("[Players.PatchPlayerSetting] Client is no longer valid.");
+        return;
+    }
+
+    if (response.Status != HTTPStatus_NoContent)
+    {
+        LogError("[Players.PatchPlayerSetting] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    LogMessage("[Players.PatchPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
 }
 
 Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
@@ -498,6 +518,25 @@ Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
     }
 
     return Plugin_Changed;
+}
+
+void GetHTTPClient()
+{
+    bool bSkip = true;
+
+    if (fuckTimer_GetHTTPClient() != null)
+    {
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
+        bSkip = false;
+    }
+
+    if (!bSkip)
+    {
+        fuckTimer_LoopClients(client, true, true)
+        {
+            OnClientPutInServer(client);
+        }
+    }
 }
 
 public any Native_GetClientStyle(Handle plugin, int numParams)
