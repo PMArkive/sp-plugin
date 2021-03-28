@@ -15,6 +15,8 @@
 #define MAX_DOT -0.75
 #define LOW_GRAV 0.5
 #define SLOW_MOTION 0.5
+#define SETTING_STYLE "Style"
+#define SETTING_INVALIDKEYPREF "InvalidKeyPref"
 
 enum struct PlayerData
 {
@@ -39,9 +41,6 @@ PlayerData Player[MAXPLAYERS + 1];
 
 enum struct PluginData
 {
-    Cookie PlayerStyle;
-    Cookie InvalidKeyPref;
-
     HTTPClient HTTPClient;
 }
 PluginData Core;
@@ -70,19 +69,22 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-    Core.PlayerStyle = new Cookie("fuckTimer_player_style", "Cookie for the current/last used player style", CookieAccess_Private);
-    Core.InvalidKeyPref = new Cookie("fuckTimer_invalid_key_preference", "Cookie for players preference while typing the invalid key", CookieAccess_Private);
-
     HookEvent("player_spawn", Event_PlayerSpawn);
 
-    fuckTimer_LoopClients(client, true, true)
-    {
-        if (!AreClientCookiesCached(client))
-        {
-            continue;
-        }
+    bool bSkip = true;
 
-        OnClientCookiesCached(client);
+    if (fuckTimer_GetHTTPClient() != null)
+    {
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
+        bSkip = false;
+    }
+
+    if (!bSkip)
+    {
+        fuckTimer_LoopClients(client, true, true)
+        {
+            OnClientPutInServer(client);
+        }
     }
 }
 
@@ -96,30 +98,6 @@ public void fuckTimer_OnAPIReady()
         {
             OnClientPutInServer(i);
         }
-    }
-}
-
-void OnClientCookiesCached(int client)
-{
-    char sBuffer[12];
-    Core.PlayerStyle.Get(client, sBuffer, sizeof(sBuffer));
-
-    Player[client].Style = view_as<Styles>(StringToInt(sBuffer));
-
-    if (Player[client].Style < StyleNormal)
-    {
-        SetClientStyle(client, StyleNormal);
-    }
-
-    sBuffer[0] = '\0';
-    
-    Core.InvalidKeyPref.Get(client, sBuffer, sizeof(sBuffer));
-
-    Player[client].InvalidKeyPref = view_as<eInvalidKeyPref>(StringToInt(sBuffer));
-
-    if (Player[client].InvalidKeyPref < IKStop)
-    {
-        SetClientInvalidKeyPref(client, IKStop);
     }
 }
 
@@ -141,11 +119,6 @@ public void OnClientPutInServer(int client)
     }
 
     Player[client].Reset();
-
-    if (AreClientCookiesCached(client))
-    {
-        OnClientCookiesCached(client);
-    }
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/%d", GetSteamAccountID(client));
@@ -189,6 +162,9 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
     Player[client].IsActive = jPlayer.GetBool("IsActive");
 
     LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].IsActive);
+
+    LoadPlayerSetting(client, "Style");
+    LoadPlayerSetting(client, "InvalidKeyPref");
 }
 
 void PreparePlayerPostData(int client)
@@ -229,6 +205,130 @@ public void PostPlayerData(HTTPResponse response, int userid, const char[] error
     OnClientPutInServer(client);
 }
 
+void LoadPlayerSetting(int client, const char[] setting)
+{
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d/Setting/%s", GetSteamAccountID(client), setting);
+
+    PrintToServer(sEndpoint);
+
+    DataPack pack = new DataPack();
+    pack.WriteCell(GetClientUserId(client));
+    pack.WriteString(setting);
+
+    Core.HTTPClient.Get(sEndpoint, GetPlayerSetting, pack);
+}
+
+public void GetPlayerSetting(HTTPResponse response, DataPack pack, const char[] error)
+{
+    pack.Reset();
+
+    int client = GetClientOfUserId(pack.ReadCell());
+
+    char sSetting[MAX_SETTING_LENGTH];
+    pack.ReadString(sSetting, sizeof(sSetting));
+
+    delete pack;
+
+    if (client < 1)
+    {
+        LogError("[Players.GetPlayerSetting] Client is no longer valid.");
+        return;
+    }
+
+    if (response.Status != HTTPStatus_OK)
+    {
+        if (response.Status == HTTPStatus_NotFound)
+        {
+            LogMessage("[Players.GetPlayerSetting] 404 Setting \"%s\" Not Found, we'll add it.", sSetting);
+            PreparePlayerPostSetting(client, sSetting);
+            return;
+        }
+
+        LogError("[Players.GetPlayerSetting] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    JSONObject jSetting = view_as<JSONObject>(response.Data);
+
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+    jSetting.GetString("Value", sValue, sizeof(sValue));
+
+    delete jSetting;
+    
+    if (StrEqual(sSetting, "Style", false))
+    {
+        Player[client].Style = view_as<Styles>(StringToInt(sValue));
+    }
+    else if (StrEqual(sSetting, "InvalidKeyPref", false))
+    {
+        Player[client].InvalidKeyPref = view_as<eInvalidKeyPref>(StringToInt(sValue));
+    }
+}
+
+void PreparePlayerPostSetting(int client, const char[] setting)
+{
+    JSONObject jSetting = new JSONObject();
+    jSetting.SetInt("PlayerId", GetSteamAccountID(client));
+    jSetting.SetString("Setting", setting);
+
+    char sBuffer[MAX_SETTING_VALUE_LENGTH];
+
+    if (StrEqual(setting, "Style", false))
+    {
+        IntToString(view_as<int>(StyleNormal), sBuffer, sizeof(sBuffer));
+        jSetting.SetString("Value", sBuffer);
+    }
+    else if (StrEqual(setting, "InvalidKeyPref", false))
+    {
+        IntToString(view_as<int>(IKStop), sBuffer, sizeof(sBuffer));
+        jSetting.SetString("Value", sBuffer);
+    }
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings");
+
+    Core.HTTPClient.Post(sEndpoint, jSetting, PostPlayerSetting, GetClientUserId(client));
+
+    delete jSetting;
+}
+
+public void PostPlayerSetting(HTTPResponse response, int userid, const char[] error)
+{
+    int client = GetClientOfUserId(userid);
+
+    if (client < 1)
+    {
+        LogError("[Players.PostPlayerSetting] Client is no longer valid.");
+        return;
+    }
+
+    if (response.Status != HTTPStatus_Created)
+    {
+        LogError("[Players.PostPlayerSetting] Can't post player setting. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    JSONObject jSetting = view_as<JSONObject>(response.Data);
+
+    char sSetting[MAX_SETTING_LENGTH], sValue[MAX_SETTING_VALUE_LENGTH];
+    jSetting.GetString("Setting", sSetting, sizeof(sSetting));
+    jSetting.GetString("Value", sValue, sizeof(sValue));
+
+    delete jSetting;
+    
+    if (StrEqual(sSetting, "Style", false))
+    {
+        Player[client].Style = view_as<Styles>(StringToInt(sValue));
+    }
+    else if (StrEqual(sSetting, "InvalidKeyPref", false))
+    {
+        Player[client].InvalidKeyPref = view_as<eInvalidKeyPref>(StringToInt(sValue));
+    }
+
+    LogMessage("[Players.PostPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
+}
+
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     RequestFrame(Frame_PlayerSpawn, event.GetInt("userid"));
@@ -240,7 +340,7 @@ public void Frame_PlayerSpawn(int userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
-        if (AreClientCookiesCached(client) && GetClientStyle(client) < StyleNormal)
+        if (GetClientStyle(client) < StyleNormal)
         {
             SetClientStyle(client, StyleNormal);
         }
@@ -346,7 +446,7 @@ Styles SetClientStyle(int client, Styles style)
 
     char sBuffer[12];
     IntToString(view_as<int>(style), sBuffer, sizeof(sBuffer));
-    Core.PlayerStyle.Set(client, sBuffer);
+    // #warning Add RESTapi call
 }
 
 eInvalidKeyPref GetClientInvalidKeyPref(int client)
@@ -360,7 +460,7 @@ eInvalidKeyPref SetClientInvalidKeyPref(int client, eInvalidKeyPref preference)
 
     char sBuffer[12];
     IntToString(view_as<int>(eInvalidKeyPref), sBuffer, sizeof(sBuffer));
-    Core.InvalidKeyPref.Set(client, sBuffer);
+    // #warning Add RESTapi call
 }
 
 Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
