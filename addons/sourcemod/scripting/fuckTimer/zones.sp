@@ -155,7 +155,6 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
             )
         )
     {
-        PrintToServer("Yes");
         bool bValidator = view_as<bool>(StringToInt(sValue));
 
         if (bValidator)
