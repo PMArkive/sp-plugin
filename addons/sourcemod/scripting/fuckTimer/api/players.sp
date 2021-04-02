@@ -47,6 +47,8 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
 
     Player[client].IsActive = jPlayer.GetBool("IsActive");
 
+    delete jPlayer;
+
     LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].IsActive);
 
     LoadPlayerSetting(client, "Style");
@@ -73,6 +75,8 @@ void PreparePlayerPostData(int client)
 public void PostPlayerData(HTTPResponse response, int userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
+
+    delete response.Data;
 
     if (client < 1)
     {
@@ -245,6 +249,7 @@ public void PatchPlayerSetting(HTTPResponse response, DataPack pack, const char[
     pack.ReadString(sValue, sizeof(sValue));
 
     delete pack;
+    delete response.Data;
 
     if (client < 1)
     {
