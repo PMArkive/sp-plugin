@@ -255,7 +255,7 @@ public void PatchPlayerSetting(HTTPResponse response, DataPack pack, const char[
 
     if (response.Status != HTTPStatus_NoContent)
     {
-        LogError("[Players.PatchPlayerSetting] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[Players.PatchPlayerSetting] Something went wrong (Setting: %s). Status Code: %d, Error: %s", sSetting, response.Status, error);
         return;
     }
 
