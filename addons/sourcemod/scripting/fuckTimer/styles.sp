@@ -85,8 +85,6 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
 
         delete jsonObject;
     }
-    
-    delete jsonArray;
 }
 
 public int Native_GetStyleName(Handle plugin, int numParams)

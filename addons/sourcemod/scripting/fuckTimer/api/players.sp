@@ -76,8 +76,6 @@ public void PostPlayerData(HTTPResponse response, int userid, const char[] error
 {
     int client = GetClientOfUserId(userid);
 
-    delete response.Data;
-
     if (client < 1)
     {
         LogError("[Players.PostPlayerData] Client is no longer valid.");
@@ -141,8 +139,6 @@ public void GetPlayerSetting(HTTPResponse response, DataPack pack, const char[] 
 
     char sValue[MAX_SETTING_VALUE_LENGTH];
     jSetting.GetString("Value", sValue, sizeof(sValue));
-
-    delete jSetting;
     
     if (StrEqual(sSetting, "Style", false))
     {

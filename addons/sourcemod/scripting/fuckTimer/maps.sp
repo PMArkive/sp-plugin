@@ -118,8 +118,6 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
     Map.Tier = jMap.GetInt("Tier");
     Map.IsActive = jMap.GetBool("IsActive");
 
-    delete jMap;
-
     LogMessage("[Maps.GetMapData] Map Found. Name: %s, Id: %d, Tier: %d, Active: %d", sName, Map.Id, Map.Tier, Map.IsActive);
 }
 
