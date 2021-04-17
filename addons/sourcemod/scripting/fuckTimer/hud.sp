@@ -166,7 +166,7 @@ public void OnGameFrame()
 
         imBuffer = new IntMap();
 
-        FormatEx(sBuffer, sizeof(sBuffer), "Tier: %d", fuckTimer_GetMapTier());
+        FormatEx(sBuffer, sizeof(sBuffer), "Tier: %d", fuckTimer_GetCurrentMapTier());
         imBuffer.SetString(HKTier, sBuffer);
 
         GetCurrentMap(sBuffer, sizeof(sBuffer));

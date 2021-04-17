@@ -5,6 +5,7 @@
 #include <ripext>
 #include <fuckZones>
 #include <fuckTimer_stocks>
+#include <fuckTimer_maps>
 #include <fuckTimer_hud>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
@@ -87,6 +88,8 @@ public void OnPluginStart()
     RegConsoleCmd("sm_styles", Command_Styles);
 
     RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref);
+
+    RegConsoleCmd("sm_tier", Command_Tier);
 
     RegConsoleCmd("sm_hud", Command_HUD, "List all HUD related commands as menu");
     RegConsoleCmd("sm_hudmove", Command_HUDMove, "Move/Swap keys to another positions");
@@ -510,6 +513,52 @@ public int Menu_InvalidKeyPref(Menu menu, MenuAction action, int client, int par
     {
         delete menu;
     }
+}
+
+public Action Command_Tier(int client, int args)
+{
+    char sBuffer[MAX_NAME_LENGTH];
+    GetCmdArgString(sBuffer, sizeof(sBuffer));
+
+    fuckTimer_GetMapTiers(client, sBuffer, OnMapTiers);
+}
+
+public void OnMapTiers(int client, StringMap tiers)
+{
+    StringMapSnapshot snap = tiers.Snapshot();
+
+    if (client == 0)
+    {
+        PrintToServer("Found %d Maps.", snap.Length);
+    }
+    else
+    {
+        PrintToChat(client, "Found %d Maps", snap.Length);
+    }
+
+    char sName[MAX_NAME_LENGTH];
+    int iTier = 0;
+
+    for (int i = 0; i < snap.Length; i++)
+    {
+        snap.GetKey(i, sName, sizeof(sName));
+        tiers.GetValue(sName, iTier);
+
+        if (client == 0)
+        {
+            PrintToServer("Map: %s, Tier: %d", sName, iTier);
+        }
+        else
+        {
+            PrintToChat(client, "Map: %s, Tier: %d", sName, iTier);
+        }
+
+        sName[0] = '\0';
+        iTier = 0;
+    }
+
+    delete snap;
+    delete tiers;
 }
 
 public Action Command_HUD(int client, int args)

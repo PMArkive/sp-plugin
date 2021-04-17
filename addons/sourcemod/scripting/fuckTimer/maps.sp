@@ -34,7 +34,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    CreateNative("fuckTimer_GetMapTier", Native_GetMapTier);
+    CreateNative("fuckTimer_GetCurrentMapTier", Native_GetCurrentMapTier);
+    CreateNative("fuckTimer_GetMapTiers", Native_GetMapTiers);
 
     RegPluginLibrary("fuckTimer_maps");
 
@@ -82,7 +83,10 @@ void LoadMapData(const char[] map)
     DataPack pack = new DataPack();
     pack.WriteString(map);
 
-    Core.HTTPClient = fuckTimer_GetHTTPClient();
+    if (Core.HTTPClient == null)
+    {
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
+    }
 
     Core.HTTPClient.Get(sEndpoint, GetMapData, pack);
 }
@@ -123,7 +127,10 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
 
 void PrepareMapPostData(const char[] map)
 {
-    Core.HTTPClient = fuckTimer_GetHTTPClient();
+    if (Core.HTTPClient == null)
+    {
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
+    }
 
     int iTier = GetMapTier(map);
 
@@ -215,7 +222,109 @@ int GetMapTier(const char[] map)
     return iTier;
 }
 
-public int Native_GetMapTier(Handle plugin, int numParams)
+public int Native_GetCurrentMapTier(Handle plugin, int numParams)
 {
     return Map.Tier;
+}
+
+public any Native_GetMapTiers(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+
+    char sName[MAX_NAME_LENGTH];
+    GetNativeString(2, sName, sizeof(sName));
+
+    Function fCallback = GetNativeFunction(3);
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/MatchName/%s", sName);
+
+    if (Core.HTTPClient == null)
+    {
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
+    }
+    
+    DataPack pack = new DataPack();
+    if (client > 0 && IsClientInGame(client))
+    {
+        pack.WriteCell(GetClientUserId(client));
+    }
+    else
+    {
+        pack.WriteCell(0);
+    }
+    pack.WriteString(sName);
+    pack.WriteCell(view_as<int>(plugin));
+    pack.WriteFunction(fCallback);
+    Core.HTTPClient.Get(sEndpoint, GetMapsData, pack);
+}
+
+public void GetMapsData(HTTPResponse response, DataPack pack, const char[] error)
+{
+    pack.Reset();
+
+    int userid = pack.ReadCell();
+
+    int client = userid == 0 ? 0 : GetClientOfUserId(userid);
+    
+
+    char sMap[MAX_NAME_LENGTH];
+    pack.ReadString(sMap, sizeof(sMap));
+
+    Handle hPlugin = view_as<Handle>(pack.ReadCell());
+
+    Function fCallback = pack.ReadFunction();
+
+    delete pack;
+
+    if (response.Status != HTTPStatus_OK)
+    {
+        if (response.Status == HTTPStatus_NotFound)
+        {
+            LogMessage("[Maps.GetMapsData] 404 Map Not Found, we'll add this map.");
+            PrepareMapPostData(sMap);
+            return;
+        }
+
+        LogError("[Maps.GetMapsData] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    JSONArray jArray = view_as<JSONArray>(response.Data);
+    JSONObject jObj;
+
+    StringMap smTiers = new StringMap();
+
+    int iTier = 0;
+    char sName[MAX_NAME_LENGTH];
+
+    LogMessage("[Maps.GetMapsData] Found %d Maps", jArray.Length);
+    
+    for (int i = 0; i < jArray.Length; i++)
+    {
+        jObj = view_as<JSONObject>(jArray.Get(i));
+        jObj.GetString("Name", sName, sizeof(sName));
+        iTier = jObj.GetInt("Tier");
+
+        LogMessage("[Maps.GetMapsData] Name: %s, Tier: %d", sName, iTier);
+
+        smTiers.SetValue(sName, iTier);
+
+        iTier = 0;
+        sName[0] = '\0';
+
+        delete jObj;
+    }
+
+    Call_StartFunction(hPlugin, fCallback);
+    if (client > 0 && IsClientInGame(client))
+    {
+        Call_PushCell(GetClientUserId(client));
+    }
+    else
+    {
+        Call_PushCell(0);
+    }
+    Call_PushCell(smTiers);
+    Call_Finish();
 }
