@@ -10,6 +10,8 @@
 
 enum struct Variables
 {
+    ConVar DisableCZZones;
+
     GlobalForward OnEnteringZone;
     GlobalForward OnTouchZone;
     GlobalForward OnLeavingZone;
@@ -98,6 +100,26 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnMapStart()
 {
     Core.Reset();
+}
+
+public void OnConfigsExecuted()
+{
+    Core.DisableCZZones = FindConVar("fuckZones_disable_circle_polygon_zones");
+    Core.DisableCZZones.SetBool(true);
+    Core.DisableCZZones.AddChangeHook(OnChangeHook);
+}
+
+public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    if (convar == Core.DisableCZZones)
+    {
+        bool bDisable = view_as<bool>(StringToInt(newValue));
+
+        if (!bDisable)
+        {
+            Core.DisableCZZones.SetBool(true);
+        }
+    }
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)

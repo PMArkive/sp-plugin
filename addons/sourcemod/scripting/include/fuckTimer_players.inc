@@ -10,27 +10,23 @@ enum eInvalidKeyPref {
     IKNormal
 }
 
-native Styles fuckTimer_GetClientStyle(int client);
-native void fuckTimer_SetClientStyle(int client, Styles style);
-
-native eInvalidKeyPref fuckTimer_GetClientInvalidKeyPref(int client);
-native void fuckTimer_SetClientInvalidKeyPref(int client, eInvalidKeyPref preference);
+native void fuckTimer_RegisterSetting(const char[] setting, const char[] defaultValue);
+native bool fuckTimer_GetClientSetting(int client, const char[] setting, char[] value);
+native void fuckTimer_SetClientSetting(int client, const char[] setting, char[] value);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_players_SetNTVOptional()
 {
-    MarkNativeAsOptional("fuckTimer_GetClientStyle");
-    MarkNativeAsOptional("fuckTimer_SetClientStyle");
-
-    MarkNativeAsOptional("fuckTimer_GetClientInvalidKeyPref");
-    MarkNativeAsOptional("fuckTimer_SetClientInvalidKeyPref");
+    MarkNativeAsOptional("fuckTimer_RegisterSetting");
+    MarkNativeAsOptional("fuckTimer_GetClientSetting");
+    MarkNativeAsOptional("fuckTimer_SetClientSetting");
 }
 #endif
 
 public SharedPlugin __pl_fuckTimer_players = 
 {
     name = "fuckTimer_players",
-    file = "maps.smx",
+    file = "hud.smx",
 #if defined REQUIRE_PLUGIN
     required = 1,
 #else

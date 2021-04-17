@@ -14,7 +14,8 @@ enum struct Style {
 }
 
 enum Styles {
-    StyleNormal = 1,
+    StyleNone = 0,
+    StyleNormal,
     StyleSideways,
     StyleHSW,
     StyleBackwards,
@@ -36,7 +37,7 @@ public void __pl_fuckTimer_styles_SetNTVOptional()
 public SharedPlugin __pl_fuckTimer_styles = 
 {
     name = "fuckTimer_styles",
-    file = "maps.smx",
+    file = "styles.smx",
 #if defined REQUIRE_PLUGIN
     required = 1,
 #else

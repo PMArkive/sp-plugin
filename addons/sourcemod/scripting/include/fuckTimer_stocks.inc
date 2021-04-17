@@ -11,16 +11,17 @@
 #define FUCKTIMER_PLUGIN_DESCRIPTION ""
 #define FUCKTIMER_PLUGIN_VERSION "1.0.0-devvvvvvvvvvvvvvvv"
 #define FUCKTIMER_PLUGIN_URL "github.com/fuckTimer"
-
 #define FUCKTIMER_BASE_CLOUD_URL "https://fucktimer.cloud/file"
-
 #define FUCKTIMER_EFFECT_NAME "fuckTimer"
 
 #define MAX_URL_LENGTH 256
 #define MAX_SETTING_LENGTH 16
 #define MAX_SETTING_VALUE_LENGTH 32
+#define MAX_HUD_KEY_LENGTH 32
+
 #define MIN_BASE_URL_LENGTH 4
 #define MIN_API_KEY_LENGTH 12
+
 #define PRESPEED_LIMIT 250
 
 #define fuckTimer_LoopClients(%1,%2,%3) for(int %1 = 1; %1 <= MaxClients; %1++) if(fuckTimer_IsClientValid(%1, %2, %3))
@@ -68,13 +69,6 @@ stock bool fuckTimer_IsClientValid(int client, bool bots = false, bool sourcetv 
     return false;
 }
 
-stock float GetClientSpeed(int client)
-{
-    float fVelocity[3];
-    GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-    return SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
-}
-
 stock void SetClientSpeed(int client)
 {
     float fVelocity[3];
@@ -92,31 +86,6 @@ stock void SetClientSpeed(int client)
             ScaleVector(fVelocity, fScale);
             TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
         }
-    }
-}
-
-stock void GetTimeBySeconds(float seconds, char[] time, int length)
-{
-    if (seconds < 60.0)
-    {
-        FormatEx(time, length, "%.3f", seconds);
-    }
-    else if (seconds < 3600.0)
-    {
-        int iBuffer = RoundToFloor(seconds);
-        int iMinutes = (iBuffer / 60) % 60;
-        float fSeconds = (iBuffer % 60) + seconds - iBuffer;
-        FormatEx(time, length, "%d:%.3f", iMinutes, fSeconds);
-    }
-    else
-    {
-        int iBuffer = RoundToFloor(seconds);
-
-        int iHours = RoundToFloor(iBuffer / 3600.0);
-        int iMinutes = (iBuffer / 60) % 60;
-        float fSeconds = (iBuffer % 60) + seconds - iBuffer;
-
-        FormatEx(time, length, "%d:%d:%.3f", iHours, iMinutes, fSeconds);
     }
 }
 

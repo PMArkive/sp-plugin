@@ -51,8 +51,10 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
 
     LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].IsActive);
 
-    LoadPlayerSetting(client, "Style");
-    LoadPlayerSetting(client, "InvalidKeyPref");
+    delete Player[client].Settings;
+    Player[client].Settings = new StringMap();
+    
+    LoadPlayerSetting(client);
 }
 
 void PreparePlayerPostData(int client)
@@ -93,28 +95,19 @@ public void PostPlayerData(HTTPResponse response, int userid, const char[] error
     OnClientPutInServer(client);
 }
 
-void LoadPlayerSetting(int client, const char[] setting)
+void LoadPlayerSetting(int client)
 {
     char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d/Setting/%s", GetSteamAccountID(client), setting);
+    Format(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d", GetSteamAccountID(client));
 
-    DataPack pack = new DataPack();
-    pack.WriteCell(GetClientUserId(client));
-    pack.WriteString(setting);
+    LogMessage(sEndpoint);
 
-    Core.HTTPClient.Get(sEndpoint, GetPlayerSetting, pack);
+    Core.HTTPClient.Get(sEndpoint, GetPlayerSetting, GetClientUserId(client));
 }
 
-public void GetPlayerSetting(HTTPResponse response, DataPack pack, const char[] error)
+public void GetPlayerSetting(HTTPResponse response, int userid, const char[] error)
 {
-    pack.Reset();
-
-    int client = GetClientOfUserId(pack.ReadCell());
-
-    char sSetting[MAX_SETTING_LENGTH];
-    pack.ReadString(sSetting, sizeof(sSetting));
-
-    delete pack;
+    int client = GetClientOfUserId(userid);
 
     if (client < 1)
     {
@@ -122,34 +115,54 @@ public void GetPlayerSetting(HTTPResponse response, DataPack pack, const char[] 
         return;
     }
 
-    if (response.Status != HTTPStatus_OK)
+    char sSetting[MAX_SETTING_LENGTH];
+    ArrayList alSettings = new ArrayList(ByteCountToCells(sizeof(sSetting)));
+    StringMapSnapshot snap = Core.Settings.Snapshot();
+
+    for (int i = 0; i < snap.Length; i++)
     {
-        if (response.Status == HTTPStatus_NotFound)
+        snap.GetKey(i, sSetting, sizeof(sSetting));
+        alSettings.PushString(sSetting);
+    }
+
+    sSetting[0] = '\0';
+
+    JSONArray jArray = view_as<JSONArray>(response.Data);
+    JSONObject jSetting;
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+
+    for (int i = 0; i < jArray.Length; i++)
+    {
+        jSetting = view_as<JSONObject>(jArray.Get(i));
+
+        jSetting.GetString("Setting", sSetting, sizeof(sSetting));
+        jSetting.GetString("Value", sValue, sizeof(sValue));
+
+        Player[client].Settings.SetString(sSetting, sValue);
+        LogMessage("[Players.GetPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
+
+        int iIndex = alSettings.FindString(sSetting);
+
+        if (iIndex != -1)
         {
-            LogMessage("[Players.GetPlayerSetting] 404 Setting \"%s\" Not Found, we'll add it.", sSetting);
-            PreparePlayerPostSetting(client, sSetting);
-            return;
+            alSettings.Erase(iIndex);
         }
 
-        LogError("[Players.GetPlayerSetting] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
-        return;
+        delete jSetting;
+        sSetting[0] = '\0';
     }
 
-    JSONObject jSetting = view_as<JSONObject>(response.Data);
-
-    char sValue[MAX_SETTING_VALUE_LENGTH];
-    jSetting.GetString("Value", sValue, sizeof(sValue));
-    
-    if (StrEqual(sSetting, "Style", false))
+    if (alSettings.Length > 0)
     {
-        Player[client].Style = view_as<Styles>(StringToInt(sValue));
-    }
-    else if (StrEqual(sSetting, "InvalidKeyPref", false))
-    {
-        Player[client].InvalidKeyPref = view_as<eInvalidKeyPref>(StringToInt(sValue));
+        for (int i = 0; i < alSettings.Length; i++)
+        {
+            alSettings.GetString(i, sSetting, sizeof(sSetting));
+            PreparePlayerPostSetting(client, sSetting);
+            LogMessage("[Players.GetPlayerSetting] 404 - Setting \"%s\" Not Found, we'll add it.", sSetting);
+        }
     }
 
-    LogMessage("[Players.GetPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
+    delete alSettings;
 }
 
 void PreparePlayerPostSetting(int client, const char[] setting)
@@ -158,18 +171,9 @@ void PreparePlayerPostSetting(int client, const char[] setting)
     jSetting.SetInt("PlayerId", GetSteamAccountID(client));
     jSetting.SetString("Setting", setting);
 
-    char sBuffer[MAX_SETTING_VALUE_LENGTH];
-
-    if (StrEqual(setting, "Style", false))
-    {
-        IntToString(view_as<int>(StyleNormal), sBuffer, sizeof(sBuffer));
-        jSetting.SetString("Value", sBuffer);
-    }
-    else if (StrEqual(setting, "InvalidKeyPref", false))
-    {
-        IntToString(view_as<int>(IKStop), sBuffer, sizeof(sBuffer));
-        jSetting.SetString("Value", sBuffer);
-    }
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+    Core.Settings.GetString(setting, sValue, sizeof(sValue));
+    jSetting.SetString("Value", sValue);
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings");
@@ -202,16 +206,8 @@ public void PostPlayerSetting(HTTPResponse response, int userid, const char[] er
     jSetting.GetString("Value", sValue, sizeof(sValue));
 
     delete jSetting;
-    
-    if (StrEqual(sSetting, "Style", false))
-    {
-        Player[client].Style = view_as<Styles>(StringToInt(sValue));
-    }
-    else if (StrEqual(sSetting, "InvalidKeyPref", false))
-    {
-        Player[client].InvalidKeyPref = view_as<eInvalidKeyPref>(StringToInt(sValue));
-    }
 
+    Player[client].Settings.SetString(sSetting, sValue);
     LogMessage("[Players.PostPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
 }
 
@@ -245,7 +241,6 @@ public void PatchPlayerSetting(HTTPResponse response, DataPack pack, const char[
     pack.ReadString(sValue, sizeof(sValue));
 
     delete pack;
-    delete response.Data;
 
     if (client < 1)
     {

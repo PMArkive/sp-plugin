@@ -5,15 +5,33 @@
 #include <ripext>
 #include <fuckZones>
 #include <fuckTimer_stocks>
+#include <fuckTimer_hud>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
 #include <fuckTimer_styles>
 #include <fuckTimer_players>
 
+enum struct PlayerData
+{
+    bool Side;
+    int Line;
+    eHUDKeys Key;
+
+    void Reset()
+    {
+        this.Side = false;
+        this.Line = -1;
+        this.Key = HKNone;
+    }
+}
+PlayerData Player[MAXPLAYERS + 1];
+
 enum struct PluginData
 {
     GlobalForward OnClientRestart;
     GlobalForward OnClientTeleport;
+
+    Handle Plugin;
 }
 PluginData Core;
 
@@ -28,6 +46,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    Core.Plugin = myself;
+    
     Core.OnClientRestart = new GlobalForward("fuckTimer_OnClientRestart", ET_Ignore, Param_Cell);
     Core.OnClientTeleport = new GlobalForward("fuckTimer_OnClientTeleport", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 
@@ -67,6 +87,18 @@ public void OnPluginStart()
     RegConsoleCmd("sm_styles", Command_Styles);
 
     RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref);
+
+    RegConsoleCmd("sm_hud", Command_HUD, "List all HUD related commands as menu");
+    RegConsoleCmd("sm_hudmove", Command_HUDMove, "Move/Swap keys to another positions");
+    RegConsoleCmd("sm_hudenable", Command_HUDEnable, "Enable/Disable the HUD entirely");
+    RegConsoleCmd("sm_hudpreset", Command_HUDPreset, "Replace HUD with a predefined preset");
+    RegConsoleCmd("sm_hudseparator", Command_HUDSeparator, "Replace tabs against vertical bars or vice versa");
+    RegConsoleCmd("sm_hudscale", Command_HUDScale, "Change the HUD font size");
+    RegConsoleCmd("sm_hudlength", Command_HUDLength, "Adjust the HUD with incorrect formatting");
+    RegConsoleCmd("sm_hudspeedunit", Command_HUDShowSpeedUnit, "Show 'u/s' behind speed or not");
+    RegConsoleCmd("sm_hudspeed", Command_HUDSpeed, "Change the hud speed calculation based of different axis");
+    RegConsoleCmd("sm_hudtime", Command_HUDTime, "Show times in different formats");
+    RegConsoleCmd("sm_hud0hours", Command_HUDShow0Hours, "Shows the leading 0(0): in time or not");
 }
 
 public Action Command_Start(int client, int args)
@@ -412,7 +444,7 @@ public int Menu_Styles(Menu menu, MenuAction action, int client, int param)
             fuckTimer_GetStyleName(style, sStyle, sizeof(sStyle));
             PrintToChat(client, "Set style to %s (Id: %d)", sStyle, style);
 
-            fuckTimer_SetClientStyle(client, style);
+            fuckTimer_SetClientSetting(client, "Style", sParam);
             ClientRestart(client);
         }
     }
@@ -433,17 +465,21 @@ public Action Command_InvalidKeyPref(int client, int args)
     Menu menu = new Menu(Menu_InvalidKeyPref);
     menu.SetTitle("Select invalid key preference:");
 
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "InvalidKeyPref", sSetting);
+    eInvalidKeyPref preference = view_as<eInvalidKeyPref>(StringToInt(sSetting));
+
     char sBuffer[32];
-    Format(sBuffer, sizeof(sBuffer), "[%s] Block Keys", fuckTimer_GetClientInvalidKeyPref(client) == IKBlock ? "X" : " ");
+    Format(sBuffer, sizeof(sBuffer), "[%s] Block Keys", preference == IKBlock ? "X" : " ");
     menu.AddItem("0", sBuffer);
 
-    Format(sBuffer, sizeof(sBuffer), "[%s] Stop Timer", fuckTimer_GetClientInvalidKeyPref(client) == IKStop ? "X" : " ");
+    Format(sBuffer, sizeof(sBuffer), "[%s] Stop Timer", preference == IKStop ? "X" : " ");
     menu.AddItem("1", sBuffer);
 
-    Format(sBuffer, sizeof(sBuffer), "[%s] Teleport to Start Zone", fuckTimer_GetClientInvalidKeyPref(client) == IKRestart ? "X" : " ");
+    Format(sBuffer, sizeof(sBuffer), "[%s] Teleport to Start Zone", preference == IKRestart ? "X" : " ");
     menu.AddItem("2", sBuffer);
 
-    Format(sBuffer, sizeof(sBuffer), "[%s] Set style to normal", fuckTimer_GetClientInvalidKeyPref(client) == IKNormal ? "X" : " ");
+    Format(sBuffer, sizeof(sBuffer), "[%s] Set style to normal", preference == IKNormal ? "X" : " ");
     menu.AddItem("3", sBuffer);
 
     menu.ExitBackButton = false;
@@ -460,7 +496,7 @@ public int Menu_InvalidKeyPref(Menu menu, MenuAction action, int client, int par
         char sParam[12];
         if (menu.GetItem(param, sParam, sizeof(sParam)))
         {
-            fuckTimer_SetClientInvalidKeyPref(client, view_as<eInvalidKeyPref>(StringToInt(sParam)));
+            fuckTimer_GetClientSetting(client, "InvalidKeyPref", sParam);
             
             if (fuckTimer_IsClientTimeRunning(client))
             {
@@ -468,6 +504,684 @@ public int Menu_InvalidKeyPref(Menu menu, MenuAction action, int client, int par
             }
 
             Command_InvalidKeyPref(client, 0);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+public Action Command_HUD(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    Menu menu = new Menu(Menu_ListHUDCommands);
+    menu.SetTitle("Select command to see how to use it:\n ");
+
+    CommandIterator iterator = new CommandIterator();
+
+    char sCommand[32], sDescription[64], sText[101];
+    while (iterator.Next())
+    {
+        if (iterator.Plugin != Core.Plugin)
+        {
+            continue;
+        }
+
+        iterator.GetName(sCommand, sizeof(sCommand));
+
+        if (StrContains(sCommand, "sm_hud", false) != -1)
+        {
+            iterator.GetDescription(sDescription, sizeof(sDescription));
+
+            FormatEx(sText, sizeof(sText), "%s\n%s", sCommand, sDescription);
+            menu.AddItem(sCommand, sText);
+        }
+    }
+
+    delete iterator;
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public int Menu_ListHUDCommands(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            PrintToChat(client, "TODO..."); // TODO: Add usage text as translation (as example: "Chat - CommandUsage - sm_hud", so "Chat - CommandUsage - %s", sParam)
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+public Action Command_HUDMove(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    Menu menu = new Menu(Menu_ListHUDKeys);
+    menu.SetTitle("Select hud element, which you want to move/swap:");
+
+    char sNumber[12], sDisplay[64];
+
+    IntToString(HKSpeed, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Speed");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKTime, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Time");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKStageTime, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "StageTime");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKPersonalRecord, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "PersonalRecord");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKServerRecord, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "ServerRecord");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKTier, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Tier");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKZone, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Zone");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKMap, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Map");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKMapType, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "MapType");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKStyle, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Style");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKCurrentStage, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "CurrentStage");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKValidator, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Validator");
+    menu.AddItem(sNumber, sDisplay);
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public int Menu_ListHUDKeys(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            Player[client].Key = view_as<eHUDKeys>(StringToInt(sParam));
+
+            ListHUDSides(client);
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (param == MenuCancel_Exit)
+        {
+            Player[client].Reset();
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+void ListHUDSides(int client)
+{
+    Menu menu = new Menu(Menu_ListHUDSides);
+    menu.SetTitle("Select on which side:");
+    menu.AddItem("0", "Left");
+    menu.AddItem("1", "Right");
+    menu.ExitBackButton = true;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int Menu_ListHUDSides(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[4];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            Player[client].Side = view_as<bool>(StringToInt(sParam));
+
+            ListHUDLines(client);
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (param == MenuCancel_Exit)
+        {
+            Player[client].Reset();
+        }
+        else if (param == MenuCancel_ExitBack)
+        {
+            Player[client].Reset();
+            Command_HUDMove(client, 0);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+void ListHUDLines(int client)
+{
+    Menu menu = new Menu(Menu_ListHUDLines);
+    menu.SetTitle("Select to which line:");
+    
+    char sLine[4], sDisplay[12];
+    for (int i = 0; i <= MAX_HUD_LINES; i++)
+    {
+        IntToString(i, sLine, sizeof(sLine));
+        FormatEx(sDisplay, sizeof(sDisplay), "%d", i+1);
+        menu.AddItem(sLine, sDisplay);
+    }
+
+    menu.ExitBackButton = true;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int Menu_ListHUDLines(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[4];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            Player[client].Line = StringToInt(sParam);
+
+            HUDMoveOrSwap(client);
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (param == MenuCancel_Exit)
+        {
+            Player[client].Reset();
+        }
+        else if (param == MenuCancel_ExitBack)
+        {
+            Player[client].Side = false;
+
+            ListHUDSides(client);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+void HUDMoveOrSwap(int client)
+{
+    Menu menu = new Menu(HUDMenu_MoveOrSwap);
+    menu.SetTitle("Do you want to move or swap this element?");
+    menu.AddItem("0", "Move\nThis will override your exist element.");
+    menu.AddItem("1", "Swap\nThis will swap your exist element to the old position.");
+    menu.ExitBackButton = true;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int HUDMenu_MoveOrSwap(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[4];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            bool swapPosition = view_as<bool>(StringToInt(sParam));
+
+            fuckTimer_MoveClientHUDKey(client, Player[client].Key, Player[client].Side, Player[client].Line, swapPosition);
+
+            Player[client].Reset();
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (param == MenuCancel_Exit)
+        {
+            Player[client].Reset();
+        }
+        else if (param == MenuCancel_ExitBack)
+        {
+            Player[client].Line = -1;
+
+            ListHUDSides(client);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+public Action Command_HUDEnable(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUD", sSetting);
+    bool status = view_as<bool>(StringToInt(sSetting));
+
+    status = !status;
+
+    IntToString(view_as<int>(status), sSetting, sizeof(sSetting));
+    fuckTimer_SetClientSetting(client, "HUD", sSetting);
+
+    ReplyToCommand(client, "HUD %s", status ? "enabled" : "disabled");
+
+    return Plugin_Handled;
+}
+
+public Action Command_HUDPreset(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    // TODO: Add translations
+    Menu menu = new Menu(Menu_HUDPreset);
+    menu.SetTitle("Select HUD Preset:");
+
+    char sBuffer[32];
+    Format(sBuffer, sizeof(sBuffer), "Default");
+    menu.AddItem("default", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "KSF Style");
+    menu.AddItem("ksf", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "SurfHeaven Style");
+    menu.AddItem("sh", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "Horizon Servers Style");
+    menu.AddItem("horizon", sBuffer);
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public int Menu_HUDPreset(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            if (StrEqual(sParam, "default", false))
+            {
+                fuckTimer_SetClientHUDLayout(client, sParam);
+
+                char sBuffer[MAX_SETTING_VALUE_LENGTH];
+                IntToString(view_as<int>(HUD_DEFAULT_SEPARATOR), sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDSeparator", sBuffer);
+
+                fuckTimer_SetClientSetting(client, "HUDScale", HUD_DEFAULT_FONTSIZE);
+
+                IntToString(HUD_DEFAULT_STRING_LENGTH, sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDLength", sBuffer);
+            }
+            else if (StrEqual(sParam, "ksf", false))
+            {
+                fuckTimer_SetClientHUDLayout(client, sParam);
+
+                char sBuffer[MAX_SETTING_VALUE_LENGTH];
+                IntToString(view_as<int>(HUD_KSF_SEPARATOR), sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDSeparator", sBuffer);
+
+                fuckTimer_SetClientSetting(client, "HUDScale", HUD_KSF_FONTSIZE);
+
+                IntToString(HUD_KSF_STRING_LENGTH, sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDLength", sBuffer);
+            }
+            else if (StrEqual(sParam, "sh", false))
+            {
+                fuckTimer_SetClientHUDLayout(client, sParam);
+
+                char sBuffer[MAX_SETTING_VALUE_LENGTH];
+                IntToString(view_as<int>(HUD_SH_SEPARATOR), sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDSeparator", sBuffer);
+
+                fuckTimer_SetClientSetting(client, "HUDScale", HUD_SH_FONTSIZE);
+
+                IntToString(HUD_SH_STRING_LENGTH, sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDLength", sBuffer);
+            }
+            else if (StrEqual(sParam, "horizon", false))
+            {
+                fuckTimer_SetClientHUDLayout(client, sParam);
+
+                char sBuffer[MAX_SETTING_VALUE_LENGTH];
+                IntToString(view_as<int>(HUD_HORIZON_SEPARATOR), sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDSeparator", sBuffer);
+
+                fuckTimer_SetClientSetting(client, "HUDScale", HUD_HORIZON_FONTSIZE);
+
+                IntToString(HUD_HORIZON_STRING_LENGTH, sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDLength", sBuffer);
+            }
+
+            Command_HUDPreset(client, 0);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+public Action Command_HUDSeparator(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    // TODO: Add translations
+    Menu menu = new Menu(Menu_HUDSeparator);
+    menu.SetTitle("Select HUD Separator:");
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDSeparator", sSetting);
+    eHUDSeparator iSeparator = view_as<eHUDSeparator>(StringToInt(sSetting));
+
+    char sBuffer[32];
+    Format(sBuffer, sizeof(sBuffer), "[%s] Tabs", iSeparator == HSTabs ? "X" : " ");
+    menu.AddItem("0", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] Vertical Bar", iSeparator == HSBar ? "X" : " ");
+    menu.AddItem("1", sBuffer);
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public int Menu_HUDSeparator(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            fuckTimer_SetClientSetting(client, "HUDSeparator", sParam);
+            
+            if (fuckTimer_IsClientTimeRunning(client))
+            {
+                ClientRestart(client);
+            }
+
+            Command_HUDSeparator(client, 0);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+public Action Command_HUDLength(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    if (args != 1)
+    {
+        char sScale[8], sLength[MAX_SETTING_VALUE_LENGTH];
+        fuckTimer_GetClientSetting(client, "HUDLength", sLength);
+        fuckTimer_GetClientSetting(client, "HUDScale", sScale);
+
+        ReplyToCommand(client, "Usage: sm_hudlength <Number>");
+        ReplyToCommand(client, "Current value '%s' with hud scale '%s'", sLength, sScale);
+        ReplyToCommand(client, "Recommended values:");
+        ReplyToCommand(client, "13 for HUD Scale SM");
+        ReplyToCommand(client, "17 for HUD Scale M");
+
+        return Plugin_Handled;
+    }
+
+    char sBuffer[8];
+    GetCmdArg(1, sBuffer, sizeof(sBuffer));
+    int iLength = StringToInt(sBuffer);
+
+    if (iLength < 1 || iLength > 32)
+    {
+        ReplyToCommand(client, "Invalid hud length. It must be between 1 and 32.");
+
+        return Plugin_Handled;
+    }
+
+    fuckTimer_SetClientSetting(client, "HUDLength", sBuffer);
+    ReplyToCommand(client, "Set HUD Length to %d", iLength);
+
+    return Plugin_Handled;
+}
+
+public Action Command_HUDScale(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    // TODO: Add translations
+    Menu menu = new Menu(Menu_HUDScale);
+    menu.SetTitle("Select HUD Scale:");
+
+    char sScale[8], sBuffer[32];
+    fuckTimer_GetClientSetting(client, "HUDScale", sScale);
+
+    // Source: https://forums.alliedmods.net/showpost.php?p=2604171&postcount=8
+    Format(sBuffer, sizeof(sBuffer), "[%s] XS (8 Pixel)", StrEqual(sScale, "xs", false) ? "X" : " ");
+    menu.AddItem("xs", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] S (12 Pixel)", StrEqual(sScale, "s", false) ? "X" : " ");
+    menu.AddItem("s", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] SM (16 Pixel)", StrEqual(sScale, "sm", false) ? "X" : " ");
+    menu.AddItem("sm", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] M (18 Pixel)", StrEqual(sScale, "m", false) ? "X" : " ");
+    menu.AddItem("m", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] L (24 Pixel)", StrEqual(sScale, "l", false) ? "X" : " ");
+    menu.AddItem("l", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] XL (32 Pixel)", StrEqual(sScale, "xl", false) ? "X" : " ");
+    menu.AddItem("xl", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] XXL (40 Pixel)", StrEqual(sScale, "xxl", false) ? "X" : " ");
+    menu.AddItem("xxl", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] XXXL (64 Pixel)", StrEqual(sScale, "xxxl", false) ? "X" : " ");
+    menu.AddItem("xxxl", sBuffer);
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public int Menu_HUDScale(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            fuckTimer_SetClientSetting(client, "HUDScale", sParam);
+
+            Command_HUDScale(client, 0);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+}
+
+public Action Command_HUDShowSpeedUnit(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sSetting);
+    bool status = view_as<bool>(StringToInt(sSetting));
+
+    status = !status;
+
+    IntToString(view_as<int>(status), sSetting, sizeof(sSetting));
+    fuckTimer_SetClientSetting(client, "HUDShowSpeedUnit", sSetting);
+
+    ReplyToCommand(client, "Speed unit (u/s) %s", status ? "enabled" : "disabled");
+
+    return Plugin_Handled;
+}
+
+public Action Command_HUDSpeed(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    // TODO: Add translations
+    Menu menu = new Menu(Menu_HUDSpeed);
+    menu.SetTitle("Select axis for calculating the speed:");
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDSpeed", sSetting);
+    eHUDSpeed iSpeed = view_as<eHUDSpeed>(StringToInt(sSetting));
+
+    char sBuffer[32];
+    Format(sBuffer, sizeof(sBuffer), "[%s] XY (Default)", iSpeed == HSXY ? "X" : " ");
+    menu.AddItem("0", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] XYZ", iSpeed == HSXYZ ? "X" : " ");
+    menu.AddItem("1", sBuffer);
+
+    Format(sBuffer, sizeof(sBuffer), "[%s] Z", iSpeed == HSZ ? "X" : " ");
+    menu.AddItem("2", sBuffer);
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
+public Action Command_HUDTime(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDTime", sSetting);
+
+    // This will replaced by menu, if we've more than 3 options
+    bool format = view_as<bool>(StringToInt(sSetting));
+    format = !format;
+
+    IntToString(view_as<int>(format), sSetting, sizeof(sSetting));
+    fuckTimer_SetClientSetting(client, "HUDTime", sSetting);
+
+    ReplyToCommand(client, "Time will shown %s", format ? "full" : "minimal");
+
+    return Plugin_Handled;
+}
+
+public Action Command_HUDShow0Hours(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDShowTime0Hours", sSetting);
+
+    bool format = view_as<bool>(StringToInt(sSetting));
+    format = !format;
+
+    IntToString(view_as<int>(format), sSetting, sizeof(sSetting));
+    fuckTimer_SetClientSetting(client, "HUDShowTime0Hours", sSetting);
+
+    ReplyToCommand(client, "0 Hours %s", format ? "enabled" : "disabled");
+
+    return Plugin_Handled;
+}
+
+public int Menu_HUDSpeed(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sParam[12];
+        if (menu.GetItem(param, sParam, sizeof(sParam)))
+        {
+            fuckTimer_SetClientSetting(client, "HUDSpeed", sParam);
+            
+            if (fuckTimer_IsClientTimeRunning(client))
+            {
+                ClientRestart(client);
+            }
+
+            Command_HUDSpeed(client, 0);
         }
     }
     else if (action == MenuAction_End)

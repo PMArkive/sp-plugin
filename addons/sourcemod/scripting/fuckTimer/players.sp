@@ -5,6 +5,7 @@
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
+#include <fuckTimer_hud>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
 #include <fuckTimer_players>
@@ -21,25 +22,23 @@ enum struct PlayerData
 {
     bool IsActive;
     bool InStage;
-
-    Styles Style;
-
-    eInvalidKeyPref InvalidKeyPref;
+    
+    StringMap Settings;
 
     void Reset()
     {
         this.IsActive = false;
         this.InStage = false;
 
-        this.Style = view_as<Styles>(0);
-
-        this.InvalidKeyPref = view_as<eInvalidKeyPref>(0);
+        delete this.Settings;
     }
 }
 PlayerData Player[MAXPLAYERS + 1];
 
 enum struct PluginData
 {
+    StringMap Settings;
+
     HTTPClient HTTPClient;
 }
 PluginData Core;
@@ -57,11 +56,10 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    CreateNative("fuckTimer_GetClientStyle", Native_GetClientStyle);
-    CreateNative("fuckTimer_SetClientStyle", Native_SetClientStyle);
+    CreateNative("fuckTimer_RegisterSetting", Native_RegisterSetting);
 
-    CreateNative("fuckTimer_GetClientInvalidKeyPref", Native_GetClientInvalidKeyPref);
-    CreateNative("fuckTimer_SetClientInvalidKeyPref", Native_SetClientInvalidKeyPref);
+    CreateNative("fuckTimer_GetClientSetting", Native_GetClientSetting);
+    CreateNative("fuckTimer_SetClientSetting", Native_SetClientSetting);
 
     RegPluginLibrary("fuckTimer_players");
 
@@ -70,9 +68,29 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+    delete Core.Settings;
+    Core.Settings = new StringMap();
+
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+    IntToString(view_as<int>(StyleNormal), sValue, sizeof(sValue));
+    Core.Settings.SetString(SETTING_STYLE, sValue);
+    
+    IntToString(view_as<int>(IKStop), sValue, sizeof(sValue));
+    Core.Settings.SetString(SETTING_INVALIDKEYPREF, sValue);
+
+    HookEvent("player_activate", Event_PlayerActivate);
     HookEvent("player_spawn", Event_PlayerSpawn);
+    HookEvent("player_death", Event_PlayerDeath);
 
     GetHTTPClient();
+}
+
+public void OnConfigsExecuted()
+{
+    fuckTimer_LoopClients(client, false, false)
+    {
+        PrintToServer("OnConfigsExecuted: %N", client);
+    }
 }
 
 public void fuckTimer_OnAPIReady()
@@ -90,12 +108,18 @@ public void fuckTimer_OnClientRestart(int client)
     }
 }
 
-public void OnClientPutInServer(int client)
+public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
 {
-    if (!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
+    int client = GetClientOfUserId(event.GetInt("userid"));
+
+    PrintToServer("[Players] Event_PlayerActivate: %d", client);
+
+    if (client < 1 || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
     {
         return;
     }
+
+    PrintToServer("[Players] Event_PlayerActivate: %N", client);
 
     Player[client].Reset();
 
@@ -108,6 +132,13 @@ public void OnClientPutInServer(int client)
     }
 
     Core.HTTPClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
+}
+
+public void OnClientDisconnect(int client)
+{
+    PrintToServer("OnClientDisconnect: %N", client);
+
+    Player[client].Reset();
 }
 
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
@@ -130,19 +161,32 @@ public void Frame_PlayerSpawn(int userid)
     }
 }
 
+public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
+{
+    int client = GetClientOfUserId(event.GetInt("userid"));
+
+    if (fuckTimer_IsClientValid(client, false, false))
+    {
+        fuckTimer_ResetClientTimer(client);
+    }
+}
+
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
     if (IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
     {
-        if (Player[client].Style == StyleSideways && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
+        Styles style;
+        Player[client].Settings.GetValue(SETTING_STYLE, style);
+
+        if (style == StyleSideways && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
         {
             return OnInvalidKeyPressure(client, vel, buttons);
         }
-        else if (Player[client].Style == StyleHSW && (!(buttons & IN_FORWARD) && !(buttons & IN_BACK) && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)))
+        else if (style == StyleHSW && (!(buttons & IN_FORWARD) && !(buttons & IN_BACK) && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)))
         {
             return OnInvalidKeyPressure(client, vel, buttons);
         }
-        else if (Player[client].Style == StyleBackwards)
+        else if (style == StyleBackwards)
         {
             // https://github.com/InfluxTimer/sm-timer/blob/28247c1d374402d529987f01281e5cb21849c495/addons/sourcemod/scripting/influx_style_backwards.sp#L69
             float fEyeAngle[3];
@@ -166,14 +210,14 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
                 return OnInvalidKeyPressure(client, vel, buttons);
             }
         }
-        else if (Player[client].Style == StyleLowGravity)
+        else if (style == StyleLowGravity)
         {
             if (GetEntityGravity(client) != LOW_GRAV)
             {
                 SetEntityGravity(client, LOW_GRAV);
             }
         }
-        else if (Player[client].Style == StyleSlowMotion)
+        else if (style == StyleSlowMotion)
         {
             if (GetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue") != SLOW_MOTION)
             {
@@ -201,49 +245,13 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
     }
 }
 
-Styles GetClientStyle(int client)
-{
-    return Player[client].Style;
-}
-
-Styles SetClientStyle(int client, Styles style)
-{
-    Player[client].Style = style;
-
-    if (style != StyleLowGravity)
-    {
-        SetEntityGravity(client, 1.0);
-    }
-    
-    if (style != StyleSlowMotion)
-    {
-        SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
-    }
-
-    char sBuffer[12];
-    IntToString(view_as<int>(style), sBuffer, sizeof(sBuffer));
-    
-    SetPlayerSetting(client, "Style", sBuffer);
-}
-
-eInvalidKeyPref GetClientInvalidKeyPref(int client)
-{
-    return Player[client].InvalidKeyPref;
-}
-
-eInvalidKeyPref SetClientInvalidKeyPref(int client, eInvalidKeyPref preference)
-{
-    Player[client].InvalidKeyPref = preference;
-
-    char sBuffer[12];
-    IntToString(view_as<int>(eInvalidKeyPref), sBuffer, sizeof(sBuffer));
-    
-    SetPlayerSetting(client, "InvalidKeyPref", sBuffer);
-}
-
 Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
 {
-    eInvalidKeyPref preference = GetClientInvalidKeyPref(client);
+    eInvalidKeyPref preference;
+    Player[client].Settings.GetValue(SETTING_INVALIDKEYPREF, preference);
+
+    Styles style;
+    Player[client].Settings.GetValue(SETTING_STYLE, style);
 
     if (preference == IKStop)
     {
@@ -257,18 +265,21 @@ Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
     }
     else if (preference == IKNormal)
     {
-        SetClientStyle(client, StyleNormal);
+        char sBuffer[MAX_SETTING_VALUE_LENGTH];
+        IntToString(view_as<int>(StyleNormal), sBuffer, sizeof(sBuffer));
+        SetPlayerSetting(client, SETTING_STYLE, sBuffer);
+
         return Plugin_Continue;
     }
     
-    if (Player[client].Style == StyleSideways || Player[client].Style == StyleHSW)
+    if (style == StyleSideways || style == StyleHSW)
     {
         buttons &= ~IN_MOVERIGHT;
         buttons &= ~IN_MOVELEFT;
         
         vel[1] = 0.0;
     }
-    else if (Player[client].Style == StyleBackwards)
+    else if (style == StyleBackwards)
     {
         vel[0] = 0.0;
         vel[1] = 0.0;
@@ -278,22 +289,79 @@ Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
     return Plugin_Changed;
 }
 
-public any Native_GetClientStyle(Handle plugin, int numParams)
+public any Native_RegisterSetting(Handle plugin, int numParams)
 {
-    return GetClientStyle(GetNativeCell(1));
+    if (Core.Settings == null)
+    {
+        Core.Settings = new StringMap();
+    }
+
+    char sSetting[MAX_SETTING_LENGTH];
+    GetNativeString(1, sSetting, sizeof(sSetting));
+
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+    GetNativeString(2, sValue, sizeof(sValue));
+
+    Core.Settings.SetString(sSetting, sValue);
+}
+
+public any Native_GetClientSetting(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    
+    char sSetting[MAX_SETTING_LENGTH];
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+
+    GetNativeString(2, sSetting, sizeof(sSetting));
+
+    if (Player[client].Settings == null)
+    {
+        return false;
+    }
+
+    bool status = Player[client].Settings.GetString(sSetting, sValue, sizeof(sValue));
+
+    if (!status)
+    {
+        return false;
+    }
+
+    int success = SetNativeString(3, sValue, sizeof(sValue));
+
+    if (success != SP_ERROR_NONE)
+    {
+        return false;
+    }
+
+    return true;
 
 }
-public any Native_SetClientStyle(Handle plugin, int numParams)
+public any Native_SetClientSetting(Handle plugin, int numParams)
 {
-    SetClientStyle(GetNativeCell(1), view_as<Styles>(GetNativeCell(2)));
-}
+    int client = GetNativeCell(1);
+    
+    char sSetting[MAX_SETTING_LENGTH];
+    GetNativeString(2, sSetting, sizeof(sSetting));
 
-public any Native_GetClientInvalidKeyPref(Handle plugin, int numParams)
-{
-    return GetClientInvalidKeyPref(GetNativeCell(1));
+    char sValue[MAX_SETTING_VALUE_LENGTH];
+    GetNativeString(3, sValue, sizeof(sValue));
 
-}
-public any Native_SetClientInvalidKeyPref(Handle plugin, int numParams)
-{
-    SetClientInvalidKeyPref(GetNativeCell(1), view_as<eInvalidKeyPref>(GetNativeCell(2)));
+    if (StrEqual(sSetting, "Style"))
+    {
+        Styles style = view_as<Styles>(StringToInt(sValue));
+
+        if (style != StyleLowGravity)
+        {
+            SetEntityGravity(client, 1.0);
+        }
+        
+        if (style != StyleSlowMotion)
+        {
+            SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
+        }
+    }
+
+    Player[client].Settings.SetString(sSetting, sValue);
+    PrintToServer("[Players.Native_SetClientSetting] Adding setting %s with value of %s", sSetting, sValue);
+    SetPlayerSetting(client, sSetting, sValue);
 }

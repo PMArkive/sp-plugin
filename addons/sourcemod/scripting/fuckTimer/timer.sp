@@ -185,6 +185,11 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
+    if (!IsPlayerAlive(client))
+    {
+        return;
+    }
+
     if (start)
     {
         SetClientStartValues(client, bonus);
@@ -413,6 +418,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
+    if (!IsPlayerAlive(client))
+    {
+        return;
+    }
+    
     if (start)
     {
         SetClientStartValues(client, bonus);
@@ -431,6 +441,11 @@ public void fuckTimer_OnClientTeleport(int client, eZone type, int level)
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
 {
+    if (!IsPlayerAlive(client))
+    {
+        return;
+    }
+    
     Player[client].SetSpeed = false;
     Player[client].BlockJump = false;
 
