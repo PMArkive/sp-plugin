@@ -70,6 +70,12 @@ enum struct Variables
 }
 Variables Core;
 
+enum struct CSDetails
+{
+    int Entity;
+    bool Normal;
+}
+
 public Plugin myinfo =
 {
     name = FUCKTIMER_PLUGIN_NAME ... "Zones",
@@ -132,11 +138,15 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
 
     char sValue[12];
+    CSDetails csDetails;
 
     if (StrContains(zone_name, "main0_start", false) != -1)
     {
         Core.StartZone = entity;
-        Core.Stage.SetValue(1, entity);
+
+        csDetails.Entity = entity;
+        csDetails.Normal = true;
+        Core.Stage.SetArray(1, csDetails, sizeof(csDetails));
         return;
     }
     else if (StrContains(zone_name, "main0_end", false) != -1)
@@ -154,15 +164,36 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue));
     int iBonus = StringToInt(sValue);
 
-
     if (StrContains(zone_name, "checkpoint", false) != -1 && iCheckpoint > 0)
     {
-        Core.Checkpoint.SetValue(iCheckpoint, entity);
+        csDetails.Entity = entity;
+
+        if (iBonus > 1)
+        {
+            csDetails.Normal = false;
+        }
+        else
+        {
+            csDetails.Normal = true;
+        }
+
+        Core.Checkpoint.SetArray(iCheckpoint, csDetails, sizeof(csDetails));
         return;
     }
     else if (StrContains(zone_name, "stage", false) != -1 && iStage > 0)
     {
-        Core.Stage.SetValue(iStage, entity);
+        csDetails.Entity = entity;
+
+        if (iBonus > 1)
+        {
+            csDetails.Normal = false;
+        }
+        else
+        {
+            csDetails.Normal = true;
+        }
+
+        Core.Stage.SetArray(iStage, csDetails, sizeof(csDetails));
         return;
     }
     else if (StrContains(zone_name, "bonus", false) != -1 && iBonus > 0)
@@ -368,12 +399,12 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
 {
     int level = GetNativeCell(1);
 
-    int iLevel;
-    bool success = Core.Checkpoint.GetValue(level, iLevel);
+    CSDetails csDetails;
+    bool success = Core.Checkpoint.GetArray(level, csDetails, sizeof(csDetails));
 
     if (success)
     {
-        return iLevel;
+        return csDetails.Entity;
     }
     else
     {
@@ -385,12 +416,12 @@ public int Native_GetStageZone(Handle plugin, int numParams)
 {
     int level = GetNativeCell(1);
 
-    int iLevel;
-    bool success = Core.Stage.GetValue(level, iLevel);
+    CSDetails csDetails;
+    bool success = Core.Stage.GetArray(level, csDetails, sizeof(csDetails));
 
     if (success)
     {
-        return iLevel;
+        return csDetails.Entity;
     }
     else
     {
