@@ -1,3 +1,4 @@
 addons/sourcemod/scripting/.atom-build.json
 .vscode/
 *smx
+addons/sourcemod/scripting/EndTouchFix.sp

@@ -6,3 +6,4 @@ Requirements:
 - [RIPExt 1.2.3 (or higher)](https://github.com/ErikMinekus/sm-ripext/releases)
 - [fuckZones](https://github.com/Bara/fuckZones)
 - [Running PHP-API](https://github.com/fuckTimer/php-api)
+- [EndTouchFix](https://github.com/rumourA/End-Touch-Fix/blob/master/scripting/EndTouchFix.sp)

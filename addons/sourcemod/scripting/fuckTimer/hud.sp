@@ -191,19 +191,9 @@ public void OnGameFrame()
 
         fTime = fuckTimer_GetClientTime(client, TimeMain);
 
-        if (fTime > 0.0)
-        {
-            fTime = GetGameTime() - fTime;
-        }
-
         if (fTime  == 0.0)
         {
             fTime = fuckTimer_GetClientTime(client, TimeBonus, fuckTimer_GetClientBonus(client));
-
-            if (fTime > 0.0)
-            {
-                fTime = GetGameTime() - fTime;
-            }
         }
 
         GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
@@ -224,11 +214,6 @@ public void OnGameFrame()
         if (iStages > 0)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
-
-            if (fCPStageTime > 0.0)
-            {
-                fCPStageTime = GetGameTime() - fCPStageTime;
-            }
 
             if (strlen(Player[client].Zone) < 1)
             {
@@ -251,12 +236,6 @@ public void OnGameFrame()
         else if (iCheckpoints > 0)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
-
-            if (fCPStageTime > 0.0)
-            {
-                fCPStageTime = GetGameTime() - fCPStageTime;
-            }
-
             GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
             imBuffer.SetString(HKStageTime, sBuffer);
