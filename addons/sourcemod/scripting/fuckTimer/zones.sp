@@ -97,6 +97,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
     CreateNative("fuckTimer_GetBonusZone", Native_GetBonusZone);
     CreateNative("fuckTimer_GetValidatorCount", Native_GetValidatorCount);
+    CreateNative("fuckTimer_IsNormalCheckpointZone", Native_IsNormalCheckpointZone);
+    CreateNative("fuckTimer_IsNormalStageZone", Native_IsNormalStageZone);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -472,4 +474,46 @@ public int Native_GetValidatorCount(Handle plugin, int numParams)
     }
 
     return 0;
+}
+
+public int Native_IsNormalCheckpointZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+    IntMapSnapshot snap = Core.Checkpoint.Snapshot();
+    CSDetails csDetails;
+
+    for (int i = 0; i < snap.Length; i++)
+    {
+        Core.Checkpoint.GetArray(i, csDetails, sizeof(csDetails));
+
+        if (csDetails.Entity == iEntity)
+        {
+            delete snap;
+            return csDetails.Normal;
+        }
+    }
+
+    delete snap;
+    return true;
+}
+
+public int Native_IsNormalStageZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+    IntMapSnapshot snap = Core.Stage.Snapshot();
+    CSDetails csDetails;
+
+    for (int i = 0; i < snap.Length; i++)
+    {
+        Core.Stage.GetArray(i, csDetails, sizeof(csDetails));
+
+        if (csDetails.Entity == iEntity)
+        {
+            delete snap;
+            return csDetails.Normal;
+        }
+    }
+
+    delete snap;
+    return true;
 }

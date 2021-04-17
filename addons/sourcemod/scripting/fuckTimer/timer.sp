@@ -26,7 +26,6 @@ enum struct PlayerData
     bool BlockJump;
 
     float MainTime;
-
     IntMap StageTimes;
     IntMap CheckpointTimes;
     IntMap BonusTimes;
@@ -48,7 +47,6 @@ enum struct PlayerData
         this.BlockJump = false;
 
         this.MainTime = 0.0;
-
         delete this.StageTimes;
         delete this.CheckpointTimes;
         delete this.BonusTimes;
