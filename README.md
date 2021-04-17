@@ -7,3 +7,6 @@ Requirements:
 - [fuckZones](https://github.com/Bara/fuckZones)
 - [Running PHP-API](https://github.com/fuckTimer/php-api)
 - [EndTouchFix](https://github.com/rumourA/End-Touch-Fix/blob/master/scripting/EndTouchFix.sp)
+
+Optional:
+- [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)
