@@ -12,7 +12,7 @@ void GetHTTPClient()
     {
         fuckTimer_LoopClients(client, true, true)
         {
-            OnClientPutInServer(client);
+            LoadPlayer(client);
         }
     }
 }
@@ -92,7 +92,7 @@ public void PostPlayerData(HTTPResponse response, int userid, const char[] error
 
     LogMessage("[Players.PostPlayerData] Success. Status Code: %d", response.Status);
 
-    OnClientPutInServer(client);
+    LoadPlayer(client);
 }
 
 void LoadPlayerSetting(int client)

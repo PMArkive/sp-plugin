@@ -125,24 +125,7 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
 
-    Player[client].Reset(true);
-
-    if (!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
-    {
-        return;
-    }
-
-    PrintToServer("[HUD] Event_PlayerActivate: %N", client);
-
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", GetSteamAccountID(client));
-
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-    }
-
-    Core.HTTPClient.Get(sEndpoint, GetPlayerHudSettings, GetClientUserId(client));
+    LoadPlayer(client);
 }
 
 public void OnGameFrame()
@@ -551,7 +534,7 @@ stock void GetTimeBySeconds(int client = 0, float seconds, char[] time, int leng
 
     if (format == HTMinimal)
     {
-        FormatEx(time, length, "%.2f", fSeconds);
+        FormatEx(time, length, "%.3f", fSeconds);
         
         if (seconds > 59.999)
         {
@@ -567,15 +550,37 @@ stock void GetTimeBySeconds(int client = 0, float seconds, char[] time, int leng
     {
         if (seconds < 60.0)
         { 
-            FormatEx(time, length, "%s00:%s%.2f", show0Hours ? "00:" : "", seconds < 10 ? "0" : "", fSeconds);
+            FormatEx(time, length, "%s00:%s%.3f", show0Hours ? "00:" : "", seconds < 10 ? "0" : "", fSeconds);
         }
         else if (seconds < 3600.0)
         {
-            Format(time, length, "%s%s%d:%s%.2f", show0Hours ? "00:" : "", iMinutes < 10 ? "0" : "", iMinutes, fSeconds < 10.0 ? "0" : "", fSeconds);
+            Format(time, length, "%s%s%d:%s%.3f", show0Hours ? "00:" : "", iMinutes < 10 ? "0" : "", iMinutes, fSeconds < 10.0 ? "0" : "", fSeconds);
         }   
         else
         {
-            Format(time, length, "%s%d:%s%d:%s%.2f", (iHours < 10 && show0Hours) ? "0" : "", iHours, iMinutes < 10 ? "0" : "", iMinutes, fSeconds < 10.0 ? "0" : "", fSeconds);
+            Format(time, length, "%s%d:%s%d:%s%.3f", (iHours < 10 && show0Hours) ? "0" : "", iHours, iMinutes < 10 ? "0" : "", iMinutes, fSeconds < 10.0 ? "0" : "", fSeconds);
         }
     }
+}
+
+void LoadPlayer(int client)
+{
+    Player[client].Reset(true);
+
+    if (!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
+    {
+        return;
+    }
+
+    PrintToServer("[HUD] LoadPlayer: %N", client);
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", GetSteamAccountID(client));
+
+    if (Core.HTTPClient == null)
+    {
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
+    }
+
+    Core.HTTPClient.Get(sEndpoint, GetPlayerHudSettings, GetClientUserId(client));
 }

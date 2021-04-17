@@ -112,26 +112,7 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
 
-    PrintToServer("[Players] Event_PlayerActivate: %d", client);
-
-    if (client < 1 || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
-    {
-        return;
-    }
-
-    PrintToServer("[Players] Event_PlayerActivate: %N", client);
-
-    Player[client].Reset();
-
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/Id/%d", GetSteamAccountID(client));
-
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-    }
-
-    Core.HTTPClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
+    LoadPlayer(client);
 }
 
 public void OnClientDisconnect(int client)
@@ -364,4 +345,28 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
     Player[client].Settings.SetString(sSetting, sValue);
     PrintToServer("[Players.Native_SetClientSetting] Adding setting %s with value of %s", sSetting, sValue);
     SetPlayerSetting(client, sSetting, sValue);
+}
+
+void LoadPlayer(int client)
+{
+    PrintToServer("[Players] LoadPlayer: %d", client);
+
+    if (client < 1 || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
+    {
+        return;
+    }
+
+    PrintToServer("[Players] LoadPlayer: %N", client);
+
+    Player[client].Reset();
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/Id/%d", GetSteamAccountID(client));
+
+    if (Core.HTTPClient == null)
+    {
+        Core.HTTPClient = fuckTimer_GetHTTPClient();
+    }
+
+    Core.HTTPClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
 }

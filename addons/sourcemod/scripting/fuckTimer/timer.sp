@@ -99,8 +99,10 @@ public void OnPluginStart()
 {
     fuckTimer_LoopClients(client, false, false)
     {
-        OnClientPutInServer(client);
+        LoadPlayer(client);
     }
+
+    HookEvent("player_activate", Event_PlayerActivate);
 }
 
 public void OnMapStart()
@@ -178,11 +180,11 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     delete snap;
 }
 
-public void OnClientPutInServer(int client)
+public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
 {
-    Player[client].Reset();
+    int client = GetClientOfUserId(event.GetInt("userid"));
 
-    SDKHook(client, SDKHook_PostThinkPost, OnPostThinkPost);
+    LoadPlayer(client);
 }
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
@@ -592,6 +594,13 @@ void SetClientStartValues(int client, int bonus)
     {
         Player[client].Checkpoint = 1;
     }
+}
+
+void LoadPlayer(int client)
+{
+    Player[client].Reset();
+
+    SDKHook(client, SDKHook_PostThinkPost, OnPostThinkPost);
 }
 
 public any Native_GetClientTime(Handle plugin, int numParams)

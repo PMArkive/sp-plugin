@@ -12,7 +12,7 @@ void GetHTTPClient()
     {
         fuckTimer_LoopClients(client, true, true)
         {
-            OnClientPutInServer(client);
+            LoadPlayer(client);
         }
     }
 }
@@ -154,7 +154,7 @@ public void PostPlayerHudSettings(HTTPResponse response, int userid, const char[
 
     LogMessage("[HUD.PostPlayerHudSettings] Success. Status Code: %d", response.Status);
 
-    OnClientPutInServer(client);
+    LoadPlayer(client);
 }
 
 void PatchPlayerHUDKeys(int client, HUDEntry entry[2])
