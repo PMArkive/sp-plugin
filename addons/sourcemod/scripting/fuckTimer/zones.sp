@@ -94,7 +94,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
     CreateNative("fuckTimer_GetBonusZone", Native_GetBonusZone);
     CreateNative("fuckTimer_GetValidatorCount", Native_GetValidatorCount);
-    CreateNative("fuckTimer_IsNormalZone", Native_IsBonusZone);
+    CreateNative("fuckTimer_IsBonusZone", Native_IsBonusZone);
 
     RegPluginLibrary("fuckTimer_zones");
 
