@@ -93,6 +93,19 @@ methodmap IntMap < Handle
         return value;
     }
     
+    // Returns an integer in a Map.
+    //
+    // @param key        The key.
+    // @return           The value as integer.
+    public float GetFloat(int key)
+    {
+        float value;
+        char buffer[6];
+        Keyize(key, buffer);
+        view_as<StringMap>(this).GetValue(buffer, value);
+        return value;
+    }
+    
     // Retrieves a value in a Map.
     //
     // @param key        The key.
