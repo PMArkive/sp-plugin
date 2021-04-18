@@ -71,7 +71,7 @@ enum struct Variables
 }
 Variables Core;
 
-bool g_bNormalZone[2048] = { false, ... };
+bool g_bBonusZone[2048] = { false, ... };
 
 public Plugin myinfo =
 {
@@ -94,7 +94,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
     CreateNative("fuckTimer_GetBonusZone", Native_GetBonusZone);
     CreateNative("fuckTimer_GetValidatorCount", Native_GetValidatorCount);
-    CreateNative("fuckTimer_IsNormalZone", Native_IsNormalZone);
+    CreateNative("fuckTimer_IsNormalZone", Native_IsBonusZone);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -128,12 +128,12 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
-    g_bNormalZone[entity] = false;
+    g_bBonusZone[entity] = false;
 }
 
 public void OnEntityDestroyed(int entity)
 {
-    g_bNormalZone[entity] = false;
+    g_bBonusZone[entity] = false;
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
@@ -168,6 +168,11 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue));
     int iBonus = StringToInt(sValue);
+
+    if (iBonus > 0)
+    {
+        g_bBonusZone[entity] = true;
+    }
 
     if (StrContains(zone_name, "checkpoint", false) != -1 && iCheckpoint > 0)
     {
@@ -457,9 +462,9 @@ public int Native_GetValidatorCount(Handle plugin, int numParams)
     return 0;
 }
 
-public int Native_IsNormalZone(Handle plugin, int numParams)
+public int Native_IsBonusZone(Handle plugin, int numParams)
 {
     int iEntity = GetNativeCell(1);
     
-    return g_bNormalZone[iEntity];
+    return g_bBonusZone[iEntity];
 }
