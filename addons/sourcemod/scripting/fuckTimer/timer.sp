@@ -493,21 +493,28 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
         {
             Player[client].MainRunning = true;
             Player[client].MainTime = 0.0;
+            Player[client].Bonus = 0;
 
             if (Core.Stages > 0)
             {
-                Player[client].StageTimes[iBonus] = new IntMap();
+                if (Player[client].StageTimes[iBonus] == null)
+                {
+                    Player[client].StageTimes[iBonus] = new IntMap();
+                }
+                
                 Player[client].Stage = 1;
-
                 Player[client].StageRunning = true;
                 Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, 0.0);
             }
 
             if (Core.Checkpoints > 0)
             {
-                Player[client].CheckpointTimes[iBonus] = new IntMap();
+                if (Player[client].CheckpointTimes[iBonus] == null)
+                {
+                    Player[client].CheckpointTimes[iBonus] = new IntMap();
+                }
+                
                 Player[client].Checkpoint = 1;
-
                 Player[client].CheckpointRunning = true;
                 Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
             }
@@ -518,11 +525,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
             {
                 Player[client].BonusTimes = new IntMap();
             }
-            
-            Player[client].Checkpoint = 0;
-            Player[client].Stage = 0;
-            Player[client].Bonus = bonus;
 
+            Player[client].Bonus = bonus;
             Player[client].BonusRunning = true;
             Player[client].BonusTimes.SetValue(Player[client].Bonus, 0.0);
         }
@@ -531,8 +535,6 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
     if (stage > 1 && Player[client].StageTimes[iBonus] != null)
     {
         Player[client].Stage = stage;
-        Player[client].Bonus = 0;
-
         Player[client].StageRunning = true;
         Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, 0.0);
     }
@@ -540,8 +542,6 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
     if (checkpoint > 1 && Player[client].CheckpointTimes[iBonus] != null)
     {
         Player[client].Checkpoint = checkpoint;
-        Player[client].Bonus = 0;
-
         Player[client].CheckpointRunning = true;
         Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
     }
