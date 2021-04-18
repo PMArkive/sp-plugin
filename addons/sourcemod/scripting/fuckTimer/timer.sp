@@ -341,7 +341,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         Player[client].SetSpeed = true;
 
         Player[client].Stage = stage;
-        Player[client].Bonus = 0;
 
         // That isn't really an workaround or dirty fix but... 
         // with this check we're able to start the stage timer
@@ -382,7 +381,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     if (checkpoint > 0)
     {
         Player[client].Stage = 0;
-        Player[client].Bonus = 0;
 
         float fBuffer = 0.0;
         Player[client].CheckpointTimes[iBonus].GetValue(checkpoint, fBuffer);
