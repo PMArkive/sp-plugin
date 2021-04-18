@@ -341,6 +341,9 @@ public void OnGameFrame()
         Format(sHUD, sizeof(sHUD), "%s%s</font></pre>", sHUD, sHUDBuffer);
         PrintCSGOHUDText(client, sHUD);
     }
+
+    delete imCheckpoints;
+    delete imStages;
 }
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
