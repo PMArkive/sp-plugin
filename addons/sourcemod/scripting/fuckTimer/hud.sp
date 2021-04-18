@@ -134,9 +134,16 @@ public void OnGameFrame()
     char sBuffer[MAX_HUD_KEY_LENGTH], sRightBuffer[MAX_HUD_KEY_LENGTH], sSetting[MAX_SETTING_VALUE_LENGTH];
 
     float fTime = 0.0;
-    int iStages = fuckTimer_GetAmountOfStages();
-    int iCheckpoints = fuckTimer_GetAmountOfCheckpoints();
     int iMaxBonus = fuckTimer_GetAmountOfBonus();
+
+    IntMap imCheckpoints = new IntMap();
+    IntMap imStages = new IntMap();
+
+    for (int i = 0; i <= iMaxBonus; i++)
+    {
+        imStages.SetValue(i, fuckTimer_GetAmountOfStages(i));
+        imCheckpoints.SetValue(i, fuckTimer_GetAmountOfCheckpoints(i));
+    }
 
     fuckTimer_LoopClients(client, false, false)
     {
@@ -189,74 +196,12 @@ public void OnGameFrame()
             imBuffer.SetString(HKZone, sBuffer);
         }
 
-        int iCheckpoint = fuckTimer_GetClientCheckpoint(client);
-        int iStage = fuckTimer_GetClientStage(client);
-        int iValidator = 0;
-        float fCPStageTime = 0.0;
-
-        if (iStages > 0)
-        {
-            fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
-
-            if (strlen(Player[client].Zone) < 1)
-            {
-                GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
-                Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-                imBuffer.SetString(HKStageTime, sBuffer);
-            }
-            else
-            {
-                FormatEx(sBuffer, sizeof(sBuffer), "0.000");
-                imBuffer.SetString(HKStageTime, sBuffer);
-            }
-
-            FormatEx(sBuffer, sizeof(sBuffer), "Stage: %d/%d", iStage, iStages);
-            imBuffer.SetString(HKCurrentStage, sBuffer);
-            imBuffer.SetString(HKMapType, sBuffer);
-
-            iValidator = fuckTimer_GetValidatorCount(iStage);
-        }
-        else if (iCheckpoints > 0)
-        {
-            fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
-            GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
-            Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-            imBuffer.SetString(HKStageTime, sBuffer);
-            PrintToChat(client, "Test 3");
-
-            FormatEx(sBuffer, sizeof(sBuffer), "CP: %d/%d", iCheckpoint, iCheckpoints);
-            imBuffer.SetString(HKCurrentStage, sBuffer);
-
-            iValidator = fuckTimer_GetValidatorCount(iCheckpoint);
-
-            FormatEx(sBuffer, sizeof(sBuffer), "Linear Map");
-            imBuffer.SetString(HKMapType, sBuffer);
-        }
-        else
-        {
-            FormatEx(sBuffer, sizeof(sBuffer), "Linear Map");
-            imBuffer.SetString(HKMapType, sBuffer);
-            imBuffer.SetString(HKCurrentStage, sBuffer);
-        }
-
+        int iBonus = fuckTimer_GetClientBonus(client);
         int iStartMatches = StrContains(Player[client].Zone, "start", false);
         bool bStartZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetStartZone());
         int iEndMatches = StrContains(Player[client].Zone, "end", false);
         bool bEndZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetEndZone());
-
-        if (iStartMatches != -1 || bStartZone)
-        {
-            FormatEx(sBuffer, sizeof(sBuffer), "Map Start");
-            imBuffer.SetString(HKMapType, sBuffer);
-        }
-        else if (iEndMatches != -1 || bEndZone)
-        {
-            FormatEx(sBuffer, sizeof(sBuffer), "Map End");
-            imBuffer.SetString(HKMapType, sBuffer);
-        }
-
-        int iBonus = fuckTimer_GetClientBonus(client);
-
+        
         if (iMaxBonus > 0 && iBonus > 0)
         {
             FormatEx(sBuffer, sizeof(sBuffer), "Bonus: %d/%d", iBonus, iMaxBonus);
@@ -272,6 +217,67 @@ public void OnGameFrame()
             }
 
             FormatEx(sBuffer, sizeof(sBuffer), "Bonus %s%s", iBonus, sBuffer);
+            imBuffer.SetString(HKMapType, sBuffer);
+        }
+
+        int iCheckpoint = fuckTimer_GetClientCheckpoint(client);
+        int iStage = fuckTimer_GetClientStage(client);
+        int iValidator = 0;
+        float fCPStageTime = 0.0;
+
+        if (imStages.GetInt(iBonus) > 0)
+        {
+            fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
+
+            if (strlen(Player[client].Zone) < 1)
+            {
+                GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
+                Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+                imBuffer.SetString(HKStageTime, sBuffer);
+            }
+            else
+            {
+                FormatEx(sBuffer, sizeof(sBuffer), "0.000");
+                imBuffer.SetString(HKStageTime, sBuffer);
+            }
+
+            FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 0 ? "B-" : "", iStage, imStages.GetInt(iBonus));
+            imBuffer.SetString(HKCurrentStage, sBuffer);
+            imBuffer.SetString(HKMapType, sBuffer);
+
+            iValidator = fuckTimer_GetValidatorCount(iStage);
+        }
+        else if (imCheckpoints.GetInt(iBonus) > 0)
+        {
+            fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
+            GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
+            Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+            imBuffer.SetString(HKStageTime, sBuffer);
+            PrintToChat(client, "Test 3");
+
+            FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 0 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
+            imBuffer.SetString(HKCurrentStage, sBuffer);
+
+            iValidator = fuckTimer_GetValidatorCount(iCheckpoint);
+
+            FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 0 ? "Bonus" : "Map");
+            imBuffer.SetString(HKMapType, sBuffer);
+        }
+        else
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 0 ? "Bonus" : "Map");
+            imBuffer.SetString(HKMapType, sBuffer);
+            imBuffer.SetString(HKCurrentStage, sBuffer);
+        }
+
+        if (iStartMatches != -1 || bStartZone)
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "Map Start");
+            imBuffer.SetString(HKMapType, sBuffer);
+        }
+        else if (iEndMatches != -1 || bEndZone)
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "Map End");
             imBuffer.SetString(HKMapType, sBuffer);
         }
 
