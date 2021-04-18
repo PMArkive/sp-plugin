@@ -23,8 +23,15 @@ native int fuckTimer_GetClientBonus(int client);
 
 native int fuckTimer_GetClientValidator(int client);
 
-native int fuckTimer_GetAmountOfCheckpoints();
-native int fuckTimer_GetAmountOfStages();
+/*
+ * Bonus 0 is the normal path, all above 0 is the bonus level
+ */
+native int fuckTimer_GetAmountOfCheckpoints(int bonus = 0);
+
+/*
+ * Bonus 0 is the normal path, all above 0 is the bonus level
+ */
+native int fuckTimer_GetAmountOfStages(int bonus = 0);
 native int fuckTimer_GetAmountOfBonus();
 
 native int fuckTimer_ResetClientTimer(int client);

@@ -59,8 +59,8 @@ PlayerData Player[MAXPLAYERS + 1];
 
 enum struct PluginData
 {
-    int Stages;
-    int Checkpoints;
+    IntMap Stages;
+    IntMap Checkpoints;
     int Bonus;
 }
 PluginData Core;
@@ -107,8 +107,12 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-    Core.Stages = 0;
-    Core.Checkpoints = 0;
+    delete Core.Stages;
+    Core.Stages = new IntMap();
+    
+    delete Core.Checkpoints;
+    Core.Checkpoints = new IntMap();
+    
     Core.Bonus = 0;
 }
 
@@ -133,34 +137,6 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
         {
             snap.GetKey(i, sKey, sizeof(sKey));
 
-            if (StrEqual(sKey, "Stage", false))
-            {
-                smValues.GetString(sKey, sValue, sizeof(sValue));
-
-                iStage = StringToInt(sValue);
-
-                if (iStage > 0 && iStage > Core.Stages)
-                {
-                    Core.Stages = iStage;
-                }
-
-                iStage = 0;
-            }
-
-            if (StrEqual(sKey, "Checkpoint", false))
-            {
-                smValues.GetString(sKey, sValue, sizeof(sValue));
-
-                iCheckpoint = StringToInt(sValue);
-
-                if (iCheckpoint > 0 && iCheckpoint > Core.Checkpoints)
-                {
-                    Core.Checkpoints = iCheckpoint;
-                }
-
-                iCheckpoint = 0;
-            }
-
             if (StrEqual(sKey, "Bonus", false))
             {
                 smValues.GetString(sKey, sValue, sizeof(sValue));
@@ -171,9 +147,35 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
                 {
                     Core.Bonus = iBonus;
                 }
-
-                iBonus = 0;
             }
+
+            if (StrEqual(sKey, "Stage", false))
+            {
+                smValues.GetString(sKey, sValue, sizeof(sValue));
+
+                iStage = StringToInt(sValue);
+
+                if (iStage > 0 && iStage > Core.Stages.GetInt(iBonus))
+                {
+                    Core.Stages.SetValue(iBonus, iStage);
+                }
+            }
+
+            if (StrEqual(sKey, "Checkpoint", false))
+            {
+                smValues.GetString(sKey, sValue, sizeof(sValue));
+
+                iCheckpoint = StringToInt(sValue);
+
+                if (iCheckpoint > 0 && iCheckpoint > Core.Checkpoints.GetInt(iBonus))
+                {
+                    Core.Checkpoints.SetValue(iBonus, iCheckpoint);
+                }
+            }
+
+            iCheckpoint = 0;
+            iStage = 0;
+            iBonus = 0;
         }
     }
 
@@ -495,25 +497,25 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
             Player[client].MainTime = 0.0;
             Player[client].Bonus = 0;
 
-            if (Core.Stages > 0)
+            if (Core.Stages.GetInt(iBonus) > 0)
             {
                 if (Player[client].StageTimes[iBonus] == null)
                 {
                     Player[client].StageTimes[iBonus] = new IntMap();
                 }
-                
+
                 Player[client].Stage = 1;
                 Player[client].StageRunning = true;
                 Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, 0.0);
             }
 
-            if (Core.Checkpoints > 0)
+            if (Core.Checkpoints.GetInt(iBonus) > 0)
             {
                 if (Player[client].CheckpointTimes[iBonus] == null)
                 {
                     Player[client].CheckpointTimes[iBonus] = new IntMap();
                 }
-                
+
                 Player[client].Checkpoint = 1;
                 Player[client].CheckpointRunning = true;
                 Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
@@ -602,11 +604,11 @@ void SetClientStartValues(int client, int bonus)
     {
         Player[client].Bonus = bonus;
     }
-    else if (Core.Stages > 0)
+    else if (Core.Stages.GetInt(bonus) > 0)
     {
         Player[client].Stage = 1;
     }
-    else if (Core.Checkpoints > 0)
+    else if (Core.Checkpoints.GetInt(bonus) > 0)
     {
         Player[client].Checkpoint = 1;
     }
@@ -711,12 +713,14 @@ public int Native_GetClientValidator(Handle plugin, int numParams)
 
 public int Native_GetAmountOfCheckpoints(Handle plugin, int numParams)
 {
-    return Core.Checkpoints;
+    int iBonus = GetNativeCell(1);
+    return Core.Checkpoints.GetInt(iBonus);
 }
 
 public int Native_GetAmountOfStages(Handle plugin, int numParams)
 {
-    return Core.Stages;
+    int iBonus = GetNativeCell(1);
+    return Core.Stages.GetInt(iBonus);
 }
 
 public int Native_GetAmountOfBonus(Handle plugin, int numParams)
