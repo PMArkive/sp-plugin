@@ -197,28 +197,7 @@ public void OnGameFrame()
         }
 
         int iBonus = fuckTimer_GetClientBonus(client);
-        int iStartMatches = StrContains(Player[client].Zone, "start", false);
-        bool bStartZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetStartZone());
-        int iEndMatches = StrContains(Player[client].Zone, "end", false);
-        bool bEndZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetEndZone());
-        
-        if (iMaxBonus > 0 && iBonus > 0)
-        {
-            FormatEx(sBuffer, sizeof(sBuffer), "Bonus: %d/%d", iBonus, iMaxBonus);
-            imBuffer.SetString(HKCurrentStage, sBuffer);
-
-            if (iStartMatches != -1)
-            {
-                FormatEx(sBuffer, sizeof(sBuffer), " Start");
-            }
-            else if (iEndMatches != -1)
-            {
-                FormatEx(sBuffer, sizeof(sBuffer), " End");
-            }
-
-            FormatEx(sBuffer, sizeof(sBuffer), "Bonus %s%s", iBonus, sBuffer);
-            imBuffer.SetString(HKMapType, sBuffer);
-        }
+        bool bReplaceBonus = true;
 
         int iCheckpoint = fuckTimer_GetClientCheckpoint(client);
         int iStage = fuckTimer_GetClientStage(client);
@@ -268,7 +247,17 @@ public void OnGameFrame()
             FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 0 ? "Bonus" : "Map");
             imBuffer.SetString(HKMapType, sBuffer);
             imBuffer.SetString(HKCurrentStage, sBuffer);
+
+            if (iBonus > 0)
+            {
+                bReplaceBonus = true;
+            }
         }
+        
+        int iStartMatches = StrContains(Player[client].Zone, "start", false);
+        bool bStartZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetStartZone());
+        int iEndMatches = StrContains(Player[client].Zone, "end", false);
+        bool bEndZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetEndZone());
 
         if (iStartMatches != -1 || bStartZone)
         {
@@ -279,6 +268,33 @@ public void OnGameFrame()
         {
             FormatEx(sBuffer, sizeof(sBuffer), "Map End");
             imBuffer.SetString(HKMapType, sBuffer);
+        }
+
+        if (bReplaceBonus && iMaxBonus > 0 && iBonus > 0)
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "Bonus: %d/%d", iBonus, iMaxBonus);
+            imBuffer.SetString(HKCurrentStage, sBuffer);
+            sBuffer[0] = '\0';
+
+            if (iStartMatches != -1)
+            {
+                FormatEx(sBuffer, sizeof(sBuffer), " Start");
+            }
+            else if (iEndMatches != -1)
+            {
+                FormatEx(sBuffer, sizeof(sBuffer), " End");
+            }
+            else
+            {
+                FormatEx(sBuffer, sizeof(sBuffer), " %d", iBonus);
+            }
+
+            Format(sBuffer, sizeof(sBuffer), "Bonus%s", sBuffer);
+            imBuffer.SetString(HKMapType, sBuffer);
+        }
+        else
+        {
+            PrintToChat(client, "bRelaceBonus: %d, iMaxBonus: %d, iBonus: %d", bReplaceBonus, iMaxBonus, iBonus);
         }
 
         if (iValidator > 0)
@@ -361,12 +377,12 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     
     if (stage > 0)
     {
-        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Stage %d", stage);
+        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Stage %d%s%s", stage, start ? " Start" : "", end ? " End" : "");
     }
     
     if (bonus > 0)
     {
-        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Bonus %d", bonus);
+        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Bonus %d%s%s", bonus, start ? " Start" : "", end ? " End" : "");
     }
 }
 

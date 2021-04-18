@@ -371,10 +371,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
 
         float fStart;
         Player[client].StageTimes[iBonus].GetValue(iPrevStage, fStart);
-        
-        float fTime = GetGameTime() - fStart;
-        Player[client].StageTimes[iBonus].SetValue(iPrevStage, fTime);
-        PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fTime);
+        PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fStart);
         Player[client].StageRunning = false;
     }
     
@@ -400,31 +397,24 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
 
         float fStart;
         Player[client].CheckpointTimes[iBonus].GetValue(iPrevCheckpoint, fStart);
-        
-        float fTime = GetGameTime() - fStart;
-        Player[client].CheckpointTimes[iBonus].SetValue(iPrevCheckpoint, fTime);
-        PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, fTime);
+        PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, fStart);
         Player[client].CheckpointRunning = false;
     }
     
     if (end && bonus == 0 && Player[client].MainTime > 0.0)
     {
-        PrintToChatAll("%N's time: %.3f", client, GetGameTime() - Player[client].MainTime);
+        PrintToChatAll("%N's time: %.3f", client, Player[client].MainTime);
         Player[client].MainRunning = false;
 
         Player[client].Reset();
+        Player[client].Bonus = bonus;
     }
     
-    if (end && bonus > 0)
+    if (end && bonus > 0 && Player[client].BonusTimes != null)
     {
         float fBuffer = 0.0;
         Player[client].BonusTimes.GetValue(bonus, fBuffer);
-
-        if (fBuffer > 0.0)
-        {
-            Player[client].BonusTimes.SetValue(bonus, 0.0);
-            return;
-        }
+        PrintToChat(client, "End Time: %.3f", fBuffer);
 
         int iPrevBonus = bonus - 1;
 
@@ -435,13 +425,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
 
         float fStart;
         Player[client].BonusTimes.GetValue(iPrevBonus, fStart);
-        
-        float fTime = GetGameTime() - fStart;
-        Player[client].BonusTimes.SetValue(iPrevBonus, fTime);
-        PrintToChatAll("%N's time for Bonus %d: %.3f", client, iPrevBonus, fTime);
+        PrintToChatAll("%N's time for Bonus %d: %.3f", client, iPrevBonus, fStart);
         Player[client].BonusRunning = false;
 
         Player[client].Reset();
+        Player[client].Bonus = bonus;
     }
 }
 
