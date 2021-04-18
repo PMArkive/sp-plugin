@@ -80,6 +80,18 @@ methodmap IntMap < Handle
         return view_as<StringMap>(this).SetString(buffer, value, replace);
     }
     
+    // Returns an integer in a Map.
+    //
+    // @param key        The key.
+    // @return           The value as integer.
+    public int GetInt(int key)
+    {
+        char buffer[6], char value[13];
+        Keyize(key, buffer);
+        view_as<StringMap>(this).GetValue(buffer, value);
+        return StringToInt(value);
+    }
+    
     // Retrieves a value in a Map.
     //
     // @param key        The key.
