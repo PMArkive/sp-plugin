@@ -23,8 +23,7 @@ native int fuckTimer_GetCheckpointZone(int level);
 native int fuckTimer_GetStageZone(int level);
 native int fuckTimer_GetBonusZone(int level);
 native int fuckTimer_GetValidatorCount(int level);
-native bool fuckTimer_IsNormalCheckpointZone(int zone);
-native bool fuckTimer_IsNormalStageZone(int zone);
+native bool fuckTimer_IsNormalZone(int zone);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_zones_SetNTVOptional()
@@ -35,8 +34,7 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_GetStageZone");
     MarkNativeAsOptional("fuckTimer_GetBonusZone");
     MarkNativeAsOptional("fuckTimer_GetValidatorCount");
-    MarkNativeAsOptional("fuckTimer_IsNormalCheckpointZone");
-    MarkNativeAsOptional("fuckTimer_IsNormalStageZone");
+    MarkNativeAsOptional("fuckTimer_IsNormalZone");
 }
 #endif
 

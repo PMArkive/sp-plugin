@@ -2,6 +2,7 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <sdkhooks>
 #include <intmap>
 #include <fuckZones>
 #include <fuckTimer_stocks>
@@ -70,11 +71,7 @@ enum struct Variables
 }
 Variables Core;
 
-enum struct CSDetails
-{
-    int Entity;
-    bool Normal;
-}
+bool g_bNormalZone[2048] = { false, ... };
 
 public Plugin myinfo =
 {
@@ -97,8 +94,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
     CreateNative("fuckTimer_GetBonusZone", Native_GetBonusZone);
     CreateNative("fuckTimer_GetValidatorCount", Native_GetValidatorCount);
-    CreateNative("fuckTimer_IsNormalCheckpointZone", Native_IsNormalCheckpointZone);
-    CreateNative("fuckTimer_IsNormalStageZone", Native_IsNormalStageZone);
+    CreateNative("fuckTimer_IsNormalZone", Native_IsNormalZone);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -130,6 +126,16 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
     }
 }
 
+public void OnEntityCreated(int entity, const char[] classname)
+{
+    g_bNormalZone[entity] = false;
+}
+
+public void OnEntityDestroyed(int entity)
+{
+    g_bNormalZone[entity] = false;
+}
+
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
     if (Core.Stage == null)
@@ -140,15 +146,12 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
 
     char sValue[12];
-    CSDetails csDetails;
 
     if (StrContains(zone_name, "main0_start", false) != -1)
     {
         Core.StartZone = entity;
+        Core.Stage.SetValue(1, entity);
 
-        csDetails.Entity = entity;
-        csDetails.Normal = true;
-        Core.Stage.SetArray(1, csDetails, sizeof(csDetails));
         return;
     }
     else if (StrContains(zone_name, "main0_end", false) != -1)
@@ -168,34 +171,12 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     if (StrContains(zone_name, "checkpoint", false) != -1 && iCheckpoint > 0)
     {
-        csDetails.Entity = entity;
-
-        if (iBonus > 1)
-        {
-            csDetails.Normal = false;
-        }
-        else
-        {
-            csDetails.Normal = true;
-        }
-
-        Core.Checkpoint.SetArray(iCheckpoint, csDetails, sizeof(csDetails));
+        Core.Checkpoint.SetValue(iCheckpoint, entity);
         return;
     }
     else if (StrContains(zone_name, "stage", false) != -1 && iStage > 0)
     {
-        csDetails.Entity = entity;
-
-        if (iBonus > 1)
-        {
-            csDetails.Normal = false;
-        }
-        else
-        {
-            csDetails.Normal = true;
-        }
-
-        Core.Stage.SetArray(iStage, csDetails, sizeof(csDetails));
+        Core.Stage.SetValue(iStage, entity);
         return;
     }
     else if (StrContains(zone_name, "bonus", false) != -1 && iBonus > 0)
@@ -401,12 +382,12 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
 {
     int level = GetNativeCell(1);
 
-    CSDetails csDetails;
-    bool success = Core.Checkpoint.GetArray(level, csDetails, sizeof(csDetails));
+    int iEntity;
+    bool success = Core.Checkpoint.GetValue(level, iEntity);
 
     if (success)
     {
-        return csDetails.Entity;
+        return iEntity;
     }
     else
     {
@@ -418,12 +399,12 @@ public int Native_GetStageZone(Handle plugin, int numParams)
 {
     int level = GetNativeCell(1);
 
-    CSDetails csDetails;
-    bool success = Core.Stage.GetArray(level, csDetails, sizeof(csDetails));
+    int iEntity;
+    bool success = Core.Stage.GetValue(level, iEntity);
 
     if (success)
     {
-        return csDetails.Entity;
+        return iEntity;
     }
     else
     {
@@ -476,44 +457,9 @@ public int Native_GetValidatorCount(Handle plugin, int numParams)
     return 0;
 }
 
-public int Native_IsNormalCheckpointZone(Handle plugin, int numParams)
+public int Native_IsNormalZone(Handle plugin, int numParams)
 {
     int iEntity = GetNativeCell(1);
-    IntMapSnapshot snap = Core.Checkpoint.Snapshot();
-    CSDetails csDetails;
-
-    for (int i = 0; i < snap.Length; i++)
-    {
-        Core.Checkpoint.GetArray(i, csDetails, sizeof(csDetails));
-
-        if (csDetails.Entity == iEntity)
-        {
-            delete snap;
-            return csDetails.Normal;
-        }
-    }
-
-    delete snap;
-    return true;
-}
-
-public int Native_IsNormalStageZone(Handle plugin, int numParams)
-{
-    int iEntity = GetNativeCell(1);
-    IntMapSnapshot snap = Core.Stage.Snapshot();
-    CSDetails csDetails;
-
-    for (int i = 0; i < snap.Length; i++)
-    {
-        Core.Stage.GetArray(i, csDetails, sizeof(csDetails));
-
-        if (csDetails.Entity == iEntity)
-        {
-            delete snap;
-            return csDetails.Normal;
-        }
-    }
-
-    delete snap;
-    return true;
+    
+    return g_bNormalZone[iEntity];
 }
