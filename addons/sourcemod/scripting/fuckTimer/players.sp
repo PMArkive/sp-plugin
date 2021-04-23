@@ -154,7 +154,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-    if (IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
+    if (Player[client].Settings != null && IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
     {
         Styles style;
         Player[client].Settings.GetValue(SETTING_STYLE, style);

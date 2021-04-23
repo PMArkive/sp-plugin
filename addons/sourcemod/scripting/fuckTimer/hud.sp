@@ -292,10 +292,6 @@ public void OnGameFrame()
             Format(sBuffer, sizeof(sBuffer), "Bonus%s", sBuffer);
             imBuffer.SetString(HKMapType, sBuffer);
         }
-        else
-        {
-            PrintToChat(client, "bRelaceBonus: %d, iMaxBonus: %d, iBonus: %d", bReplaceBonus, iMaxBonus, iBonus);
-        }
 
         if (iValidator > 0)
         {
@@ -590,6 +586,8 @@ stock void GetTimeBySeconds(int client = 0, float seconds, char[] time, int leng
 
 void LoadPlayer(int client)
 {
+    PrintToServer("[HUD] LoadPlayer1: %d", client);
+
     Player[client].Reset(true);
 
     if (!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
@@ -597,7 +595,7 @@ void LoadPlayer(int client)
         return;
     }
 
-    PrintToServer("[HUD] LoadPlayer: %N", client);
+    PrintToServer("[HUD] LoadPlayer2: %N", client);
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", GetSteamAccountID(client));

@@ -266,7 +266,13 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         {
             if (view_as<bool>(StringToInt(sValue)))
             {
-                Player[client].Validator++;
+                GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue));
+
+                if (StringToInt(sValue) == Player[client].Stage)
+                {
+                    Player[client].Validator++;
+                    PrintToChat(client, "Validator Count: %d", Player[client].Validator);
+                }
             }
         }
 
@@ -284,6 +290,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
                 {
                     iValidator = fuckTimer_GetValidatorCount(Player[client].Stage);
                 }
+
+                PrintToChat(client, "iValidator: %d, Player[client].Validator: %d", iValidator, Player[client].Validator);
 
                 if (iValidator > 0 && Player[client].Validator >= iValidator)
                 {
@@ -327,7 +335,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     }
 
     // Fix for missing checkpoint entry in end zone
-    if (checkpoint == 0 && Player[client].Checkpoint > 0)
+    if (end && checkpoint == 0 && Player[client].Checkpoint > 0)
     {
         Player[client].Checkpoint++;
         checkpoint = Player[client].Checkpoint;
@@ -338,6 +346,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     if (stage > 0)
     {
         Player[client].Validator = 0;
+        PrintToChat(client, "Set Validator to 0");
         Player[client].SetSpeed = true;
 
         Player[client].Stage = stage;

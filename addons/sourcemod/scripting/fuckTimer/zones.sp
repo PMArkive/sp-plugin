@@ -128,12 +128,18 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
-    g_bBonusZone[entity] = false;
+    if (IsValidEntity(entity))
+    {
+        g_bBonusZone[entity] = false;
+    }
 }
 
 public void OnEntityDestroyed(int entity)
 {
-    g_bBonusZone[entity] = false;
+    if (IsValidEntity(entity))
+    {
+        g_bBonusZone[entity] = false;
+    }
 }
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
@@ -169,6 +175,9 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue));
     int iBonus = StringToInt(sValue);
 
+    GetfuckTimerZoneValue(smEffects, "Start", sValue, sizeof(sValue));
+    bool bStart = view_as<bool>(StringToInt(sValue));
+
     if (iBonus > 0)
     {
         g_bBonusZone[entity] = true;
@@ -184,13 +193,13 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
         Core.Stage.SetValue(iStage, entity);
         return;
     }
-    else if (StrContains(zone_name, "bonus", false) != -1 && iBonus > 0)
+    else if (bStart && StrContains(zone_name, "bonus", false) != -1 && iBonus > 0)
     {
         Core.Bonus.SetValue(iBonus, entity);
         return;
     }
 
-    if (StrContains(zone_name, "validator", false) != -1 && GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) &&
+    if (iBonus == 0 && StrContains(zone_name, "validator", false) != -1 && GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) &&
             (
                 iCheckpoint > 0 || iStage > 0
             )
