@@ -512,7 +512,14 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     {
         if (Zone[i].Bonus == bonus)
         {
-            return Zone[i].Stages.GetInt(stage);
+            if (stage > 1)
+            {
+                return Zone[i].Stages.GetInt(stage);
+            }
+            else
+            {
+                return i;
+            }
         }
     }
 
