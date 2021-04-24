@@ -12,8 +12,10 @@ enum struct ZoneDetails
     bool TeleToStart;
     bool Stop;
     bool AntiJump;
+    bool Checker;
 
     int Bonus;
+    int Validators;
 
     IntMap Checkpoints;
     IntMap Stages;
@@ -64,10 +66,30 @@ native bool fuckTimer_IsEndZone(int zone, int bonus);
  */
 native bool fuckTimer_IsMiscZone(int zone, int bonus);
 
+/**
+ * Bonus will be set, if return is true
+ */
 native bool fuckTimer_IsValidatorZone(int zone, int bonus);
+
+/**
+ * Bonus will be set, if return is true
+ */
 native bool fuckTimer_IsTeleToStartZone(int zone, int bonus);
+
+/**
+ * Bonus will be set, if return is true
+ */
 native bool fuckTimer_IsStopZone(int zone, int bonus);
+
+/**
+ * Bonus will be set, if return is true
+ */
 native bool fuckTimer_IsAntiJumpZone(int zone, int bonus);
+
+/**
+ * Bonus and validators will be set, if return is true
+ */
+native bool fuckTimer_IsCheckerZone(int zone, int bonus, int validators);
 
 /**
  * Returns the bonus level of the specific zone.

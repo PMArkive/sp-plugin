@@ -46,6 +46,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_IsTeleToStartZone", Native_IsTeleToStartZone);
     CreateNative("fuckTimer_IsStopZone", Native_IsStopZone);
     CreateNative("fuckTimer_IsAntiJumpZone", Native_IsAntiJumpZone);
+    CreateNative("fuckTimer_IsCheckerZone", Native_IsCheckerZone);
 
     CreateNative("fuckTimer_GetZoneBonus", Native_GetZoneBonus);
 
@@ -154,6 +155,16 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     if (GetfuckTimerZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
     {
         Zone[entity].AntiJump = view_as<bool>(StringToInt(sValue));
+    }
+
+    if (GetfuckTimerZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
+    {
+        Zone[entity].Checker = view_as<bool>(StringToInt(sValue));
+        
+        if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
+        {
+            Zone[entity].Validators = StringToInt(sValue);
+        }
     }
 }
 
@@ -456,6 +467,20 @@ public int Native_IsAntiJumpZone(Handle plugin, int numParams)
     if (Zone[iEntity].AntiJump)
     {
         SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
+}
+
+public int Native_IsCheckerZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].Checker)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        SetNativeCellRef(3, Zone[iEntity].Validators);
         return true;
     }
 
