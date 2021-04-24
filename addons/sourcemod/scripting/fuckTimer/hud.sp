@@ -14,6 +14,7 @@
 
 enum struct PlayerData
 {
+    int LastZone;
     char Zone[MAX_ZONE_NAME_LENGTH];
 
     int LeftSide[MAX_HUD_LINES];
@@ -21,6 +22,7 @@ enum struct PlayerData
 
     void Reset(bool resetHud)
     {
+        this.LastZone = -1;
         this.Zone[0] = '\0';
 
         if (!resetHud)
@@ -201,8 +203,10 @@ public void OnGameFrame()
 
         int iCheckpoint = fuckTimer_GetClientCheckpoint(client);
         int iStage = fuckTimer_GetClientStage(client);
-        int iValidator = 0;
         float fCPStageTime = 0.0;
+
+        int iValidator, iTemp;
+        fuckTimer_IsCheckerZone(Player[client].LastZone, iTemp, iValidator);
 
         if (imStages.GetInt(iBonus) > 0)
         {
@@ -223,8 +227,6 @@ public void OnGameFrame()
             FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 0 ? "B-" : "", iStage, imStages.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
             imBuffer.SetString(HKMapType, sBuffer);
-
-            iValidator = fuckTimer_GetValidatorCount(iStage);
         }
         else if (imCheckpoints.GetInt(iBonus) > 0)
         {
@@ -236,8 +238,6 @@ public void OnGameFrame()
 
             FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 0 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
-
-            iValidator = fuckTimer_GetValidatorCount(iCheckpoint);
 
             FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 0 ? "Bonus" : "Map");
             imBuffer.SetString(HKMapType, sBuffer);
@@ -255,9 +255,9 @@ public void OnGameFrame()
         }
         
         int iStartMatches = StrContains(Player[client].Zone, "start", false);
-        bool bStartZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetStartZone());
+        bool bStartZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client)));
         int iEndMatches = StrContains(Player[client].Zone, "end", false);
-        bool bEndZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetEndZone());
+        bool bEndZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetEndZone(fuckTimer_GetClientBonus(client)));
 
         if (iStartMatches != -1 || bStartZone)
         {
@@ -358,33 +358,43 @@ public void OnGameFrame()
     delete imStages;
 }
 
-public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 {
     Player[client].Reset(false);
+    Player[client].LastZone = zone;
 
-    if (start)
+    int iBonus;
+    bool bStart = fuckTimer_IsStartZone(zone, iBonus);
+    bool bEnd = fuckTimer_IsEndZone(zone, iBonus);
+
+    if (bStart)
     {
         FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Start");
     }
-    else if (end)
+    
+    if (bEnd)
     {
         FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "End");
     }
+
+    int iStage;
+    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
     
-    if (stage > 0)
+    if (iStage > 0)
     {
-        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Stage %d%s%s", stage, start ? " Start" : "", end ? " End" : "");
+        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Stage %d%s%s", iStage, bStart ? " Start" : "", bEnd ? " End" : "");
     }
     
-    if (bonus > 0)
+    if (iBonus > 0)
     {
-        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Bonus %d%s%s", bonus, start ? " Start" : "", end ? " End" : "");
+        FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Bonus %d%s%s", iBonus, bStart ? " Start" : "", bEnd ? " End" : "");
     }
 }
 
-public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 {
     Player[client].Reset(false);
+    Player[client].LastZone = zone;
 }
 
 public any Native_SetClientHUDLayout(Handle plugin, int numParams)
