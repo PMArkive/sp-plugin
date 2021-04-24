@@ -41,6 +41,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_IsStartZone", Native_IsStartZone);
     CreateNative("fuckTimer_IsEndZone", Native_IsEndZone);
+    CreateNative("fuckTimer_IsMiscZone", Native_IsMiscZone);
     CreateNative("fuckTimer_IsValidatorZone", Native_IsValidatorZone);
 
     CreateNative("fuckTimer_GetZoneBonus", Native_GetZoneBonus);
@@ -378,9 +379,30 @@ public int Native_IsEndZone(Handle plugin, int numParams)
     return false;
 }
 
+public int Native_IsMiscZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].Misc)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
+}
+
 public int Native_IsValidatorZone(Handle plugin, int numParams)
 {
-    return Zone[GetNativeCell(1)].Validator;
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].Validator)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
 }
 
 public int Native_GetCheckpointZone(Handle plugin, int numParams)
