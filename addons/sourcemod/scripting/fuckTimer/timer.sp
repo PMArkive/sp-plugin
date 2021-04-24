@@ -288,7 +288,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     // Fix for missing checkpoint entry in end zone
     int iCheckpoint = 0;
     fuckTimer_GetCheckpointByIndex(zone, iBonus, iCheckpoint);
-    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iCheckpoint == 0 && Player[client].Checkpoint > 0)
+    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iCheckpoint < 1 && Player[client].Checkpoint > 0)
     {
         Player[client].Checkpoint++;
         iCheckpoint = Player[client].Checkpoint;
