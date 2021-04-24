@@ -16,62 +16,10 @@ enum struct Variables
     GlobalForward OnEnteringZone;
     GlobalForward OnTouchZone;
     GlobalForward OnLeavingZone;
-
-    int StartZone;
-    int EndZone;
-
-    IntMap Checkpoint;
-    IntMap Stage;
-    IntMap Bonus;
-
-    IntMap Validator;
-
-    void Reset()
-    {
-        this.StartZone = -1;
-        this.EndZone = -1;
-
-        delete this.Checkpoint;
-        delete this.Stage;
-        delete this.Bonus;
-
-        if (this.Validator != null)
-        {
-            IntMapSnapshot imSnap = this.Validator.Snapshot();
-
-            for (int i = 0; i < imSnap.Length; i++)
-            {
-                int iIndex = imSnap.GetKey(i);
-
-                ArrayList alArray = null;
-
-                if (this.Validator.GetValue(iIndex, alArray))
-                {
-                    delete alArray;
-                }
-            }
-
-            delete imSnap;
-        }
-
-        delete this.Validator;
-    }
-
-    void Init()
-    {
-        this.StartZone = -1;
-        this.EndZone = -1;
-
-        this.Checkpoint = new IntMap();
-        this.Stage = new IntMap();
-        this.Bonus = new IntMap();
-
-        this.Validator = new IntMap();
-    }
 }
 Variables Core;
 
-bool g_bBonusZone[2048] = { false, ... };
+ZoneDetails Zone[MAX_ENTITIES];
 
 public Plugin myinfo =
 {
@@ -84,17 +32,25 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    Core.OnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    Core.OnTouchZone = new GlobalForward("fuckTimer_OnTouchZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    Core.OnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnEnteringZone = new GlobalForward("fuckTimer_OnEnteringZone", ET_Ignore, Param_Cell, Param_Cell, Param_String);
+    Core.OnTouchZone = new GlobalForward("fuckTimer_OnTouchZone", ET_Ignore, Param_Cell, Param_Cell, Param_String);
+    Core.OnLeavingZone = new GlobalForward("fuckTimer_OnLeavingZone", ET_Ignore, Param_Cell, Param_Cell, Param_String);
 
     CreateNative("fuckTimer_GetStartZone", Native_GetStartZone);
     CreateNative("fuckTimer_GetEndZone", Native_GetEndZone);
+
+    CreateNative("fuckTimer_IsStartZone", Native_IsStartZone);
+    CreateNative("fuckTimer_IsEndZone", Native_IsEndZone);
+
+    CreateNative("fuckTimer_GetZoneBonus", Native_GetZoneBonus);
+
     CreateNative("fuckTimer_GetCheckpointZone", Native_GetCheckpointZone);
     CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
-    CreateNative("fuckTimer_GetBonusZone", Native_GetBonusZone);
+
+    CreateNative("fuckTimer_GetCheckpointByIndex", Native_GetCheckpointByIndex);
+    CreateNative("fuckTimer_GetStageByIndex", Native_GetStageByIndex);
+
     CreateNative("fuckTimer_GetValidatorCount", Native_GetValidatorCount);
-    CreateNative("fuckTimer_IsBonusZone", Native_IsBonusZone);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -103,7 +59,15 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnMapStart()
 {
-    Core.Reset();
+    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    {
+        if (Zone[i].Stages == null)
+        {
+            continue;
+        }
+
+        Zone[i].Reset();
+    }
 }
 
 public void OnConfigsExecuted()
@@ -126,44 +90,29 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
     }
 }
 
-public void OnEntityCreated(int entity, const char[] classname)
-{
-    if (IsValidEntity(entity))
-    {
-        g_bBonusZone[entity] = false;
-    }
-}
-
-public void OnEntityDestroyed(int entity)
-{
-    if (IsValidEntity(entity))
-    {
-        g_bBonusZone[entity] = false;
-    }
-}
-
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
-    if (Core.Stage == null)
+    if (Zone[entity].Stages == null)
     {
-        Core.Init();
+        Zone[entity].Init();
     }
 
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
 
     char sValue[12];
 
-    if (StrContains(zone_name, "main0_start", false) != -1)
-    {
-        Core.StartZone = entity;
-        Core.Stage.SetValue(1, entity);
+    GetfuckTimerZoneValue(smEffects, "Start", sValue, sizeof(sValue));
+    Zone[entity].Start = view_as<bool>(StringToInt(sValue));
 
-        return;
-    }
-    else if (StrContains(zone_name, "main0_end", false) != -1)
+    GetfuckTimerZoneValue(smEffects, "End", sValue, sizeof(sValue));
+    Zone[entity].End = view_as<bool>(StringToInt(sValue));
+
+    GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue));
+    Zone[entity].Bonus = StringToInt(sValue);
+
+    if (Zone[entity].Start)
     {
-        Core.EndZone = entity;
-        return;
+        Zone[entity].Stages.SetValue(1, entity);
     }
 
     GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue));
@@ -172,72 +121,25 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue));
     int iStage = StringToInt(sValue);
 
-    GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue));
-    int iBonus = StringToInt(sValue);
-
-    GetfuckTimerZoneValue(smEffects, "Start", sValue, sizeof(sValue));
-    bool bStart = view_as<bool>(StringToInt(sValue));
-
-    if (iBonus > 0)
+    if (iCheckpoint > 0)
     {
-        g_bBonusZone[entity] = true;
-    }
-
-    if (StrContains(zone_name, "checkpoint", false) != -1 && iCheckpoint > 0)
-    {
-        Core.Checkpoint.SetValue(iCheckpoint, entity);
+        Zone[entity].Checkpoints.SetValue(iCheckpoint, entity);
         return;
     }
-    else if (StrContains(zone_name, "stage", false) != -1 && iStage > 0)
+    
+    if (iStage > 0)
     {
-        Core.Stage.SetValue(iStage, entity);
-        return;
-    }
-    else if (bStart && StrContains(zone_name, "bonus", false) != -1 && iBonus > 0)
-    {
-        Core.Bonus.SetValue(iBonus, entity);
+        Zone[entity].Stages.SetValue(iStage, entity);
         return;
     }
 
-    if (iBonus == 0 && StrContains(zone_name, "validator", false) != -1 && GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) &&
-            (
-                iCheckpoint > 0 || iStage > 0
-            )
-        )
+    if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) && (iCheckpoint > 0 || iStage > 0))
     {
         bool bValidator = view_as<bool>(StringToInt(sValue));
 
         if (bValidator)
         {
-            int iLevel = 0;
-
-            if (iCheckpoint > 0)
-            {
-                iLevel = iCheckpoint;
-            }
-            else if (iStage > 0)
-            {
-                iLevel = iStage;
-            }
-            else
-            {
-                LogError("Validator zone detected without valid checkpoint/stage value.");
-                return;
-            }
-
-            ArrayList alArray = null;
-
-            Core.Validator.GetValue(iLevel, alArray);
-
-            if (alArray == null)
-            {
-                alArray = new ArrayList();
-                Core.Validator.SetValue(iLevel, alArray);
-            }
-
-            alArray.Push(EntIndexToEntRef(entity));
-
-            return;
+            Zone[entity].Validators.SetValue(Zone[entity].Bonus, Zone[entity].Validators.GetInt(Zone[entity].Bonus) + 1);
         }
     }
 }
@@ -382,98 +284,208 @@ int GetBonusNumber(StringMap values)
     return 0;
 }
 
+
+bool GetZoneValue(StringMap values, const char[] key, char[] value, int length)
+{
+    char sKey[MAX_KEY_NAME_LENGTH];
+    StringMapSnapshot keys = values.Snapshot();
+
+    for (int x = 0; x < keys.Length; x++)
+    {
+        keys.GetKey(x, sKey, sizeof(sKey));
+
+        if (StrEqual(sKey, key, false))
+        {
+            values.GetString(sKey, value, length);
+
+            delete keys;
+            return true;
+        }
+    }
+
+    delete keys;
+    return false;
+}
+
+bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
+{
+    StringMap smValues;
+    effects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
+
+    char sKey[MAX_KEY_NAME_LENGTH];
+    StringMapSnapshot keys = smValues.Snapshot();
+
+    for (int x = 0; x < keys.Length; x++)
+    {
+        keys.GetKey(x, sKey, sizeof(sKey));
+
+        if (StrEqual(sKey, key, false))
+        {
+            smValues.GetString(sKey, value, length);
+
+            delete keys;
+            return true;
+        }
+    }
+
+    delete keys;
+    return false;
+}
+
 public int Native_GetStartZone(Handle plugin, int numParams)
 {
-    return Core.StartZone;
+    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    {
+        if (Zone[i].Start && Zone[i].Bonus == GetNativeCell(1))
+        {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 public int Native_GetEndZone(Handle plugin, int numParams)
 {
-    return Core.EndZone;
+    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    {
+        if (Zone[i].End && Zone[i].Bonus == GetNativeCell(1))
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+public int Native_IsStartZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].Start)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
+}
+
+public int Native_IsEndZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].End)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
 }
 
 public int Native_GetCheckpointZone(Handle plugin, int numParams)
 {
-    int level = GetNativeCell(1);
+    int bonus = GetNativeCell(1);
+    int checkpoint = GetNativeCell(2);
 
-    int iEntity;
-    bool success = Core.Checkpoint.GetValue(level, iEntity);
+    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    {
+        if (Zone[i].Bonus == bonus)
+        {
+            return Zone[i].Checkpoints.GetInt(checkpoint);
+        }
+    }
 
-    if (success)
-    {
-        return iEntity;
-    }
-    else
-    {
-        return 0;
-    }
+    return -1;
 }
 
 public int Native_GetStageZone(Handle plugin, int numParams)
 {
-    int level = GetNativeCell(1);
+    int bonus = GetNativeCell(1);
+    int stage = GetNativeCell(2);
 
-    int iEntity;
-    bool success = Core.Stage.GetValue(level, iEntity);
-
-    if (success)
+    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
     {
-        return iEntity;
+        if (Zone[i].Bonus == bonus)
+        {
+            return Zone[i].Stages.GetInt(stage);
+        }
     }
-    else
-    {
-        return 0;
-    }
-}
 
-public int Native_GetBonusZone(Handle plugin, int numParams)
-{
-    int level = GetNativeCell(1);
-
-    int iLevel;
-    bool success = Core.Bonus.GetValue(level, iLevel);
-
-    if (success)
-    {
-        return iLevel;
-    }
-    else
-    {
-        return 0;
-    }
+    return -1;
 }
 
 public int Native_GetValidatorCount(Handle plugin, int numParams)
 {
     if (fuckTimer_GetAmountOfStages() > 1)
     {
-        ArrayList alArray = null;
-
-        Core.Validator.GetValue(GetNativeCell(1), alArray);
-
-        if (alArray != null)
-        {
-            return alArray.Length;
-        }
+        
     }
     else
     {
-        ArrayList alArray = null;
-
-        Core.Validator.GetValue(0, alArray);
-
-        if (alArray != null)
-        {
-            return alArray.Length;
-        }
+        
     }
-
+    
     return 0;
 }
 
-public int Native_IsBonusZone(Handle plugin, int numParams)
+public int Native_GetZoneBonus(Handle plugin, int numParams)
+{
+    return Zone[GetNativeCell(1)].Bonus;
+}
+
+public int Native_GetCheckpointByIndex(Handle plugin, int numParams)
 {
     int iEntity = GetNativeCell(1);
-    
-    return g_bBonusZone[iEntity];
+
+    if (Zone[iEntity].Checkpoints != null)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        
+        IntMapSnapshot snap = Zone[iEntity].Checkpoints.Snapshot();
+        int iTemp = 0;
+
+        for (int i = 0; i < snap.Length; i++)
+        {
+            iTemp = Zone[iEntity].Checkpoints.GetInt(snap.GetKey(i));
+
+            if (iTemp == iEntity)
+            {
+                SetNativeCellRef(3, snap.GetKey(i));
+                return true;
+            }
+        }
+
+        delete snap;
+    }
+
+    return false;
+}
+public int Native_GetStageByIndex(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].Stages != null)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        
+        IntMapSnapshot snap = Zone[iEntity].Stages.Snapshot();
+        int iTemp = 0;
+
+        for (int i = 0; i < snap.Length; i++)
+        {
+            iTemp = Zone[iEntity].Stages.GetInt(snap.GetKey(i));
+
+            if (iTemp == iEntity)
+            {
+                SetNativeCellRef(3, snap.GetKey(i));
+                return true;
+            }
+        }
+
+        delete snap;
+    }
+
+    return false;
 }

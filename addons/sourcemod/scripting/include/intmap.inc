@@ -89,8 +89,14 @@ methodmap IntMap < Handle
         int value;
         char buffer[6];
         Keyize(key, buffer);
-        view_as<StringMap>(this).GetValue(buffer, value);
-        return value;
+        bool success = view_as<StringMap>(this).GetValue(buffer, value);
+
+        if (success)
+        {
+            return value;
+        }
+
+        return -1;
     }
     
     // Returns an integer in a Map.
@@ -102,8 +108,14 @@ methodmap IntMap < Handle
         float value;
         char buffer[6];
         Keyize(key, buffer);
-        view_as<StringMap>(this).GetValue(buffer, value);
-        return value;
+        bool success = view_as<StringMap>(this).GetValue(buffer, value);
+
+        if (success)
+        {
+            return value;
+        }
+
+        return 0.0;
     }
     
     // Retrieves a value in a Map.
