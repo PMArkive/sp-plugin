@@ -208,126 +208,77 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     return Plugin_Continue;
 }
 
-public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 {
     if (!IsPlayerAlive(client))
     {
         return;
     }
 
-    if (start)
+    int iBonus = 0;
+
+    if (fuckTimer_IsStartZone(zone, iBonus))
     {
-        SetClientStartValues(client, bonus);
+        SetClientStartValues(client, iBonus);
 
         return;
     }
 
-    if (misc)
+    if (fuckTimer_IsMiscZone(zone, iBonus))
     {
-        StringMap smEffects = fuckZones_GetZoneEffects(zone);
-
-        char sValue[4];
-        if (GetfuckTimerZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
+        if (fuckTimer_IsStopZone(zone, iBonus))
         {
-            if (view_as<bool>(StringToInt(sValue)))
-            {
-                Player[client].Reset();
-
-                return;
-            }
+            Player[client].Reset();
+            return;
         }
         
-        if (GetfuckTimerZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
+        if (fuckTimer_IsTeleToStartZone(zone, iBonus))
         {
-            if (view_as<bool>(StringToInt(sValue)))
+            Player[client].Reset();
+
+            int iZone = fuckTimer_GetStartZone(iBonus);
+
+            if (iZone > 0)
             {
-                Player[client].Reset();
+                fuckZones_TeleportClientToZoneIndex(client, iZone);
+            }
 
-                int iZone = fuckTimer_GetStartZone();
+            return;
+        }
 
-                if (iZone > 0)
-                {
-                    fuckZones_TeleportClientToZoneIndex(client, iZone);
-                }
+        if (fuckTimer_IsAntiJumpZone(zone, iBonus))
+        {
+            Player[client].BlockJump = true;
+        }
 
+        if (fuckTimer_IsValidatorZone(zone, iBonus))
+        {
+            int iStage = 0;
+            fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+
+            if (iStage == Player[client].Stage)
+            {
+                Player[client].Validator++;
+                PrintToChat(client, "Validator Count: %d", Player[client].Validator);
+            }
+        }
+
+        int iValidators;
+        if (fuckTimer_IsCheckerZone(zone, iBonus, iValidators))
+        {
+            PrintToChat(client, "iValidators: %d, Player[client].Validator: %d", iValidators, Player[client].Validator);
+
+            if (iValidators > 0 && Player[client].Validator >= iValidators)
+            {
                 return;
             }
-        }
 
-        if (GetfuckTimerZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
-        {
-            if (view_as<bool>(StringToInt(sValue)))
+            int iZone = fuckTimer_GetStageZone(iBonus, Player[client].Bonus);
+
+            if (iZone > 0)
             {
-                Player[client].BlockJump = true;
-            }
-        }
-
-        if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
-        {
-            if (view_as<bool>(StringToInt(sValue)))
-            {
-                GetfuckTimerZoneValue(smEffects, "Stage", sValue, sizeof(sValue));
-
-                if (StringToInt(sValue) == Player[client].Stage)
-                {
-                    Player[client].Validator++;
-                    PrintToChat(client, "Validator Count: %d", Player[client].Validator);
-                }
-            }
-        }
-
-        if (GetfuckTimerZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
-        {
-            if (view_as<bool>(StringToInt(sValue)))
-            {
-                int iValidator = 0;
-
-                if (Player[client].Checkpoint > 0)
-                {
-                    iValidator = fuckTimer_GetValidatorCount(Player[client].Checkpoint);
-                }
-                else if (Player[client].Stage > 0)
-                {
-                    iValidator = fuckTimer_GetValidatorCount(Player[client].Stage);
-                }
-
-                PrintToChat(client, "iValidator: %d, Player[client].Validator: %d", iValidator, Player[client].Validator);
-
-                if (iValidator > 0 && Player[client].Validator >= iValidator)
-                {
-                    return;
-                }
-
-                int iZone = 0;
-
-                if (Player[client].Stage > 1)
-                {
-                    iZone = fuckTimer_GetStageZone(Player[client].Stage);
-
-                    if (iZone > 0)
-                    {
-                        fuckZones_TeleportClientToZoneIndex(client, iZone);
-                        return;
-                    }
-                }
-                else if (Player[client].Bonus > 0)
-                {
-                    iZone = fuckTimer_GetStageZone(Player[client].Bonus);
-
-                    if (iZone > 0)
-                    {
-                        fuckZones_TeleportClientToZoneIndex(client, iZone);
-                        return;
-                    }
-                }
-
-                iZone = fuckTimer_GetStartZone();
-
-                if (iZone > 0)
-                {
-                    fuckZones_TeleportClientToZoneIndex(client, iZone);
-                    return;
-                }
+                fuckZones_TeleportClientToZoneIndex(client, iZone);
+                return;
             }
         }
 
@@ -335,21 +286,24 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     }
 
     // Fix for missing checkpoint entry in end zone
-    if (end && checkpoint == 0 && Player[client].Checkpoint > 0)
+    int iCheckpoint = 0;
+    fuckTimer_GetCheckpointByIndex(zone, iBonus, iCheckpoint);
+    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iCheckpoint == 0 && Player[client].Checkpoint > 0)
     {
         Player[client].Checkpoint++;
-        checkpoint = Player[client].Checkpoint;
+        iCheckpoint = Player[client].Checkpoint;
     }
 
-    int iBonus = view_as<int>(fuckTimer_IsBonusZone(zone));
+    int iStage = 0;
+    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
     
-    if (stage > 0)
+    if (iStage > 0)
     {
         Player[client].Validator = 0;
         PrintToChat(client, "Set Validator to 0");
         Player[client].SetSpeed = true;
 
-        Player[client].Stage = stage;
+        Player[client].Stage = iStage;
 
         // That isn't really an workaround or dirty fix but... 
         // with this check we're able to start the stage timer
@@ -363,15 +317,15 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         }
 
         float fBuffer = 0.0;
-        Player[client].StageTimes[iBonus].GetValue(stage, fBuffer);
+        Player[client].StageTimes[iBonus].GetValue(iStage, fBuffer);
 
         if (fBuffer > 0.0)
         {
-            Player[client].StageTimes[iBonus].SetValue(stage, 0.0);
+            Player[client].StageTimes[iBonus].SetValue(iStage, 0.0);
             return;
         }
 
-        int iPrevStage = stage - 1;
+        int iPrevStage = iStage - 1;
 
         if (iPrevStage < 1)
         {
@@ -384,20 +338,20 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         Player[client].StageRunning = false;
     }
     
-    if (checkpoint > 0)
+    if (iCheckpoint > 0)
     {
         Player[client].Stage = 0;
 
         float fBuffer = 0.0;
-        Player[client].CheckpointTimes[iBonus].GetValue(checkpoint, fBuffer);
+        Player[client].CheckpointTimes[iBonus].GetValue(iCheckpoint, fBuffer);
 
         if (fBuffer > 0.0)
         {
-            Player[client].CheckpointTimes[iBonus].SetValue(checkpoint, 0.0);
+            Player[client].CheckpointTimes[iBonus].SetValue(iCheckpoint, 0.0);
             return;
         }
 
-        int iPrevCheckpoint = checkpoint - 1;
+        int iPrevCheckpoint = iCheckpoint - 1;
 
         if (iPrevCheckpoint < 1)
         {
@@ -410,7 +364,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         Player[client].CheckpointRunning = false;
     }
     
-    if (end && bonus == 0 && Player[client].MainTime > 0.0)
+    int bonus = fuckTimer_GetZoneBonus(zone);
+    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && bonus == 0 && Player[client].MainTime > 0.0)
     {
         PrintToChatAll("%N's time: %.3f", client, Player[client].MainTime);
         Player[client].MainRunning = false;
@@ -419,7 +374,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
         Player[client].Bonus = bonus;
     }
     
-    if (end && bonus > 0 && Player[client].BonusTimes != null)
+    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && bonus > 0 && Player[client].BonusTimes != null)
     {
         float fBuffer = 0.0;
         Player[client].BonusTimes.GetValue(bonus, fBuffer);
@@ -442,30 +397,34 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name, bo
     }
 }
 
-public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 {
     if (!IsPlayerAlive(client))
     {
         return;
     }
     
-    if (start)
+    int iBonus = 0;
+    if (fuckTimer_IsStartZone(zone, iBonus))
     {
-        SetClientStartValues(client, bonus);
+        SetClientStartValues(client, iBonus);
     }
+
+    int iStage;
+    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
     
-    if (!misc && stage > 0)
+    if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
         Player[client].SetSpeed = true;
     }
 }
 
-public void fuckTimer_OnClientTeleport(int client, eZone type, int level)
+public void fuckTimer_OnClientTeleport(int client, int level)
 {
     Player[client].Reset();
 }
 
-public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 {
     if (!IsPlayerAlive(client))
     {
@@ -477,12 +436,13 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
 
     int iBonus = 0;
 
+    int bonus = fuckTimer_GetZoneBonus(zone);
     if (bonus > 0)
     {
         iBonus = 1;
     }
 
-    if (start)
+    if (fuckTimer_IsStartZone(zone, bonus))
     {
         Player[client].Reset();
 
@@ -529,16 +489,20 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, boo
         }
     }
 
-    if (stage > 1 && Player[client].StageTimes[iBonus] != null)
+    int iStage;
+    fuckTimer_GetStageByIndex(zone, Player[client].Bonus, iStage);
+    if (iStage > 1 && Player[client].StageTimes[iBonus] != null)
     {
-        Player[client].Stage = stage;
+        Player[client].Stage = iStage;
         Player[client].StageRunning = true;
         Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, 0.0);
     }
 
-    if (checkpoint > 1 && Player[client].CheckpointTimes[iBonus] != null)
+    int iCheckpoint;
+    fuckTimer_GetCheckpointByIndex(zone, Player[client].Bonus, iCheckpoint);
+    if (iCheckpoint > 1 && Player[client].CheckpointTimes[iBonus] != null)
     {
-        Player[client].Checkpoint = checkpoint;
+        Player[client].Checkpoint = iCheckpoint;
         Player[client].CheckpointRunning = true;
         Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
     }
