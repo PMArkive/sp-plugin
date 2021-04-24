@@ -50,7 +50,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     Core.Plugin = myself;
     
     Core.OnClientRestart = new GlobalForward("fuckTimer_OnClientRestart", ET_Ignore, Param_Cell);
-    Core.OnClientTeleport = new GlobalForward("fuckTimer_OnClientTeleport", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnClientTeleport = new GlobalForward("fuckTimer_OnClientTeleport", ET_Ignore, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_RestartClient", Native_RestartClient);
 
@@ -117,7 +117,7 @@ public Action Command_Start(int client, int args)
 
     if (iZone > 0)
     {
-        ClientTeleport(client, ZoneStart, 0);
+        ClientTeleport(client, 0);
 
         fuckZones_TeleportClientToZoneIndex(client, iZone);
     }
@@ -150,7 +150,7 @@ public Action Command_End(int client, int args)
 
     if (iZone > 0)
     {
-        ClientTeleport(client, ZoneEnd, 0);
+        ClientTeleport(client, 0);
 
         fuckZones_TeleportClientToZoneIndex(client, iZone);
     }
@@ -167,7 +167,7 @@ public Action Command_Restart(int client, int args)
 
     ClientRestart(client);
 
-    ClientTeleport(client, ZoneStart, 0);
+    ClientTeleport(client, 0);
 
     return Plugin_Handled;
 }
@@ -194,7 +194,7 @@ public Action Command_GoBack(int client, int args)
 
         iZone = fuckTimer_GetStageZone(iStage);
 
-        ClientTeleport(client, ZoneStage, iStage);
+        ClientTeleport(client, iStage);
     }
     else if (iBonus > 0)
     {
@@ -207,13 +207,13 @@ public Action Command_GoBack(int client, int args)
 
         iZone = fuckTimer_GetBonusZone(iBonus);
 
-        ClientTeleport(client, ZoneBonus, iBonus);
+        ClientTeleport(client, iBonus);
     }
     else
     {
         iZone = fuckTimer_GetStartZone();
 
-        ClientTeleport(client, ZoneStart, 0);
+        ClientTeleport(client, 0);
     }
 
     if (iZone > 0)
@@ -242,19 +242,19 @@ public Action Command_RestartStage(int client, int args)
     {
         iZone = fuckTimer_GetStageZone(iStage);
 
-        ClientTeleport(client, ZoneStage, iStage);
+        ClientTeleport(client, iStage);
     }
     else if (iBonus > 0)
     {
         iZone = fuckTimer_GetBonusZone(iBonus);
 
-        ClientTeleport(client, ZoneBonus, iBonus);
+        ClientTeleport(client, iBonus);
     }
     else
     {
         iZone = fuckTimer_GetStartZone();
 
-        ClientTeleport(client, ZoneStart, 0);
+        ClientTeleport(client, 0);
     }
 
     if (iZone > 0)
@@ -288,13 +288,13 @@ public Action Command_Bonus(int client, int args)
         {
             iZone = fuckTimer_GetBonusZone(1);
 
-            ClientTeleport(client, ZoneBonus, 1);
+            ClientTeleport(client, 1);
         }
         else
         {
             iZone = fuckTimer_GetBonusZone(iBonus);
 
-            ClientTeleport(client, ZoneStage, iBonus);
+            ClientTeleport(client, iBonus);
         }
     }
     else
@@ -313,14 +313,14 @@ public Action Command_Bonus(int client, int args)
         {
             iZone = fuckTimer_GetBonusZone(iTemp);
 
-            ClientTeleport(client, ZoneBonus, iTemp);
+            ClientTeleport(client, iTemp);
         }
         
         if (iZone  < 1)
         {
             iZone = fuckTimer_GetBonusZone(1);
 
-            ClientTeleport(client, ZoneBonus, 1);
+            ClientTeleport(client, 1);
         }
     }
 
@@ -355,13 +355,13 @@ public Action Command_Stage(int client, int args)
         {
             iZone = fuckTimer_GetStageZone(1);
 
-            ClientTeleport(client, ZoneStage, 1);
+            ClientTeleport(client, 1);
         }
         else
         {
             iZone = fuckTimer_GetStageZone(iStage);
 
-            ClientTeleport(client, ZoneStage, iStage);
+            ClientTeleport(client, iStage);
         }
     }
     else
@@ -380,14 +380,14 @@ public Action Command_Stage(int client, int args)
         {
             iZone = fuckTimer_GetStageZone(iTemp);
 
-            ClientTeleport(client, ZoneStage, iTemp);
+            ClientTeleport(client, iTemp);
         }
         
         if (iZone  < 1)
         {
             iZone = fuckTimer_GetStageZone(1);
 
-            ClientTeleport(client, ZoneStage, 1);
+            ClientTeleport(client, 1);
         }
     }
 
@@ -1253,11 +1253,10 @@ void ClientRestart(int client)
     Call_Finish();
 }
 
-void ClientTeleport(int client, eZone type, int level)
+void ClientTeleport(int client, int level)
 {
     Call_StartForward(Core.OnClientTeleport);
     Call_PushCell(client);
-    Call_PushCell(type);
     Call_PushCell(level);
     Call_Finish();
 }
