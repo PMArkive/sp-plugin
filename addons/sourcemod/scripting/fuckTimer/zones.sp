@@ -43,6 +43,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_IsEndZone", Native_IsEndZone);
     CreateNative("fuckTimer_IsMiscZone", Native_IsMiscZone);
     CreateNative("fuckTimer_IsValidatorZone", Native_IsValidatorZone);
+    CreateNative("fuckTimer_IsTeleToStartZone", Native_IsTeleToStartZone);
+    CreateNative("fuckTimer_IsStopZone", Native_IsStopZone);
+    CreateNative("fuckTimer_IsAntiJumpZone", Native_IsAntiJumpZone);
 
     CreateNative("fuckTimer_GetZoneBonus", Native_GetZoneBonus);
 
@@ -133,9 +136,24 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
         return;
     }
 
-    if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) && (iCheckpoint > 0 || iStage > 0))
+    if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
     {
         Zone[entity].Validator = view_as<bool>(StringToInt(sValue));
+    }
+
+    if (GetfuckTimerZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
+    {
+        Zone[entity].TeleToStart = view_as<bool>(StringToInt(sValue));
+    }
+
+    if (GetfuckTimerZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
+    {
+        Zone[entity].Stop = view_as<bool>(StringToInt(sValue));
+    }
+
+    if (GetfuckTimerZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
+    {
+        Zone[entity].AntiJump = view_as<bool>(StringToInt(sValue));
     }
 }
 
@@ -397,6 +415,45 @@ public int Native_IsValidatorZone(Handle plugin, int numParams)
     int iEntity = GetNativeCell(1);
 
     if (Zone[iEntity].Validator)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
+}
+
+public int Native_IsTeleToStartZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].TeleToStart)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
+}
+
+public int Native_IsStopZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].Stop)
+    {
+        SetNativeCellRef(2, Zone[iEntity].Bonus);
+        return true;
+    }
+
+    return false;
+}
+
+public int Native_IsAntiJumpZone(Handle plugin, int numParams)
+{
+    int iEntity = GetNativeCell(1);
+
+    if (Zone[iEntity].AntiJump)
     {
         SetNativeCellRef(2, Zone[iEntity].Bonus);
         return true;

@@ -6,9 +6,12 @@
 enum struct ZoneDetails
 {
     bool Start;
+    bool End;
     bool Misc;
     bool Validator;
-    bool End;
+    bool TeleToStart;
+    bool Stop;
+    bool AntiJump;
 
     int Bonus;
 
@@ -62,6 +65,9 @@ native bool fuckTimer_IsEndZone(int zone, int bonus);
 native bool fuckTimer_IsMiscZone(int zone, int bonus);
 
 native bool fuckTimer_IsValidatorZone(int zone, int bonus);
+native bool fuckTimer_IsTeleToStartZone(int zone, int bonus);
+native bool fuckTimer_IsStopZone(int zone, int bonus);
+native bool fuckTimer_IsAntiJumpZone(int zone, int bonus);
 
 /**
  * Returns the bonus level of the specific zone.
@@ -94,6 +100,9 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_IsEndZone");
     MarkNativeAsOptional("fuckTimer_IsMiscZone");
     MarkNativeAsOptional("fuckTimer_IsValidatorZone");
+    MarkNativeAsOptional("fuckTimer_IsTeleToStartZone");
+    MarkNativeAsOptional("fuckTimer_IsStopZone");
+    MarkNativeAsOptional("fuckTimer_IsAntiJumpZone");
 
     MarkNativeAsOptional("fuckTimer_GetZoneBonus");
 
