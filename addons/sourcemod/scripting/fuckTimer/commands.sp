@@ -113,7 +113,7 @@ public Action Command_Start(int client, int args)
 
     fuckTimer_ResetClientTimer(client);
 
-    int iZone = fuckTimer_GetStartZone();
+    int iZone = fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client));
 
     if (iZone > 0)
     {
@@ -146,7 +146,7 @@ public Action Command_End(int client, int args)
 
     fuckTimer_ResetClientTimer(client);
 
-    int iZone = fuckTimer_GetEndZone();
+    int iZone = fuckTimer_GetEndZone(fuckTimer_GetClientBonus(client));
 
     if (iZone > 0)
     {
@@ -186,17 +186,9 @@ public Action Command_GoBack(int client, int args)
 
     fuckTimer_ResetClientTimer(client);
 
-    PrintToChat(client, "Stage: %d, Bonus: %d", iStage, iBonus);
+    PrintToChat(client, "Before - Stage: %d, Bonus: %d", iStage, iBonus);
 
-    if (iStage > 1)
-    {
-        iStage--;
-
-        iZone = fuckTimer_GetStageZone(iStage);
-
-        ClientTeleport(client, iStage);
-    }
-    else if (iBonus > 0)
+    if (iBonus > 0)
     {
         iBonus--;
 
@@ -204,14 +196,21 @@ public Action Command_GoBack(int client, int args)
         {
             iBonus = 1;
         }
+    }
 
-        iZone = fuckTimer_GetBonusZone(iBonus);
+    PrintToChat(client, "After - Stage: %d, Bonus: %d", iStage, iBonus);
 
-        ClientTeleport(client, iBonus);
+    if (iStage > 1)
+    {
+        iStage--;
+
+        iZone = fuckTimer_GetStageZone(iBonus, iStage);
+
+        ClientTeleport(client, iStage);
     }
     else
     {
-        iZone = fuckTimer_GetStartZone();
+        iZone = fuckTimer_GetStartZone(iBonus);
 
         ClientTeleport(client, 0);
     }
@@ -240,19 +239,13 @@ public Action Command_RestartStage(int client, int args)
 
     if (iStage > 1)
     {
-        iZone = fuckTimer_GetStageZone(iStage);
+        iZone = fuckTimer_GetStageZone(iBonus, iStage);
 
         ClientTeleport(client, iStage);
     }
     else if (iBonus > 0)
     {
-        iZone = fuckTimer_GetBonusZone(iBonus);
-
-        ClientTeleport(client, iBonus);
-    }
-    else
-    {
-        iZone = fuckTimer_GetStartZone();
+        iZone = fuckTimer_GetStartZone(iBonus);
 
         ClientTeleport(client, 0);
     }
@@ -286,13 +279,13 @@ public Action Command_Bonus(int client, int args)
     {
         if (iBonus < 2)
         {
-            iZone = fuckTimer_GetBonusZone(1);
+            iZone = fuckTimer_GetStartZone(1);
 
             ClientTeleport(client, 1);
         }
         else
         {
-            iZone = fuckTimer_GetBonusZone(iBonus);
+            iZone = fuckTimer_GetStartZone(iBonus);
 
             ClientTeleport(client, iBonus);
         }
@@ -311,14 +304,14 @@ public Action Command_Bonus(int client, int args)
 
         if (iTemp)
         {
-            iZone = fuckTimer_GetBonusZone(iTemp);
+            iZone = fuckTimer_GetStartZone(iTemp);
 
             ClientTeleport(client, iTemp);
         }
         
         if (iZone  < 1)
         {
-            iZone = fuckTimer_GetBonusZone(1);
+            iZone = fuckTimer_GetStartZone(1);
 
             ClientTeleport(client, 1);
         }
@@ -344,56 +337,42 @@ public Action Command_Stage(int client, int args)
         return Plugin_Handled;
     }
 
-    int iZone = 0;
-    int iStage = fuckTimer_GetClientStage(client);
-
-    fuckTimer_ResetClientTimer(client);
-
-    if (args == 0)
+    if (args == 2)
     {
-        if (iStage < 2)
+        int iZone = 0;
+
+        fuckTimer_ResetClientTimer(client);
+
+        char sBonus[12], sStage[12];
+        GetCmdArg(1, sBonus, sizeof(sBonus));
+        GetCmdArg(2, sStage, sizeof(sStage));
+
+        int iBonus = 0;
+        int iStage = 0;
+        
+        if (IsStringNumeric(sBonus))
         {
-            iZone = fuckTimer_GetStageZone(1);
+            iBonus = StringToInt(sBonus);
+        }
+
+        if (IsStringNumeric(sStage))
+        {
+            iStage = StringToInt(sStage);
+        }
+
+        iZone = fuckTimer_GetStageZone(iBonus, iStage);
+        
+        if (iZone == -1)
+        {
+            iZone = fuckTimer_GetStageZone(0, 1);
 
             ClientTeleport(client, 1);
         }
-        else
+
+        if (iZone > 0)
         {
-            iZone = fuckTimer_GetStageZone(iStage);
-
-            ClientTeleport(client, iStage);
+            fuckZones_TeleportClientToZoneIndex(client, iZone);
         }
-    }
-    else
-    {
-        char sBuffer[12];
-        GetCmdArgString(sBuffer, sizeof(sBuffer));
-
-        int iTemp = 0;
-        
-        if (IsStringNumeric(sBuffer))
-        {
-            iTemp = StringToInt(sBuffer);
-        }
-
-        if (iTemp)
-        {
-            iZone = fuckTimer_GetStageZone(iTemp);
-
-            ClientTeleport(client, iTemp);
-        }
-        
-        if (iZone  < 1)
-        {
-            iZone = fuckTimer_GetStageZone(1);
-
-            ClientTeleport(client, 1);
-        }
-    }
-
-    if (iZone > 0)
-    {
-        fuckZones_TeleportClientToZoneIndex(client, iZone);
     }
 
     return Plugin_Handled;
