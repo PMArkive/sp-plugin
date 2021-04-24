@@ -100,7 +100,7 @@ public void fuckTimer_OnAPIReady()
 
 public void fuckTimer_OnClientRestart(int client)
 {
-    int iZone = fuckTimer_GetStageZone(fuckTimer_GetClientBonus(client), fuckTimer_GetClientStage(client));
+    int iZone = fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client));
 
     if (iZone > 0)
     {
@@ -213,8 +213,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 {
     int iBonus;
-    int iStage;
-    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
 
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
@@ -225,8 +224,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 {
     int iBonus;
-    int iStage;
-    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
 
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {

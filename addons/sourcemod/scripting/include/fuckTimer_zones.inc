@@ -19,10 +19,10 @@ enum struct ZoneDetails
     int Bonus;
     int Validators;
 
-    IntMap Checkpoints;
-    IntMap Stages;
+    int Checkpoint;
+    int Stage;
 
-    void Init()
+    /* void Init()
     {
         this.Checkpoints = new IntMap();
         this.Stages = new IntMap();
@@ -32,7 +32,7 @@ enum struct ZoneDetails
     {
         delete this.Checkpoints;
         delete this.Stages;
-    }
+    } */
 }
 
 forward void fuckTimer_OnEnteringZone(int client, int zone, const char[] name);
@@ -56,42 +56,42 @@ native int fuckTimer_GetEndZone(int bonus);
 /**
  * Bonus will be set, if return is true
  */
-native bool fuckTimer_IsStartZone(int zone, int bonus);
+native bool fuckTimer_IsStartZone(int zone, int &bonus);
 
 /**
  * Bonus will be set, if return is true
  */
-native bool fuckTimer_IsEndZone(int zone, int bonus);
+native bool fuckTimer_IsEndZone(int zone, int &bonus);
 
 /**
  * Bonus will be set, if return is true
  */
-native bool fuckTimer_IsMiscZone(int zone, int bonus);
+native bool fuckTimer_IsMiscZone(int zone, int &bonus);
 
 /**
  * Bonus will be set, if return is true
  */
-native bool fuckTimer_IsValidatorZone(int zone, int bonus);
+native bool fuckTimer_IsValidatorZone(int zone, int &bonus);
 
 /**
  * Bonus will be set, if return is true
  */
-native bool fuckTimer_IsTeleToStartZone(int zone, int bonus);
+native bool fuckTimer_IsTeleToStartZone(int zone, int &bonus);
 
 /**
  * Bonus will be set, if return is true
  */
-native bool fuckTimer_IsStopZone(int zone, int bonus);
+native bool fuckTimer_IsStopZone(int zone, int &bonus);
 
 /**
  * Bonus will be set, if return is true
  */
-native bool fuckTimer_IsAntiJumpZone(int zone, int bonus);
+native bool fuckTimer_IsAntiJumpZone(int zone, int &bonus);
 
 /**
  * Bonus and validators will be set, if return is true
  */
-native bool fuckTimer_IsCheckerZone(int zone, int bonus, int validators);
+native bool fuckTimer_IsCheckerZone(int zone, int &bonus, int &validators);
 
 /**
  * Returns the bonus level of the specific zone.
@@ -104,14 +104,14 @@ native int fuckTimer_GetCheckpointZone(int bonus, int checkpoint);
 native int fuckTimer_GetStageZone(int bonus, int stage);
 
 /**
- * Paramter bonus and checkpoint will be set.
+ * Paramter bonus will be set.
  */
-native bool fuckTimer_GetCheckpointByIndex(int zone, int bonus, int checkpoint);
+native int fuckTimer_GetCheckpointByIndex(int zone, int &bonus);
 
 /**
- * Paramter bonus and stage will be set.
+ * Paramter bonus will be set.
  */
-native bool fuckTimer_GetStageByIndex(int zone, int bonus, int stage);
+native int fuckTimer_GetStageByIndex(int zone, int &bonus);
 
 
 #if !defined REQUIRE_PLUGIN

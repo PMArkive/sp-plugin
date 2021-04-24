@@ -61,19 +61,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-public void OnMapStart()
-{
-    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
-    {
-        if (Zone[i].Stages == null)
-        {
-            continue;
-        }
-
-        Zone[i].Reset();
-    }
-}
-
 public void OnConfigsExecuted()
 {
     Core.DisableCZZones = FindConVar("fuckZones_disable_circle_polygon_zones");
@@ -96,11 +83,6 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
 
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
-    if (Zone[entity].Stages == null)
-    {
-        Zone[entity].Init();
-    }
-
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
 
     char sValue[12];
@@ -116,7 +98,7 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     if (Zone[entity].Start)
     {
-        Zone[entity].Stages.SetValue(1, entity);
+        Zone[entity].Stage = 1;
     }
 
     GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue));
@@ -127,13 +109,13 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     if (iCheckpoint > 0)
     {
-        Zone[entity].Checkpoints.SetValue(iCheckpoint, entity);
+        Zone[entity].Checkpoint = iCheckpoint;
         return;
     }
     
     if (iStage > 0)
     {
-        Zone[entity].Stages.SetValue(iStage, entity);
+        Zone[entity].Stage = iStage;
         return;
     }
 
@@ -201,12 +183,6 @@ public void OneZoneStartTouch(int client, int entity, StringMap values)
     Call_PushCell(client);
     Call_PushCell(entity);
     Call_PushString(sName);
-    Call_PushCell(IsStartZone(values));
-    Call_PushCell(IsMiscZone(values));
-    Call_PushCell(IsEndZone(values));
-    Call_PushCell(GetStageNumber(values));
-    Call_PushCell(GetCheckpointNumber(values));
-    Call_PushCell(GetBonusNumber(values));
     Call_Finish();
 }
 
@@ -219,12 +195,6 @@ public void OnZoneTouch(int client, int entity, StringMap values)
     Call_PushCell(client);
     Call_PushCell(entity);
     Call_PushString(sName);
-    Call_PushCell(IsStartZone(values));
-    Call_PushCell(IsMiscZone(values));
-    Call_PushCell(IsEndZone(values));
-    Call_PushCell(GetStageNumber(values));
-    Call_PushCell(GetCheckpointNumber(values));
-    Call_PushCell(GetBonusNumber(values));
     Call_Finish();
 }
 
@@ -239,96 +209,7 @@ public void OnZoneEndTouch(int client, int entity, StringMap values)
     Call_PushCell(client);
     Call_PushCell(entity);
     Call_PushString(sName);
-    Call_PushCell(IsStartZone(values));
-    Call_PushCell(IsMiscZone(values));
-    Call_PushCell(IsEndZone(values));
-    Call_PushCell(GetStageNumber(values));
-    Call_PushCell(GetCheckpointNumber(values));
-    Call_PushCell(GetBonusNumber(values));
     Call_Finish();
-}
-
-bool IsStartZone(StringMap values)
-{
-    char sValue[MAX_KEY_VALUE_LENGTH];
-    if (GetZoneValue(values, "Start", sValue, sizeof(sValue)))
-    {
-        return view_as<bool>(StringToInt(sValue));
-    }
-    return false;
-}
-
-bool IsMiscZone(StringMap values)
-{
-    char sValue[MAX_KEY_VALUE_LENGTH];
-    if (GetZoneValue(values, "Misc", sValue, sizeof(sValue)))
-    {
-        return view_as<bool>(StringToInt(sValue));
-    }
-    return false;
-}
-
-bool IsEndZone(StringMap values)
-{
-    char sValue[MAX_KEY_VALUE_LENGTH];
-    if (GetZoneValue(values, "End", sValue, sizeof(sValue)))
-    {
-        return view_as<bool>(StringToInt(sValue));
-    }
-    return false;
-}
-
-int GetStageNumber(StringMap values)
-{
-    char sValue[MAX_KEY_VALUE_LENGTH];
-    if (GetZoneValue(values, "Stage", sValue, sizeof(sValue)))
-    {
-        return StringToInt(sValue);
-    }
-    return 0;
-}
-
-int GetCheckpointNumber(StringMap values)
-{
-    char sValue[MAX_KEY_VALUE_LENGTH];
-    if (GetZoneValue(values, "Checkpoint", sValue, sizeof(sValue)))
-    {
-        return StringToInt(sValue);
-    }
-    return 0;
-}
-
-int GetBonusNumber(StringMap values)
-{
-    char sValue[MAX_KEY_VALUE_LENGTH];
-    if (GetZoneValue(values, "Bonus", sValue, sizeof(sValue)))
-    {
-        return StringToInt(sValue);
-    }
-    return 0;
-}
-
-
-bool GetZoneValue(StringMap values, const char[] key, char[] value, int length)
-{
-    char sKey[MAX_KEY_NAME_LENGTH];
-    StringMapSnapshot keys = values.Snapshot();
-
-    for (int x = 0; x < keys.Length; x++)
-    {
-        keys.GetKey(x, sKey, sizeof(sKey));
-
-        if (StrEqual(sKey, key, false))
-        {
-            values.GetString(sKey, value, length);
-
-            delete keys;
-            return true;
-        }
-    }
-
-    delete keys;
-    return false;
 }
 
 bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
@@ -494,9 +375,9 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
 
     for (int i = MaxClients; i <= MAX_ENTITIES; i++)
     {
-        if (Zone[i].Bonus == bonus)
+        if (Zone[i].Bonus == bonus && Zone[i].Checkpoint == checkpoint)
         {
-            return Zone[i].Checkpoints.GetInt(checkpoint);
+            return i;
         }
     }
 
@@ -509,17 +390,11 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     int stage = GetNativeCell(2);
 
     for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+
     {
-        if (Zone[i].Bonus == bonus)
+        if (Zone[i].Bonus == bonus && Zone[i].Stage == stage)
         {
-            if (stage > 1)
-            {
-                return Zone[i].Stages.GetInt(stage);
-            }
-            else
-            {
-                return i;
-            }
+            return i;
         }
     }
 
@@ -535,53 +410,13 @@ public int Native_GetCheckpointByIndex(Handle plugin, int numParams)
 {
     int iEntity = GetNativeCell(1);
 
-    if (Zone[iEntity].Checkpoints != null)
-    {
-        SetNativeCellRef(2, Zone[iEntity].Bonus);
-        
-        IntMapSnapshot snap = Zone[iEntity].Checkpoints.Snapshot();
-        int iTemp = 0;
-
-        for (int i = 0; i < snap.Length; i++)
-        {
-            iTemp = Zone[iEntity].Checkpoints.GetInt(snap.GetKey(i));
-
-            if (iTemp == iEntity)
-            {
-                SetNativeCellRef(3, snap.GetKey(i));
-                return true;
-            }
-        }
-
-        delete snap;
-    }
-
-    return false;
+    SetNativeCellRef(2, Zone[iEntity].Bonus);
+    return Zone[iEntity].Checkpoint;
 }
 public int Native_GetStageByIndex(Handle plugin, int numParams)
 {
     int iEntity = GetNativeCell(1);
 
-    if (Zone[iEntity].Stages != null)
-    {
-        SetNativeCellRef(2, Zone[iEntity].Bonus);
-        
-        IntMapSnapshot snap = Zone[iEntity].Stages.Snapshot();
-        int iTemp = 0;
-
-        for (int i = 0; i < snap.Length; i++)
-        {
-            iTemp = Zone[iEntity].Stages.GetInt(snap.GetKey(i));
-
-            if (iTemp == iEntity)
-            {
-                SetNativeCellRef(3, snap.GetKey(i));
-                return true;
-            }
-        }
-
-        delete snap;
-    }
-
-    return false;
+    SetNativeCellRef(2, Zone[iEntity].Bonus);
+    return Zone[iEntity].Stage;
 }

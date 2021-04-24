@@ -253,8 +253,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         if (fuckTimer_IsValidatorZone(zone, iBonus))
         {
-            int iStage = 0;
-            fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+            int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
 
             if (iStage == Player[client].Stage)
             {
@@ -286,16 +285,14 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     }
 
     // Fix for missing checkpoint entry in end zone
-    int iCheckpoint = 0;
-    fuckTimer_GetCheckpointByIndex(zone, iBonus, iCheckpoint);
+    int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
     if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iCheckpoint < 1 && Player[client].Checkpoint > 0)
     {
         Player[client].Checkpoint++;
         iCheckpoint = Player[client].Checkpoint;
     }
 
-    int iStage = 0;
-    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     
     if (iStage > 0)
     {
@@ -410,8 +407,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         SetClientStartValues(client, iBonus);
     }
 
-    int iStage;
-    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
@@ -489,8 +485,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         }
     }
 
-    int iStage;
-    fuckTimer_GetStageByIndex(zone, Player[client].Bonus, iStage);
+    int iStage = fuckTimer_GetStageByIndex(zone, Player[client].Bonus);
     if (iStage > 1 && Player[client].StageTimes[iBonus] != null)
     {
         Player[client].Stage = iStage;
@@ -498,8 +493,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, 0.0);
     }
 
-    int iCheckpoint;
-    fuckTimer_GetCheckpointByIndex(zone, Player[client].Bonus, iCheckpoint);
+    int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, Player[client].Bonus);
     if (iCheckpoint > 1 && Player[client].CheckpointTimes[iBonus] != null)
     {
         Player[client].Checkpoint = iCheckpoint;

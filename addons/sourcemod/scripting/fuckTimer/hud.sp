@@ -206,7 +206,11 @@ public void OnGameFrame()
         float fCPStageTime = 0.0;
 
         int iValidator, iTemp;
-        fuckTimer_IsCheckerZone(Player[client].LastZone, iTemp, iValidator);
+
+        if (Player[client].LastZone > 0)
+        {
+            fuckTimer_IsCheckerZone(Player[client].LastZone, iTemp, iValidator);
+        }
 
         if (imStages.GetInt(iBonus) > 0)
         {
@@ -377,8 +381,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "End");
     }
 
-    int iStage;
-    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     
     if (iStage > 0)
     {
