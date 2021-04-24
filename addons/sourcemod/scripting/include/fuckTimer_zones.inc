@@ -7,26 +7,24 @@ enum struct ZoneDetails
 {
     bool Start;
     bool Misc;
+    bool Validator;
     bool End;
 
     int Bonus;
 
     IntMap Checkpoints;
     IntMap Stages;
-    IntMap Validators;
 
     void Init()
     {
         this.Checkpoints = new IntMap();
         this.Stages = new IntMap();
-        this.Validators = new IntMap();
     }
 
     void Reset()
     {
         delete this.Checkpoints;
         delete this.Stages;
-        delete this.Validators;
     }
 }
 
@@ -51,14 +49,14 @@ native int fuckTimer_GetEndZone(int bonus);
 /**
  * Bonus will be set, if return is true
  */
-
 native bool fuckTimer_IsStartZone(int zone, int bonus);
 
 /**
  * Bonus will be set, if return is true
  */
-
 native bool fuckTimer_IsEndZone(int zone, int bonus);
+
+native bool fuckTimer_IsValidatorZone(int zone, int bonus);
 
 /**
  * Returns the bonus level of the specific zone.
@@ -72,19 +70,13 @@ native int fuckTimer_GetStageZone(int bonus, int stage);
 
 /**
  * Paramter bonus and checkpoint will be set.
- *
- * @return     Return description
  */
 native bool fuckTimer_GetCheckpointByIndex(int zone, int bonus, int checkpoint);
 
 /**
  * Paramter bonus and stage will be set.
- *
- * @return     Return description
  */
 native bool fuckTimer_GetStageByIndex(int zone, int bonus, int stage);
-
-native int fuckTimer_GetValidatorCount(int bonus, int stage = 0);
 
 
 #if !defined REQUIRE_PLUGIN
@@ -95,6 +87,7 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
 
     MarkNativeAsOptional("fuckTimer_IsStartZone");
     MarkNativeAsOptional("fuckTimer_IsEndZone");
+    MarkNativeAsOptional("fuckTimer_IsValidatorZone");
 
     MarkNativeAsOptional("fuckTimer_GetZoneBonus");
 
@@ -103,8 +96,6 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
 
     MarkNativeAsOptional("fuckTimer_GetCheckpointByIndex");
     MarkNativeAsOptional("fuckTimer_GetStageByIndex");
-
-    MarkNativeAsOptional("fuckTimer_GetValidatorCount");
 }
 #endif
 

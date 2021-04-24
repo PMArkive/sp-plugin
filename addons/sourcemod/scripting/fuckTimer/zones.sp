@@ -41,6 +41,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_IsStartZone", Native_IsStartZone);
     CreateNative("fuckTimer_IsEndZone", Native_IsEndZone);
+    CreateNative("fuckTimer_IsValidatorZone", Native_IsValidatorZone);
 
     CreateNative("fuckTimer_GetZoneBonus", Native_GetZoneBonus);
 
@@ -49,8 +50,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_GetCheckpointByIndex", Native_GetCheckpointByIndex);
     CreateNative("fuckTimer_GetStageByIndex", Native_GetStageByIndex);
-
-    CreateNative("fuckTimer_GetValidatorCount", Native_GetValidatorCount);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -135,12 +134,7 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)) && (iCheckpoint > 0 || iStage > 0))
     {
-        bool bValidator = view_as<bool>(StringToInt(sValue));
-
-        if (bValidator)
-        {
-            Zone[entity].Validators.SetValue(Zone[entity].Bonus, Zone[entity].Validators.GetInt(Zone[entity].Bonus) + 1);
-        }
+        Zone[entity].Validator = view_as<bool>(StringToInt(sValue));
     }
 }
 
@@ -384,6 +378,11 @@ public int Native_IsEndZone(Handle plugin, int numParams)
     return false;
 }
 
+public int Native_IsValidatorZone(Handle plugin, int numParams)
+{
+    return Zone[GetNativeCell(1)].Validator;
+}
+
 public int Native_GetCheckpointZone(Handle plugin, int numParams)
 {
     int bonus = GetNativeCell(1);
@@ -414,20 +413,6 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     }
 
     return -1;
-}
-
-public int Native_GetValidatorCount(Handle plugin, int numParams)
-{
-    if (fuckTimer_GetAmountOfStages() > 1)
-    {
-        
-    }
-    else
-    {
-        
-    }
-    
-    return 0;
 }
 
 public int Native_GetZoneBonus(Handle plugin, int numParams)
