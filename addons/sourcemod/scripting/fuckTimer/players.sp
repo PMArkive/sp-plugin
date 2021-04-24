@@ -100,7 +100,7 @@ public void fuckTimer_OnAPIReady()
 
 public void fuckTimer_OnClientRestart(int client)
 {
-    int iZone = fuckTimer_GetStartZone();
+    int iZone = fuckTimer_GetStageZone(fuckTimer_GetClientBonus(client), fuckTimer_GetClientStage(client));
 
     if (iZone > 0)
     {
@@ -133,7 +133,7 @@ public void Frame_PlayerSpawn(int userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
-        int iZone = fuckTimer_GetStartZone();
+        int iZone = fuckTimer_GetStartZone(0);
 
         if (iZone > 0)
         {
@@ -210,17 +210,25 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     return Plugin_Continue;
 }
 
-public void fuckTimer_OnTouchZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 {
-    if (!misc && stage > 0)
+    int iBonus;
+    int iStage;
+    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+
+    if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
         Player[client].InStage = true;
     }
 }
 
-public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name, bool start, bool misc, bool end, int stage, int checkpoint, int bonus)
+public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 {
-    if (!misc && stage > 0)
+    int iBonus;
+    int iStage;
+    fuckTimer_GetStageByIndex(zone, iBonus, iStage);
+
+    if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
         Player[client].InStage = false;
     }
