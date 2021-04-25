@@ -238,7 +238,6 @@ public void OnGameFrame()
             GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
             imBuffer.SetString(HKStageTime, sBuffer);
-            PrintToChat(client, "Test 3");
 
             FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 0 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);

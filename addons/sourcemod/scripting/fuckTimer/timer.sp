@@ -163,13 +163,22 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
             if (StrEqual(sKey, "Checkpoint", false))
             {
+                if (Core.Checkpoints.GetInt(iBonus) == -1)
+                {
+                    Core.Checkpoints.SetValue(iBonus, 0);
+                }
+                else if (Core.Checkpoints.GetInt(iBonus) == 1)
+                {
+                    Core.Checkpoints.SetValue(iBonus, 2); // If we've a checkpoint map here, add one additional checkpoint more for the end zone as workaround without adding/changing each map zone config.
+                }
+
                 smValues.GetString(sKey, sValue, sizeof(sValue));
 
                 iCheckpoint = StringToInt(sValue);
 
                 if (iCheckpoint > 0 && iCheckpoint > Core.Checkpoints.GetInt(iBonus))
                 {
-                    Core.Checkpoints.SetValue(iBonus, iCheckpoint);
+                    Core.Checkpoints.SetValue(iBonus, Core.Checkpoints.GetInt(iBonus) + 1);
                 }
             }
 
@@ -280,7 +289,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
     if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iCheckpoint < 1 && Player[client].Checkpoint > 0)
     {
-        Player[client].Checkpoint++;
+        // Player[client].Checkpoint++;
         iCheckpoint = Player[client].Checkpoint;
     }
 
@@ -329,6 +338,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     
     if (iCheckpoint > 0)
     {
+        iCheckpoint = Player[client].Checkpoint + 1;
         Player[client].Stage = 0;
 
         float fBuffer = 0.0;
@@ -337,18 +347,26 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         if (fBuffer > 0.0)
         {
             Player[client].CheckpointTimes[iBonus].SetValue(iCheckpoint, 0.0);
-            return;
         }
 
         int iPrevCheckpoint = iCheckpoint - 1;
 
-        if (iPrevCheckpoint < 1)
+        if (iPrevCheckpoint < 0)
         {
-            iPrevCheckpoint = 1;
+            iPrevCheckpoint = 0;
         }
 
         float fStart;
         Player[client].CheckpointTimes[iBonus].GetValue(iPrevCheckpoint, fStart);
+
+        // We increase this here, to show the correct Checkpoint Number in players chat
+        iPrevCheckpoint++;
+
+        if (iPrevCheckpoint > Core.Checkpoints.GetInt(iBonus))
+        {
+            iPrevCheckpoint = Core.Checkpoints.GetInt(iBonus);
+        }
+
         PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, fStart);
         Player[client].CheckpointRunning = false;
     }
@@ -459,7 +477,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
                     Player[client].CheckpointTimes[iBonus] = new IntMap();
                 }
 
-                Player[client].Checkpoint = 1;
+                Player[client].Checkpoint = 0;
                 Player[client].CheckpointRunning = true;
                 Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
             }
@@ -488,7 +506,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, Player[client].Bonus);
     if (iCheckpoint > 1 && Player[client].CheckpointTimes[iBonus] != null)
     {
-        Player[client].Checkpoint = iCheckpoint;
+        Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
         Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
     }
@@ -555,7 +573,7 @@ void SetClientStartValues(int client, int bonus)
     }
     else if (Core.Checkpoints.GetInt(bonus) > 0)
     {
-        Player[client].Checkpoint = 1;
+        Player[client].Checkpoint = 0;
     }
 }
 
