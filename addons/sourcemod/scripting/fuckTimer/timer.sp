@@ -161,11 +161,17 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
             if (StrEqual(sKey, "Checkpoint", false))
             {
+                if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
+                {
+                    iBonus = StringToInt(sValue);
+                }
+
                 if (Core.Checkpoints.GetInt(iBonus) == -1)
                 {
                     Core.Checkpoints.SetValue(iBonus, 0);
                 }
-                else if (Core.Checkpoints.GetInt(iBonus) == 1)
+                
+                if (Core.Checkpoints.GetInt(iBonus) == 1)
                 {
                     Core.Checkpoints.SetValue(iBonus, 2); // If we've a checkpoint map here, add one additional checkpoint more for the end zone as workaround without adding/changing each map zone config.
                 }
@@ -573,34 +579,27 @@ public any Native_GetClientTime(Handle plugin, int numParams)
     TimeType type = GetNativeCell(2);
 
     int level = GetNativeCell(3);
-    float fTime = 0.0;
 
     if (type == TimeMain)
     {
         if (Player[client].Times != null)
         {
-            Player[client].Times.GetValue(level, fTime);
+            return Player[client].Times.GetFloat(level);
         }
-        
-        return fTime;
     }
     else if (type == TimeCheckpoint)
     {
         if (Player[client].CheckpointTimes != null)
         {
-            Player[client].CheckpointTimes.GetValue(level, fTime);
+            return Player[client].CheckpointTimes.GetFloat(level);
         }
-        
-        return fTime;
     }
     else if (type == TimeStage)
     {
         if (Player[client].StageTimes != null)
         {
-            Player[client].StageTimes.GetValue(level, fTime);
+            return Player[client].StageTimes.GetFloat(level);
         }
-        
-        return fTime;
     }
 
     return 0.0;

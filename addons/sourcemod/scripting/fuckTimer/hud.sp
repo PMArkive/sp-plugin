@@ -181,7 +181,9 @@ public void OnGameFrame()
         Format(sBuffer, sizeof(sBuffer), "Style: %s", sBuffer);
         imBuffer.SetString(HKStyle, sBuffer);
 
-        fTime = fuckTimer_GetClientTime(client, TimeMain);
+        int iBonus = fuckTimer_GetClientBonus(client);
+
+        fTime = fuckTimer_GetClientTime(client, TimeMain, iBonus);
 
         GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
@@ -193,7 +195,6 @@ public void OnGameFrame()
             imBuffer.SetString(HKZone, sBuffer);
         }
 
-        int iBonus = fuckTimer_GetClientBonus(client);
         bool bReplaceBonus = true;
 
         int iCheckpoint = fuckTimer_GetClientCheckpoint(client);
@@ -270,8 +271,12 @@ public void OnGameFrame()
 
         if (bReplaceBonus && iMaxBonus > 0 && iBonus > 0)
         {
-            FormatEx(sBuffer, sizeof(sBuffer), "Bonus: %d/%d", iBonus, iMaxBonus);
-            imBuffer.SetString(HKCurrentStage, sBuffer);
+            if (bStartZone || bEndZone)
+            {
+                FormatEx(sBuffer, sizeof(sBuffer), "Bonus: %d/%d", iBonus, iMaxBonus);
+                imBuffer.SetString(HKCurrentStage, sBuffer);
+            }
+
             sBuffer[0] = '\0';
 
             if (iStartMatches != -1)
