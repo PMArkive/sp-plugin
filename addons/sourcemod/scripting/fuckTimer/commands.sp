@@ -337,23 +337,17 @@ public Action Command_Stage(int client, int args)
         return Plugin_Handled;
     }
 
-    if (args == 2)
+    if (args == 1)
     {
         int iZone = 0;
 
         fuckTimer_ResetClientTimer(client);
 
-        char sBonus[12], sStage[12];
-        GetCmdArg(1, sBonus, sizeof(sBonus));
+        char sStage[12];
         GetCmdArg(2, sStage, sizeof(sStage));
 
-        int iBonus = 0;
+        int iBonus = fuckTimer_GetClientBonus(client);
         int iStage = 0;
-        
-        if (IsStringNumeric(sBonus))
-        {
-            iBonus = StringToInt(sBonus);
-        }
 
         if (IsStringNumeric(sStage))
         {
