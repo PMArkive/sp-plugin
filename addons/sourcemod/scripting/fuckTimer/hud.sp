@@ -501,13 +501,13 @@ bool GetOldPosition(int client, int key, HUDEntry hEntry[2])
 
 void PrintCSGOHUDText(int client, const char[] format, any ...)
 {
-    char sMessage[225];
+    char sMessage[2048];
     VFormat(sMessage, sizeof(sMessage), format, 3);
-    Format(sMessage, sizeof(sMessage), "</font> %s%s ", Core.Title, sMessage);
+    Format(sMessage, sizeof(sMessage), "</font> %s%s", Core.Title, sMessage);
 
-    for(int i = strlen(sMessage); i < sizeof(sMessage); i++)
+    for(int i = strlen(sMessage); i < sizeof(sMessage)-1; i++)
     {
-        sMessage[i] = '\n';
+        sMessage[i] = ' ';
     }
 
     Protobuf pbBuf = view_as<Protobuf>(StartMessageOne("TextMsg", client, USERMSG_RELIABLE | USERMSG_BLOCKHOOKS));

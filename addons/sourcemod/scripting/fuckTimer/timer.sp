@@ -149,6 +149,11 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
             if (StrEqual(sKey, "Stage", false))
             {
+                if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
+                {
+                    iBonus = StringToInt(sValue);
+                }
+
                 smValues.GetString(sKey, sValue, sizeof(sValue));
 
                 iStage = StringToInt(sValue);
@@ -289,15 +294,12 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         return;
     }
 
-    // Fix for missing checkpoint entry in end zone
-    int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
-    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iCheckpoint < 1 && Player[client].Checkpoint > 0)
-    {
-        // Player[client].Checkpoint++;
-        iCheckpoint = Player[client].Checkpoint;
-    }
-
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
+    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iStage < 1 && Player[client].Stage > 0)
+    {
+        Player[client].Stage++;
+        iStage = Player[client].Stage;
+    }
     
     if (iStage > 0)
     {
@@ -338,6 +340,14 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Player[client].StageTimes.GetValue(iPrevStage, fStart);
         PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fStart);
         Player[client].StageRunning = false;
+    }
+
+    // Fix for missing checkpoint entry in end zone
+    int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
+    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && iCheckpoint < 1 && Player[client].Checkpoint > 0)
+    {
+        // Player[client].Checkpoint++;
+        iCheckpoint = Player[client].Checkpoint;
     }
     
     if (iCheckpoint > 0)
