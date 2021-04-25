@@ -28,9 +28,13 @@ enum struct PlayerData
     IntMap StageTimes[2];
     IntMap CheckpointTimes[2];
 
-    void Reset()
+    void Reset(bool noCheckpoint = false)
     {
-        this.Checkpoint = 0;
+        if (!noCheckpoint)
+        {
+            this.Checkpoint = 0;
+        }
+
         this.Stage = 0;
         this.Bonus = 0;
 
@@ -334,6 +338,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     
     if (iCheckpoint > 0)
     {
+        if (Player[client].CheckpointTimes[iBonus] == null)
+        {
+            return;
+        }
+        
         iCheckpoint = Player[client].Checkpoint + 1;
         Player[client].Stage = 0;
 
@@ -365,6 +374,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, fStart);
         Player[client].CheckpointRunning = false;
+
+        if (fuckTimer_IsEndZone(zone, Player[client].Bonus))
+        {
+            Player[client].Checkpoint++;
+        }
     }
     
     int bonus = fuckTimer_GetZoneBonus(zone);
@@ -393,7 +407,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         
         Player[client].MainRunning = false;
 
-        Player[client].Reset();
+        Player[client].Reset(true);
         Player[client].Bonus = bonus;
     }
 }
