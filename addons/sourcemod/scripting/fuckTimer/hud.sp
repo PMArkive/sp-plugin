@@ -173,6 +173,9 @@ public void OnGameFrame()
 
         FormatEx(sBuffer, sizeof(sBuffer), "SR: None");
         imBuffer.SetString(HKServerRecord, sBuffer);
+
+        FormatEx(sBuffer, sizeof(sBuffer), "Rank: None");
+        imBuffer.SetString(HKRank, sBuffer);
         
         fuckTimer_GetClientSetting(client, "Style", sSetting);
         Styles style = view_as<Styles>(StringToInt(sSetting));
