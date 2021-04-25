@@ -180,8 +180,6 @@ public void OneZoneStartTouch(int client, int entity, StringMap values)
     char sName[MAX_ZONE_NAME_LENGTH];
     fuckZones_GetZoneName(entity, sName, sizeof(sName));
 
-    PrintToChat(client, "OneZoneStartTouch - Name: %s", sName);
-
     Call_StartForward(Core.OnEnteringZone);
     Call_PushCell(client);
     Call_PushCell(entity);
@@ -206,38 +204,11 @@ public void OnZoneEndTouch(int client, int entity, StringMap values)
     char sName[MAX_ZONE_NAME_LENGTH];
     fuckZones_GetZoneName(entity, sName, sizeof(sName));
 
-    PrintToChat(client, "OnZoneEndTouch - Name: %s", sName);
-
     Call_StartForward(Core.OnLeavingZone);
     Call_PushCell(client);
     Call_PushCell(entity);
     Call_PushString(sName);
     Call_Finish();
-}
-
-bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
-{
-    StringMap smValues;
-    effects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
-
-    char sKey[MAX_KEY_NAME_LENGTH];
-    StringMapSnapshot keys = smValues.Snapshot();
-
-    for (int x = 0; x < keys.Length; x++)
-    {
-        keys.GetKey(x, sKey, sizeof(sKey));
-
-        if (StrEqual(sKey, key, false))
-        {
-            smValues.GetString(sKey, value, length);
-
-            delete keys;
-            return true;
-        }
-    }
-
-    delete keys;
-    return false;
 }
 
 public int Native_GetStartZone(Handle plugin, int numParams)

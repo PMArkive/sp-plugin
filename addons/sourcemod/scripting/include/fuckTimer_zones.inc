@@ -113,6 +113,30 @@ native int fuckTimer_GetCheckpointByIndex(int zone, int &bonus);
  */
 native int fuckTimer_GetStageByIndex(int zone, int &bonus);
 
+stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
+{
+    StringMap smValues;
+    effects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
+
+    char sKey[MAX_KEY_NAME_LENGTH];
+    StringMapSnapshot keys = smValues.Snapshot();
+
+    for (int x = 0; x < keys.Length; x++)
+    {
+        keys.GetKey(x, sKey, sizeof(sKey));
+
+        if (StrEqual(sKey, key, false))
+        {
+            smValues.GetString(sKey, value, length);
+
+            delete keys;
+            return true;
+        }
+    }
+
+    delete keys;
+    return false;
+}
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_zones_SetNTVOptional()
