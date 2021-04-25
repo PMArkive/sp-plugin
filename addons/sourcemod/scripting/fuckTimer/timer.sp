@@ -251,34 +251,26 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             Player[client].BlockJump = true;
         }
 
-        if (fuckTimer_IsValidatorZone(zone, iBonus))
-        {
-            int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
-
-            if (iStage == Player[client].Stage)
-            {
-                Player[client].Validator++;
-                PrintToChat(client, "Validator Count: %d", Player[client].Validator);
-            }
-        }
-
         int iValidators;
         if (fuckTimer_IsCheckerZone(zone, iBonus, iValidators))
         {
-            PrintToChat(client, "iValidators: %d, Player[client].Validator: %d", iValidators, Player[client].Validator);
-
             if (iValidators > 0 && Player[client].Validator >= iValidators)
             {
                 return;
             }
 
-            int iZone = fuckTimer_GetStageZone(iBonus, Player[client].Bonus);
+            int iZone = fuckTimer_GetStageZone(iBonus, Player[client].Stage);
 
             if (iZone > 0)
             {
                 fuckZones_TeleportClientToZoneIndex(client, iZone);
                 return;
             }
+        }
+
+        if (fuckTimer_IsValidatorZone(zone, iBonus))
+        {
+            Player[client].Validator++;
         }
 
         return;
