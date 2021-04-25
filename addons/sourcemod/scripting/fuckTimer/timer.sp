@@ -25,8 +25,8 @@ enum struct PlayerData
     bool BlockJump;
 
     IntMap Times;
-    IntMap StageTimes[2];
-    IntMap CheckpointTimes[2];
+    IntMap StageTimes;
+    IntMap CheckpointTimes;
 
     void Reset(bool noCheckpoint = false)
     {
@@ -48,10 +48,8 @@ enum struct PlayerData
         this.BlockJump = false;
 
         delete this.Times;
-        delete this.CheckpointTimes[0];
-        delete this.CheckpointTimes[1];
-        delete this.StageTimes[0];
-        delete this.StageTimes[1];
+        delete this.CheckpointTimes;
+        delete this.StageTimes;
     }
 }
 
@@ -308,18 +306,18 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         // and just count the stage times. So you don't need to
         // restart the whole timer from the first stage to your
         // selected or current stage.
-        if (Player[client].StageTimes[iBonus] == null)
+        if (Player[client].StageTimes == null)
         {
-            Player[client].StageTimes[iBonus] = new IntMap();
+            Player[client].StageTimes = new IntMap();
             return;
         }
 
         float fBuffer = 0.0;
-        Player[client].StageTimes[iBonus].GetValue(iStage, fBuffer);
+        Player[client].StageTimes.GetValue(iStage, fBuffer);
 
         if (fBuffer > 0.0)
         {
-            Player[client].StageTimes[iBonus].SetValue(iStage, 0.0);
+            Player[client].StageTimes.SetValue(iStage, 0.0);
             return;
         }
 
@@ -331,14 +329,14 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         float fStart;
-        Player[client].StageTimes[iBonus].GetValue(iPrevStage, fStart);
+        Player[client].StageTimes.GetValue(iPrevStage, fStart);
         PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fStart);
         Player[client].StageRunning = false;
     }
     
     if (iCheckpoint > 0)
     {
-        if (Player[client].CheckpointTimes[iBonus] == null)
+        if (Player[client].CheckpointTimes == null)
         {
             return;
         }
@@ -347,11 +345,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Player[client].Stage = 0;
 
         float fBuffer = 0.0;
-        Player[client].CheckpointTimes[iBonus].GetValue(iCheckpoint, fBuffer);
+        Player[client].CheckpointTimes.GetValue(iCheckpoint, fBuffer);
 
         if (fBuffer > 0.0)
         {
-            Player[client].CheckpointTimes[iBonus].SetValue(iCheckpoint, 0.0);
+            Player[client].CheckpointTimes.SetValue(iCheckpoint, 0.0);
         }
 
         int iPrevCheckpoint = iCheckpoint - 1;
@@ -362,7 +360,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         float fStart;
-        Player[client].CheckpointTimes[iBonus].GetValue(iPrevCheckpoint, fStart);
+        Player[client].CheckpointTimes.GetValue(iPrevCheckpoint, fStart);
 
         // We increase this here, to show the correct Checkpoint Number in players chat
         iPrevCheckpoint++;
@@ -448,13 +446,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     Player[client].SetSpeed = false;
     Player[client].BlockJump = false;
 
-    int iBonus = 0;
-
     int bonus = fuckTimer_GetZoneBonus(zone);
-    if (bonus > 0)
-    {
-        iBonus = 1;
-    }
 
     if (fuckTimer_IsStartZone(zone, bonus))
     {
@@ -472,45 +464,45 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].MainRunning = true;
         Player[client].Bonus = 0;
 
-        if (Core.Stages.GetInt(iBonus) > 0)
+        if (Core.Stages.GetInt(bonus) > 0)
         {
-            if (Player[client].StageTimes[iBonus] == null)
+            if (Player[client].StageTimes == null)
             {
-                Player[client].StageTimes[iBonus] = new IntMap();
+                Player[client].StageTimes = new IntMap();
             }
 
             Player[client].Stage = 1;
             Player[client].StageRunning = true;
-            Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, 0.0);
+            Player[client].StageTimes.SetValue(Player[client].Stage, 0.0);
         }
 
-        if (Core.Checkpoints.GetInt(iBonus) > 0)
+        if (Core.Checkpoints.GetInt(bonus) > 0)
         {
-            if (Player[client].CheckpointTimes[iBonus] == null)
+            if (Player[client].CheckpointTimes == null)
             {
-                Player[client].CheckpointTimes[iBonus] = new IntMap();
+                Player[client].CheckpointTimes = new IntMap();
             }
 
             Player[client].Checkpoint = 0;
             Player[client].CheckpointRunning = true;
-            Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
+            Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
         }
     }
 
     int iStage = fuckTimer_GetStageByIndex(zone, Player[client].Bonus);
-    if (iStage > 1 && Player[client].StageTimes[iBonus] != null)
+    if (iStage > 1 && Player[client].StageTimes != null)
     {
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
-        Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, 0.0);
+        Player[client].StageTimes.SetValue(Player[client].Stage, 0.0);
     }
 
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, Player[client].Bonus);
-    if (iCheckpoint > 1 && Player[client].CheckpointTimes[iBonus] != null)
+    if (iCheckpoint > 1 && Player[client].CheckpointTimes != null)
     {
         Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
-        Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, 0.0);
+        Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
     }
 }
 
@@ -530,25 +522,18 @@ public Action OnPostThinkPost(int client)
         Player[client].Times.SetValue(Player[client].Bonus, fTime);
     }
 
-    int iBonus = 0;
-
-    if (Player[client].Bonus > 0)
-    {
-        iBonus = 1;
-    }
-
     if (Player[client].CheckpointRunning)
     {   
-        Player[client].CheckpointTimes[iBonus].GetValue(Player[client].Checkpoint, fTime);
+        Player[client].CheckpointTimes.GetValue(Player[client].Checkpoint, fTime);
         fTime += GetTickInterval();
-        Player[client].CheckpointTimes[iBonus].SetValue(Player[client].Checkpoint, fTime);
+        Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, fTime);
     }
 
     if (Player[client].StageRunning)
     {   
-        Player[client].StageTimes[iBonus].GetValue(Player[client].Stage, fTime);
+        Player[client].StageTimes.GetValue(Player[client].Stage, fTime);
         fTime += GetTickInterval();
-        Player[client].StageTimes[iBonus].SetValue(Player[client].Stage, fTime);
+        Player[client].StageTimes.SetValue(Player[client].Stage, fTime);
     }
     
     return Plugin_Continue;
@@ -590,8 +575,6 @@ public any Native_GetClientTime(Handle plugin, int numParams)
     int level = GetNativeCell(3);
     float fTime = 0.0;
 
-    int iBonus = view_as<int>(GetNativeCell(4));
-
     if (type == TimeMain)
     {
         if (Player[client].Times != null)
@@ -603,18 +586,18 @@ public any Native_GetClientTime(Handle plugin, int numParams)
     }
     else if (type == TimeCheckpoint)
     {
-        if (Player[client].CheckpointTimes[iBonus] != null)
+        if (Player[client].CheckpointTimes != null)
         {
-            Player[client].CheckpointTimes[iBonus].GetValue(level, fTime);
+            Player[client].CheckpointTimes.GetValue(level, fTime);
         }
         
         return fTime;
     }
     else if (type == TimeStage)
     {
-        if (Player[client].StageTimes[iBonus] != null)
+        if (Player[client].StageTimes != null)
         {
-            Player[client].StageTimes[iBonus].GetValue(level, fTime);
+            Player[client].StageTimes.GetValue(level, fTime);
         }
         
         return fTime;
@@ -631,11 +614,11 @@ public int Native_IsClientTimeRunning(Handle plugin, int numParams)
     {
         return true;
     }
-    else if (Player[client].CheckpointTimes[0] != null || Player[client].CheckpointTimes[1] != null)
+    else if (Player[client].CheckpointTimes != null)
     {
         return true;
     }
-    else if (Player[client].StageTimes[0] != null || Player[client].StageTimes[1] != null)
+    else if (Player[client].StageTimes != null)
     {
         return true;
     }

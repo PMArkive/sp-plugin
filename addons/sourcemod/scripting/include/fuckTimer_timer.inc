@@ -10,10 +10,7 @@ enum TimeType
     TimeStage
 };
 
-/* 
- * The additional parameter 'bouns' is only available for TimeCheckpoint and TimeStage, for TimeMain and TimeBonus it'll be ignored
- */
-native float fuckTimer_GetClientTime(int client, TimeType type, int level = 0, bool bonus = false);
+native float fuckTimer_GetClientTime(int client, TimeType type, int level = 0);
 native bool fuckTimer_IsClientTimeRunning(int client);
 
 native int fuckTimer_GetClientCheckpoint(int client);
