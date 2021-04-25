@@ -7,8 +7,7 @@ enum TimeType
 {
     TimeMain = 0,
     TimeCheckpoint,
-    TimeStage,
-    TimeBonus
+    TimeStage
 };
 
 /* 

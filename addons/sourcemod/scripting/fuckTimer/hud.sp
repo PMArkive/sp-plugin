@@ -183,11 +183,6 @@ public void OnGameFrame()
 
         fTime = fuckTimer_GetClientTime(client, TimeMain);
 
-        if (fTime  == 0.0)
-        {
-            fTime = fuckTimer_GetClientTime(client, TimeBonus, fuckTimer_GetClientBonus(client));
-        }
-
         GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
         imBuffer.SetString(HKTime, sBuffer);
