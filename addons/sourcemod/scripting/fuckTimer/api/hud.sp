@@ -93,6 +93,11 @@ void PreparePlayerPostHudSettings(int client, char[] layout = "default")
         Player[client].LeftSide = HUD_HORIZON_LEFT_SIDE;
         Player[client].RightSide = HUD_HORIZON_RIGHT_SIDE;
     }
+    else if (StrEqual(layout, "gofree", false))
+    {
+        Player[client].LeftSide = HUD_GOFREE_LEFT_SIDE;
+        Player[client].RightSide = HUD_GOFREE_RIGHT_SIDE;
+    }
 
     int iAccountID = GetSteamAccountID(client);
 

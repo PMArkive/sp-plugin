@@ -75,6 +75,12 @@ enum struct HUDEntry
 #define HUD_HORIZON_LEFT_SIDE { 10, 50, 1, 0, 0, 0 }
 #define HUD_HORIZON_RIGHT_SIDE  { 20, 30, 40, 0, 0, 0 }
 
+#define HUD_GOFREE_SEPARATOR HSTabs
+#define HUD_GOFREE_FONTSIZE "m"
+#define HUD_GOFREE_STRING_LENGTH 16
+#define HUD_GOFREE_LEFT_SIDE { 10, 20, 33, 0, 0, 0 }
+#define HUD_GOFREE_RIGHT_SIDE  { 21, 22, 1, 0, 0, 0 }
+
 native void fuckTimer_SetClientHUDLayout(int client, char[] layout = "default");
 
 native bool fuckTimer_MoveClientHUDKey(int client, eHUDKeys key = HKNone, bool side, int line, bool swapPositions = false);

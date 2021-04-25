@@ -862,6 +862,9 @@ public Action Command_HUDPreset(int client, int args)
     Format(sBuffer, sizeof(sBuffer), "Horizon Servers Style");
     menu.AddItem("horizon", sBuffer);
 
+    Format(sBuffer, sizeof(sBuffer), "GoFree Style");
+    menu.AddItem("gofree", sBuffer);
+
     menu.ExitBackButton = false;
     menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
@@ -926,6 +929,19 @@ public int Menu_HUDPreset(Menu menu, MenuAction action, int client, int param)
                 fuckTimer_SetClientSetting(client, "HUDScale", HUD_HORIZON_FONTSIZE);
 
                 IntToString(HUD_HORIZON_STRING_LENGTH, sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDLength", sBuffer);
+            }
+            else if (StrEqual(sParam, "gofree", false))
+            {
+                fuckTimer_SetClientHUDLayout(client, sParam);
+
+                char sBuffer[MAX_SETTING_VALUE_LENGTH];
+                IntToString(view_as<int>(HUD_GOFREE_SEPARATOR), sBuffer, sizeof(sBuffer));
+                fuckTimer_SetClientSetting(client, "HUDSeparator", sBuffer);
+
+                fuckTimer_SetClientSetting(client, "HUDScale", HUD_GOFREE_FONTSIZE);
+
+                IntToString(HUD_GOFREE_STRING_LENGTH, sBuffer, sizeof(sBuffer));
                 fuckTimer_SetClientSetting(client, "HUDLength", sBuffer);
             }
 
