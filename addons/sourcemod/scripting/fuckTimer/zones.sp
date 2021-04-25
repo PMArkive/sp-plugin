@@ -110,13 +110,16 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     if (iCheckpoint > 0)
     {
         Zone[entity].Checkpoint = iCheckpoint;
-        return;
     }
     
     if (iStage > 0)
     {
         Zone[entity].Stage = iStage;
-        return;
+    }
+
+    if (GetfuckTimerZoneValue(smEffects, "Misc", sValue, sizeof(sValue)))
+    {
+        Zone[entity].Misc = view_as<bool>(StringToInt(sValue));
     }
 
     if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
