@@ -120,35 +120,35 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     if (GetfuckTimerZoneValue(smEffects, "Misc", sValue, sizeof(sValue)))
     {
         Zone[entity].Misc = view_as<bool>(StringToInt(sValue));
-    }
 
-    if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
-    {
-        Zone[entity].Validator = view_as<bool>(StringToInt(sValue));
-    }
-
-    if (GetfuckTimerZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
-    {
-        Zone[entity].TeleToStart = view_as<bool>(StringToInt(sValue));
-    }
-
-    if (GetfuckTimerZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
-    {
-        Zone[entity].Stop = view_as<bool>(StringToInt(sValue));
-    }
-
-    if (GetfuckTimerZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
-    {
-        Zone[entity].AntiJump = view_as<bool>(StringToInt(sValue));
-    }
-
-    if (GetfuckTimerZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
-    {
-        Zone[entity].Checker = view_as<bool>(StringToInt(sValue));
-        
         if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
         {
-            Zone[entity].Validators = StringToInt(sValue);
+            Zone[entity].Validator = view_as<bool>(StringToInt(sValue));
+        }
+
+        if (GetfuckTimerZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
+        {
+            Zone[entity].TeleToStart = view_as<bool>(StringToInt(sValue));
+        }
+
+        if (GetfuckTimerZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
+        {
+            Zone[entity].Stop = view_as<bool>(StringToInt(sValue));
+        }
+
+        if (GetfuckTimerZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
+        {
+            Zone[entity].AntiJump = view_as<bool>(StringToInt(sValue));
+        }
+
+        if (GetfuckTimerZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
+        {
+            Zone[entity].Checker = view_as<bool>(StringToInt(sValue));
+            
+            if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
+            {
+                Zone[entity].Validators = StringToInt(sValue);
+            }
         }
     }
 }
@@ -363,11 +363,13 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     int bonus = GetNativeCell(1);
     int stage = GetNativeCell(2);
 
-    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    PrintToChatAll("Native_GetStageZone1 - Bonus: %d, Stage: %d", bonus, stage);
 
+    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
     {
         if (Zone[i].Bonus == bonus && Zone[i].Stage == stage)
         {
+            PrintToChatAll("Native_GetStageZone2 - Bonus: %d, Stage: %d, Zone: %d", Zone[i].Bonus, Zone[i].Stage, i);
             return i;
         }
     }

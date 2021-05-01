@@ -272,21 +272,22 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         int iValidators;
         if (fuckTimer_IsCheckerZone(zone, iBonus, iValidators))
         {
-            if (iValidators > 0 && Player[client].Validator >= iValidators)
+            if (iBonus == Player[client].Bonus && iValidators > 0 && Player[client].Validator >= iValidators)
             {
                 return;
             }
 
-            int iZone = fuckTimer_GetStageZone(iBonus, Player[client].Stage);
+            int iZone = fuckTimer_GetStageZone(Player[client].Bonus, Player[client].Stage);
 
             if (iZone > 0)
             {
                 fuckZones_TeleportClientToZoneIndex(client, iZone);
-                return;
             }
+            
+            return;
         }
 
-        if (fuckTimer_IsValidatorZone(zone, iBonus))
+        if (fuckTimer_IsValidatorZone(zone, Player[client].Bonus))
         {
             Player[client].Validator++;
         }
@@ -428,7 +429,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 {
-    if (!IsPlayerAlive(client))
+    if (!IsPlayerAlive(client) || Player[client].Times == null)
     {
         return;
     }
@@ -478,7 +479,6 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Times.SetValue(Player[client].Bonus, 0.0);
 
         Player[client].MainRunning = true;
-        Player[client].Bonus = 0;
 
         if (Core.Stages.GetInt(bonus) > 0)
         {
