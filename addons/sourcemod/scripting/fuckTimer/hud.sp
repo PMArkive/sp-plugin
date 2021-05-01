@@ -250,6 +250,9 @@ public void OnGameFrame()
             imBuffer.SetString(HKMapType, sBuffer);
             imBuffer.SetString(HKCurrentStage, sBuffer);
 
+            FormatEx(sBuffer, sizeof(sBuffer), "0.000");
+            imBuffer.SetString(HKStageTime, sBuffer);
+
             if (iBonus > 0)
             {
                 bReplaceBonus = true;
