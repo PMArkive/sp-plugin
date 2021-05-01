@@ -23,6 +23,7 @@ enum struct PlayerData
 
     bool SetSpeed;
     bool BlockJump;
+    bool BlockTeleport;
 
     IntMap Times;
     IntMap StageTimes;
@@ -43,7 +44,7 @@ enum struct PlayerData
         this.MainRunning = false;
         this.CheckpointRunning = false;
         this.StageRunning = false;
-        
+
         this.SetSpeed = false;
         this.BlockJump = false;
 
@@ -235,7 +236,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
     int iBonus = 0;
 
-    if (fuckTimer_IsStartZone(zone, iBonus))
+    if (fuckTimer_IsStartZone(zone, iBonus) && !fuckTimer_IsMiscZone(zone, iBonus))
     {
         SetClientStartValues(client, iBonus);
 
@@ -249,16 +250,23 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             Player[client].Reset();
             return;
         }
-        
-        if (fuckTimer_IsTeleToStartZone(zone, iBonus))
-        {
-            Player[client].Reset();
 
-            int iZone = fuckTimer_GetStartZone(iBonus);
+        if (fuckTimer_IsTeleToStartZone(zone, iBonus) && !Player[client].BlockTeleport)
+        {
+            bool bStart = fuckTimer_IsStartZone(zone, iBonus);
+
+            int iZone = bStart ? fuckTimer_GetStartZone(iBonus) : fuckTimer_GetStageZone(Player[client].Bonus, Player[client].Stage);
+
+            if (bStart)
+            {
+                Player[client].Reset();
+            }
 
             if (iZone > 0)
             {
                 fuckZones_TeleportClientToZoneIndex(client, iZone);
+
+                Player[client].BlockTeleport = true;
             }
 
             return;
@@ -270,7 +278,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         int iValidators;
-        if (fuckTimer_IsCheckerZone(zone, iBonus, iValidators))
+        if (fuckTimer_IsCheckerZone(zone, iBonus, iValidators) && !Player[client].BlockTeleport)
         {
             if (iBonus == Player[client].Bonus && iValidators > 0 && Player[client].Validator >= iValidators)
             {
@@ -282,6 +290,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             if (iZone > 0)
             {
                 fuckZones_TeleportClientToZoneIndex(client, iZone);
+
+                Player[client].BlockTeleport = true;
             }
             
             return;
@@ -305,7 +315,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     if (iStage > 0)
     {
         Player[client].Validator = 0;
-        PrintToChat(client, "Set Validator to 0");
         Player[client].SetSpeed = true;
 
         Player[client].Stage = iStage;
@@ -441,10 +450,19 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     }
 
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
+    int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
     
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
         Player[client].SetSpeed = true;
+        Player[client].StageRunning = false;
+        Player[client].StageTimes.SetValue(iStage, 0.0);
+    }
+
+    if (!fuckTimer_IsMiscZone(zone, iBonus) && iCheckpoint > 0)
+    {
+        Player[client].CheckpointRunning = false;
+        Player[client].CheckpointTimes.SetValue(iCheckpoint, 0.0);
     }
 }
 
@@ -465,7 +483,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
     int bonus = fuckTimer_GetZoneBonus(zone);
 
-    if (fuckTimer_IsStartZone(zone, bonus))
+    if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
         Player[client].Reset();
 
@@ -503,6 +521,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Player[client].CheckpointRunning = true;
             Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
         }
+
+        Player[client].BlockTeleport = false;
     }
 
     int iStage = fuckTimer_GetStageByIndex(zone, Player[client].Bonus);
@@ -511,6 +531,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
         Player[client].StageTimes.SetValue(Player[client].Stage, 0.0);
+
+        Player[client].BlockTeleport = false;
     }
 
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, Player[client].Bonus);
@@ -519,6 +541,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
         Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
+
+        Player[client].BlockTeleport = false;
     }
 }
 
