@@ -370,6 +370,13 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     Player[client].LastZone = zone;
 
     int iBonus;
+    bool bMisc = fuckTimer_IsMiscZone(zone, iBonus);
+
+    if (bMisc)
+    {
+        return;
+    }
+
     bool bStart = fuckTimer_IsStartZone(zone, iBonus);
     bool bEnd = fuckTimer_IsEndZone(zone, iBonus);
 
