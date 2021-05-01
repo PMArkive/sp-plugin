@@ -417,7 +417,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
         else
         {
-            int iPrevBonus = bonus - 1;
+            int iPrevBonus = bonus/* - 1*/; // TODO: Requires some tests, whether we don't need it anymore
 
             if (iPrevBonus < 1)
             {
