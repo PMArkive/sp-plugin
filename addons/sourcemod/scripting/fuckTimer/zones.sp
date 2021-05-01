@@ -363,13 +363,10 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     int bonus = GetNativeCell(1);
     int stage = GetNativeCell(2);
 
-    PrintToChatAll("Native_GetStageZone1 - Bonus: %d, Stage: %d", bonus, stage);
-
     for (int i = MaxClients; i <= MAX_ENTITIES; i++)
     {
         if (Zone[i].Bonus == bonus && Zone[i].Stage == stage)
         {
-            PrintToChatAll("Native_GetStageZone2 - Bonus: %d, Stage: %d, Zone: %d", Zone[i].Bonus, Zone[i].Stage, i);
             return i;
         }
     }
