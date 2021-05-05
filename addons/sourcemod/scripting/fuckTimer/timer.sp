@@ -464,6 +464,11 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         Player[client].CheckpointRunning = false;
         Player[client].CheckpointTimes.SetValue(iCheckpoint, 0.0);
     }
+
+    if (fuckTimer_IsAntiJumpZone(zone, iBonus))
+    {
+        Player[client].BlockJump = true;
+    }
 }
 
 public void fuckTimer_OnClientTeleport(int client, int level)
