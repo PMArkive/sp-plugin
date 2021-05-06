@@ -25,7 +25,7 @@ enum struct PlayerData
     bool BlockJump;
     bool BlockTeleport;
 
-    IntMap Times;
+    float Time;
     IntMap StageTimes;
     IntMap CheckpointTimes;
 
@@ -48,7 +48,7 @@ enum struct PlayerData
         this.SetSpeed = false;
         this.BlockJump = false;
 
-        delete this.Times;
+        this.Time = 0.0;
         delete this.CheckpointTimes;
         delete this.StageTimes;
     }
@@ -407,13 +407,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     
     int bonus = fuckTimer_GetZoneBonus(zone);
     
-    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && Player[client].Times != null)
+    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && Player[client].Time > 0.0)
     {
         if (Player[client].Bonus == 0)
         {
-            float fBuffer = 0.0;
-            Player[client].Times.GetValue(bonus, fBuffer);
-            PrintToChat(client, "End Time: %.3f", fBuffer);
+            PrintToChat(client, "End Time: %.3f", Player[client].Time);
         }
         else
         {
@@ -424,9 +422,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
                 iPrevBonus = 1;
             }
 
-            float fStart;
-            Player[client].Times.GetValue(iPrevBonus, fStart);
-            PrintToChatAll("%N's time for Bonus %d: %.3f", client, iPrevBonus, fStart);
+            PrintToChatAll("%N's time for Bonus %d: %.3f", client, iPrevBonus, Player[client].Time);
         }
         
         Player[client].MainRunning = false;
@@ -438,7 +434,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 {
-    if (!IsPlayerAlive(client) || Player[client].Times == null)
+    if (!IsPlayerAlive(client) || Player[client].Time == 0.0)
     {
         return;
     }
@@ -492,14 +488,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     {
         Player[client].Reset();
 
-        if (Player[client].Times == null)
-        {
-            Player[client].Times = new IntMap();
-        }
-
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
-        Player[client].Times.SetValue(Player[client].Bonus, 0.0);
 
         Player[client].MainRunning = true;
 
@@ -561,10 +551,8 @@ public Action OnPostThinkPost(int client)
     float fTime = 0.0;
 
     if (Player[client].MainRunning)
-    {   
-        Player[client].Times.GetValue(Player[client].Bonus, fTime);
-        fTime += GetTickInterval();
-        Player[client].Times.SetValue(Player[client].Bonus, fTime);
+    {
+        Player[client].Time += GetTickInterval();
     }
 
     if (Player[client].CheckpointRunning)
@@ -621,9 +609,9 @@ public any Native_GetClientTime(Handle plugin, int numParams)
 
     if (type == TimeMain)
     {
-        if (Player[client].Times != null)
+        if (Player[client].Time > 0.0)
         {
-            return Player[client].Times.GetFloat(level);
+            return Player[client].Time;
         }
     }
     else if (type == TimeCheckpoint)
@@ -648,7 +636,7 @@ public int Native_IsClientTimeRunning(Handle plugin, int numParams)
 {
     int client = GetNativeCell(1);
 
-    if (Player[client].Times != null)
+    if (Player[client].Time > 0.0)
     {
         return true;
     }

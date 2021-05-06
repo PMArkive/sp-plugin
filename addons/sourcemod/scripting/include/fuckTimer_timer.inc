@@ -10,6 +10,10 @@ enum TimeType
     TimeStage
 };
 
+/**
+ * For TimeMain is the level parameter useless, it just return the current running time.
+ *
+ */
 native float fuckTimer_GetClientTime(int client, TimeType type, int level = 0);
 native bool fuckTimer_IsClientTimeRunning(int client);
 
