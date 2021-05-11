@@ -44,7 +44,7 @@ public void OnMapStart()
         hPlugin = ReadPlugin(hIter);
         GetPluginFilename(hPlugin, Core.Name, sizeof(Core.Name));
 
-        if (StrContains(Core.Name, "fuckZones.smx") != -1)
+        if (StrContains(Core.Name, "fuckZones.smx", false) != -1)
         {
             bFound = true;
             break;
