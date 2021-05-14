@@ -3,6 +3,8 @@
 #endif
 #define _fuckTimer_timer_included
 
+#include <intmap>
+
 enum TimeType
 {
     TimeMain = 0,
