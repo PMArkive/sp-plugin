@@ -64,6 +64,8 @@ enum struct PluginData
     int Bonus;
 
     GlobalForward OnClientTimerStart;
+    GlobalForward OnClientZoneTouchStart;
+    GlobalForward OnClientZoneTouchEnd;
     GlobalForward OnClientTimerEnd;
 }
 PluginData Core;
@@ -80,6 +82,8 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     Core.OnClientTimerStart = new GlobalForward("fuckTimer_OnClientTimerStart", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnClientZoneTouchStart = new GlobalForward("fuckTimer_OnClientZoneTouchStart", ET_Ignore); // TODO
+    Core.OnClientZoneTouchEnd = new GlobalForward("fuckTimer_OnClientZoneTouchEnd", ET_Ignore); // TODO
     Core.OnClientTimerEnd = new GlobalForward("fuckTimer_OnClientTimerEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Float, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
@@ -573,8 +577,21 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Call_StartForward(Core.OnClientTimerStart);
         Call_PushCell(client);
         Call_PushCell(Player[client].Bonus);
-        Call_PushCell(Player[client].Checkpoint);
-        Call_PushCell(Player[client].Stage);
+        if (Player[client].Checkpoint > 0)
+        {
+            Call_PushCell(TimeCheckpoint);
+            Call_PushCell(Player[client].Checkpoint);
+        }
+        else if (Player[client].Stage > 0)
+        {
+            Call_PushCell(TimeStage);
+            Call_PushCell(Player[client].Stage);
+        }
+        else
+        {
+            Call_PushCell(TimeMain);
+            Call_PushCell(0);
+        }
         Call_Finish();
     }
 }
