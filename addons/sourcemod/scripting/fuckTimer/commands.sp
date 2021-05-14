@@ -2,7 +2,6 @@
 #pragma newdecls required
 
 #include <sourcemod>
-#include <ripext>
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_maps>

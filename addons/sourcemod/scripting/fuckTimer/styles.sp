@@ -2,8 +2,6 @@
 #pragma newdecls required
 
 #include <sourcemod>
-#include <intmap>
-#include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
 #include <fuckTimer_styles>
