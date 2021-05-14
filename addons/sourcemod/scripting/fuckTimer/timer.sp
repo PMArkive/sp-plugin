@@ -64,6 +64,7 @@ enum struct PluginData
     int Bonus;
 
     GlobalForward OnClientTimerStart;
+    GlobalForward OnClientTimerEnd;
 }
 PluginData Core;
 
@@ -79,6 +80,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     Core.OnClientTimerStart = new GlobalForward("fuckTimer_OnClientTimerStart", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    Core.OnClientTimerEnd = new GlobalForward("fuckTimer_OnClientTimerEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Float, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
     CreateNative("fuckTimer_IsClientTimeRunning", Native_IsClientTimeRunning);
@@ -429,6 +431,29 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
             PrintToChatAll("%N's time for Bonus %d: %.3f", client, iPrevBonus, Player[client].Time);
         }
+
+        Call_StartForward(Core.OnClientTimerEnd);
+        Call_PushCell(client);
+        Call_PushCell(Player[client].Bonus);
+        Call_PushFloat(Player[client].Time);
+
+        if (Player[client].CheckpointTimes != null)
+        {
+            Call_PushCell(RunCheckpoint);
+            Call_PushCell(view_as<int>(Player[client].CheckpointTimes));
+        }
+        else if (Player[client].StageTimes != null)
+        {
+            Call_PushCell(RunStage);
+            Call_PushCell(view_as<int>(Player[client].StageTimes));
+        }
+        else
+        {
+            Call_PushCell(RunLinear);
+            Call_PushCell(0);
+        }
+
+        Call_Finish();
         
         Player[client].MainRunning = false;
 

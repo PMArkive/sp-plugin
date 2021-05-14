@@ -10,6 +10,13 @@ enum TimeType
     TimeStage
 };
 
+enum RunType
+{
+    RunLinear = 0,
+    RunCheckpoint,
+    RunStage
+}
+
 /**
  * For TimeMain is the level parameter useless, it just return the current running time.
  *
