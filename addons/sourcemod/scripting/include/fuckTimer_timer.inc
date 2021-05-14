@@ -17,6 +17,9 @@ enum RunType
     RunStage
 }
 
+forward void fuckTimer_OnClientTimerStart(int client, int bonus, int checkpoint, int bonus);
+forward void fuckTimer_OnClientTimerEnd(int client, int bonus, float time, RunType type, IntMap times);
+
 /**
  * For TimeMain is the level parameter useless, it just return the current running time.
  *
