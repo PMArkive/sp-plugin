@@ -16,8 +16,12 @@ enum TimeType
  * We use TimeType here to keep forward parameters amount lower and we don't really need another enum here.
  */
 forward void fuckTimer_OnClientTimerStart(int client, int bonus, TimeType type, int level);
-forward void fuckTimer_OnClientZoneTouchStart(int client, bool stop, TimeType type, int level, float time);
 forward void fuckTimer_OnClientZoneTouchEnd(int client, TimeType type, int level);
+
+/**
+ * This will not called when you enter/leave the start/end zone. Level means the old level with the specific time.
+ */
+forward void fuckTimer_OnClientZoneTouchStart(int client, bool stop, int bonus, TimeType type, int level, float time);
 forward void fuckTimer_OnClientTimerEnd(int client, int bonus, float time, TimeType type, IntMap times);
 
 /**

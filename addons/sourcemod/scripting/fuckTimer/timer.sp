@@ -82,7 +82,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     Core.OnClientTimerStart = new GlobalForward("fuckTimer_OnClientTimerStart", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    Core.OnClientZoneTouchStart = new GlobalForward("fuckTimer_OnClientZoneTouchStart", ET_Ignore); // TODO
+    Core.OnClientZoneTouchStart = new GlobalForward("fuckTimer_OnClientZoneTouchStart", ET_Ignore, Param_Cell, Param_Cell,  Param_Cell, Param_Cell, Param_Cell, Param_Float);
     Core.OnClientZoneTouchEnd = new GlobalForward("fuckTimer_OnClientZoneTouchEnd", ET_Ignore); // TODO
     Core.OnClientTimerEnd = new GlobalForward("fuckTimer_OnClientTimerEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Float, Param_Cell, Param_Cell);
 
@@ -259,6 +259,16 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         if (fuckTimer_IsStopZone(zone, iBonus))
         {
             Player[client].Reset();
+
+            Call_StartForward(Core.OnClientZoneTouchStart);
+            Call_PushCell(client);
+            Call_PushCell(view_as<int>(true));
+            Call_PushCell(iBonus);
+            Call_PushCell(0);
+            Call_PushCell(0);
+            Call_PushFloat(0.0);
+            Call_Finish();
+            
             return;
         }
 
@@ -271,6 +281,15 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             if (bStart)
             {
                 Player[client].Reset();
+
+                Call_StartForward(Core.OnClientZoneTouchStart);
+                Call_PushCell(client);
+                Call_PushCell(view_as<int>(true));
+                Call_PushCell(iBonus);
+                Call_PushCell(0);
+                Call_PushCell(0);
+                Call_PushFloat(0.0);
+                Call_Finish();
             }
 
             if (iZone > 0)
@@ -357,10 +376,19 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevStage = 1;
         }
 
-        float fStart;
-        Player[client].StageTimes.GetValue(iPrevStage, fStart);
-        PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fStart);
+        float fTime;
+        Player[client].StageTimes.GetValue(iPrevStage, fTime);
+        PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fTime);
         Player[client].StageRunning = false;
+
+        Call_StartForward(Core.OnClientZoneTouchStart);
+        Call_PushCell(client);
+        Call_PushCell(view_as<int>(false));
+        Call_PushCell(iBonus);
+        Call_PushCell(TimeStage);
+        Call_PushCell(iPrevStage);
+        Call_PushFloat(fTime);
+        Call_Finish();
     }
 
     // Fix for missing checkpoint entry in end zone
@@ -396,8 +424,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevCheckpoint = 0;
         }
 
-        float fStart;
-        Player[client].CheckpointTimes.GetValue(iPrevCheckpoint, fStart);
+        float fTime;
+        Player[client].CheckpointTimes.GetValue(iPrevCheckpoint, fTime);
 
         // We increase this here, to show the correct Checkpoint Number in players chat
         iPrevCheckpoint++;
@@ -407,8 +435,17 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevCheckpoint = Core.Checkpoints.GetInt(iBonus);
         }
 
-        PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, fStart);
+        PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, fTime);
         Player[client].CheckpointRunning = false;
+
+        Call_StartForward(Core.OnClientZoneTouchStart);
+        Call_PushCell(client);
+        Call_PushCell(view_as<int>(false));
+        Call_PushCell(iBonus);
+        Call_PushCell(TimeCheckpoint);
+        Call_PushCell(iPrevCheckpoint);
+        Call_PushFloat(fTime);
+        Call_Finish();
 
         if (fuckTimer_IsEndZone(zone, Player[client].Bonus))
         {
@@ -577,6 +614,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Call_StartForward(Core.OnClientTimerStart);
         Call_PushCell(client);
         Call_PushCell(Player[client].Bonus);
+
         if (Player[client].Checkpoint > 0)
         {
             Call_PushCell(TimeCheckpoint);
@@ -592,6 +630,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Call_PushCell(TimeMain);
             Call_PushCell(0);
         }
+
         Call_Finish();
     }
 }
