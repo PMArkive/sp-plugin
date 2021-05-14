@@ -439,17 +439,17 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         if (Player[client].CheckpointTimes != null)
         {
-            Call_PushCell(RunCheckpoint);
+            Call_PushCell(TimeCheckpoint);
             Call_PushCell(view_as<int>(Player[client].CheckpointTimes));
         }
         else if (Player[client].StageTimes != null)
         {
-            Call_PushCell(RunStage);
+            Call_PushCell(TimeStage);
             Call_PushCell(view_as<int>(Player[client].StageTimes));
         }
         else
         {
-            Call_PushCell(RunLinear);
+            Call_PushCell(TimeType);
             Call_PushCell(0);
         }
 

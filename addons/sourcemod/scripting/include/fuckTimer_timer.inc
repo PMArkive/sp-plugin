@@ -10,15 +10,13 @@ enum TimeType
     TimeStage
 };
 
-enum RunType
-{
-    RunLinear = 0,
-    RunCheckpoint,
-    RunStage
-}
-
-forward void fuckTimer_OnClientTimerStart(int client, int bonus, int checkpoint, int bonus);
-forward void fuckTimer_OnClientTimerEnd(int client, int bonus, float time, RunType type, IntMap times);
+/**
+ * We use TimeType here to keep forward parameters amount lower and we don't really need another enum here.
+ */
+forward void fuckTimer_OnClientTimerStart(int client, int bonus, TimeType type);
+forward void fuckTimer_OnClientZoneTouchStart(int client, bool stop, TimeType type, int level, float time);
+forward void fuckTimer_OnClientZoneTouchEnd(int client, TimeType type, int level);
+forward void fuckTimer_OnClientTimerEnd(int client, int bonus, float time, TimeType type, IntMap times);
 
 /**
  * For TimeMain is the level parameter useless, it just return the current running time.
