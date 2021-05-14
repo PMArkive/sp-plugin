@@ -83,7 +83,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
     Core.OnClientTimerStart = new GlobalForward("fuckTimer_OnClientTimerStart", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     Core.OnClientZoneTouchStart = new GlobalForward("fuckTimer_OnClientZoneTouchStart", ET_Ignore, Param_Cell, Param_Cell,  Param_Cell, Param_Cell, Param_Cell, Param_Float);
-    Core.OnClientZoneTouchEnd = new GlobalForward("fuckTimer_OnClientZoneTouchEnd", ET_Ignore); // TODO
+    Core.OnClientZoneTouchEnd = new GlobalForward("fuckTimer_OnClientZoneTouchEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     Core.OnClientTimerEnd = new GlobalForward("fuckTimer_OnClientTimerEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Float, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
@@ -633,6 +633,23 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
         Call_Finish();
     }
+
+    Call_StartForward(Core.OnClientZoneTouchEnd);
+    Call_PushCell(client);
+    Call_PushCell(Player[client].Bonus);
+
+    if (Player[client].CheckpointRunning)
+    {
+        Call_PushCell(TimeCheckpoint);
+        Call_PushCell(Player[client].Checkpoint);
+    }
+    if (Player[client].StageRunning)
+    {
+        Call_PushCell(TimeStage);
+        Call_PushCell(Player[client].Stage);
+    }
+
+    Call_Finish();
 }
 
 public Action OnPostThinkPost(int client)
