@@ -60,7 +60,10 @@ enum struct PluginData
 {
     IntMap Stages;
     IntMap Checkpoints;
+
     int Bonus;
+
+    GlobalForward OnClientTimerStart;
 }
 PluginData Core;
 
@@ -75,6 +78,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    Core.OnClientTimerStart = new GlobalForward("fuckTimer_OnClientTimerStart", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+
     CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
     CreateNative("fuckTimer_IsClientTimeRunning", Native_IsClientTimeRunning);
 
@@ -491,8 +496,6 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
 
-        Player[client].MainRunning = true;
-
         if (Core.Stages.GetInt(bonus) > 0)
         {
             if (Player[client].StageTimes == null)
@@ -538,6 +541,16 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
 
         Player[client].BlockTeleport = false;
+    }
+
+    if (Player[client].MainRunning)
+    {
+        Call_StartForward(Core.OnClientTimerStart);
+        Call_PushCell(client);
+        Call_PushCell(Player[client].Bonus);
+        Call_PushCell(Player[client].Checkpoint);
+        Call_PushCell(Player[client].Stage);
+        Call_Finish();
     }
 }
 

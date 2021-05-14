@@ -5,6 +5,7 @@
 
 #include <autoexecconfig>
 #include <sdktools>
+#include <fuckTimer_hud>
 
 #define FUCKTIMER_PLUGIN_NAME "fuckTimer - "
 #define FUCKTIMER_PLUGIN_AUTHOR "fuckTimer Contributors"
