@@ -3,9 +3,9 @@
 
 #include <sourcemod>
 #include <fuckZones>
-#include <fuckTimer_stocks>
 #include <fuckTimer_api>
 #include <fuckTimer_hud>
+#include <fuckTimer_stocks>
 #include <fuckTimer_maps>
 #include <fuckTimer_timer>
 #include <fuckTimer_zones>
@@ -163,9 +163,11 @@ public void OnGameFrame()
 
         GetCurrentMap(sBuffer, sizeof(sBuffer));
         imBuffer.SetString(HKMap, sBuffer);
-        
+
+        char sSpeed[MAX_SETTING_VALUE_LENGTH];
+        fuckTimer_GetClientSetting(client, "HUDSpeed", sSpeed);
         fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sSetting);
-        FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", GetClientSpeed(client), (view_as<bool>(StringToInt(sSetting)) ? " u/s" : ""));
+        FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", GetClientSpeed(client, view_as<eHUDSpeed>(StringToInt(sSpeed))), (view_as<bool>(StringToInt(sSetting)) ? " u/s" : ""));
         imBuffer.SetString(HKSpeed, sBuffer);
 
         FormatEx(sBuffer, sizeof(sBuffer), "PR: None");
@@ -530,34 +532,6 @@ void PrintCSGOHUDText(int client, const char[] format, any ...)
     pbBuf.AddString("params", NULL_STRING);
     
     EndMessage();
-}
-
-float GetClientSpeed(int client)
-{
-    float fVelocity[3];
-    GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-
-    float fSpeed = 0.0;
-
-    char sSpeed[MAX_SETTING_VALUE_LENGTH];
-    fuckTimer_GetClientSetting(client, "HUDSpeed", sSpeed);
-
-    eHUDSpeed eSpeed = view_as<eHUDSpeed>(StringToInt(sSpeed));
-
-    if (eSpeed == HSXYZ)
-    {
-        fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0) + Pow(fVelocity[2], 2.0));
-    }
-    else if (eSpeed == HSZ)
-    {
-        fSpeed = fVelocity[2];
-    }
-    else
-    {
-        fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
-    }
-
-    return fSpeed;
 }
 
 stock void GetTimeBySeconds(int client = 0, float seconds, char[] time, int length, eHUDTime format = HTMinimal, bool show0Hours = false)

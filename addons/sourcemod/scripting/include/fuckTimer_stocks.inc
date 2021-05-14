@@ -70,6 +70,29 @@ stock bool fuckTimer_IsClientValid(int client, bool bots = false, bool sourcetv 
     return false;
 }
 
+stock float GetClientSpeed(int client, eHUDSpeed eSpeed = HSXY)
+{
+    float fVelocity[3];
+    GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
+
+    float fSpeed = 0.0;
+
+    if (eSpeed == HSXYZ)
+    {
+        fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0) + Pow(fVelocity[2], 2.0));
+    }
+    else if (eSpeed == HSZ)
+    {
+        fSpeed = fVelocity[2];
+    }
+    else
+    {
+        fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
+    }
+
+    return fSpeed;
+}
+
 stock void SetClientSpeed(int client)
 {
     float fVelocity[3];
