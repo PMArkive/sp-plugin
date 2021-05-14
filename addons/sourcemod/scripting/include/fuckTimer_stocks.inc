@@ -154,3 +154,23 @@ stock bool IsStringNumeric(const char[] str)
 
 	return true;
 }
+
+stock float GetServerTickrate()
+{
+    return 1.0 / GetTickInterval();
+}
+
+stock void GetClientOrigin(int client, float origin[3])
+{
+    GetClientAbsOrigin(client, origin);
+}
+
+stock void GetClientAngles(int client, float angles[3])
+{
+    GetClientEyeAngles(client, angles);
+}
+
+stock void GetClientVelocity(int client, float velocity[3])
+{
+    GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
+}
