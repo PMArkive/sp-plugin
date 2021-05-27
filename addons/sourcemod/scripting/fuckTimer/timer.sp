@@ -28,8 +28,8 @@ enum struct PlayerData
     float Time;
     float StartZoneTime;
 
-    IntMap StageTimes;
-    IntMap CheckpointTimes;
+    IntMap StageDetails;
+    IntMap CheckpointDetails;
 
     void Reset(bool noCheckpoint = false, bool resetStartZoneTime = true)
     {
@@ -58,8 +58,8 @@ enum struct PlayerData
             this.StartZoneTime = 0.0;
         }
 
-        delete this.CheckpointTimes;
-        delete this.StageTimes;
+        delete this.CheckpointDetails;
+        delete this.StageDetails;
     }
 }
 
@@ -350,6 +350,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Player[client].Stage++;
         iStage = Player[client].Stage;
     }
+
+    CSDetails details;
     
     if (iStage > 0)
     {
@@ -363,17 +365,18 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         // and just count the stage times. So you don't need to
         // restart the whole timer from the first stage to your
         // selected or current stage.
-        if (Player[client].StageTimes == null)
+        if (Player[client].StageDetails == null)
         {
-            Player[client].StageTimes = new IntMap();
+            Player[client].StageDetails = new IntMap();
             return;
         }
 
-        float fBuffer = Player[client].StageTimes.GetFloat(iStage);
+        Player[client].StageDetails.GetArray(iStage, details, sizeof(details));
 
-        if (fBuffer > 0.0)
+        if (details.Time > 0.0)
         {
-            Player[client].StageTimes.SetValue(iStage, 0.0);
+            details.Time = 0.0;
+            Player[client].StageDetails.SetArray(iStage, details, sizeof(details));
             return;
         }
 
@@ -384,8 +387,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevStage = 1;
         }
 
-        float fTime = Player[client].StageTimes.GetFloat(iPrevStage);
-        PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fTime);
+        Player[client].StageDetails.GetArray(iPrevStage, details, sizeof(details));
+        PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, details.Time);
         Player[client].StageRunning = false;
 
         Call_StartForward(Core.OnClientZoneTouchStart);
@@ -394,7 +397,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Call_PushCell(iBonus);
         Call_PushCell(TimeStage);
         Call_PushCell(iPrevStage);
-        Call_PushFloat(fTime);
+        Call_PushFloat(details.Time);
         Call_Finish();
     }
 
@@ -408,7 +411,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     
     if (iCheckpoint > 0)
     {
-        if (Player[client].CheckpointTimes == null)
+        if (Player[client].CheckpointDetails == null)
         {
             return;
         }
@@ -416,11 +419,12 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         iCheckpoint = Player[client].Checkpoint + 1;
         Player[client].Stage = 0;
 
-        float fBuffer = Player[client].CheckpointTimes.GetFloat(iCheckpoint);
+        Player[client].CheckpointDetails.GetArray(iCheckpoint, details, sizeof(details));
 
-        if (fBuffer > 0.0)
+        if (details.Time > 0.0)
         {
-            Player[client].CheckpointTimes.SetValue(iCheckpoint, 0.0);
+            details.Time = 0.0;
+            Player[client].CheckpointDetails.SetArray(iStage, details, sizeof(details));
         }
 
         int iPrevCheckpoint = iCheckpoint - 1;
@@ -430,7 +434,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevCheckpoint = 0;
         }
 
-        float fTime = Player[client].CheckpointTimes.GetFloat(iPrevCheckpoint);
+        Player[client].CheckpointDetails.GetArray(iPrevCheckpoint, details, sizeof(details));
 
         // We increase this here, to show the correct Checkpoint Number in players chat
         iPrevCheckpoint++;
@@ -440,7 +444,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevCheckpoint = Core.Checkpoints.GetInt(iBonus);
         }
 
-        PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, fTime);
+        PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, details.Time);
         Player[client].CheckpointRunning = false;
 
         Call_StartForward(Core.OnClientZoneTouchStart);
@@ -449,7 +453,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Call_PushCell(iBonus);
         Call_PushCell(TimeCheckpoint);
         Call_PushCell(iPrevCheckpoint);
-        Call_PushFloat(fTime);
+        Call_PushFloat(details.Time);
         Call_Finish();
 
         if (fuckTimer_IsEndZone(zone, Player[client].Bonus))
@@ -483,15 +487,15 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Call_PushCell(Player[client].Bonus);
         Call_PushFloat(Player[client].Time);
 
-        if (Player[client].CheckpointTimes != null)
+        if (Player[client].CheckpointDetails != null)
         {
             Call_PushCell(TimeCheckpoint);
-            Call_PushCell(view_as<int>(Player[client].CheckpointTimes));
+            Call_PushCell(view_as<int>(Player[client].CheckpointDetails));
         }
-        else if (Player[client].StageTimes != null)
+        else if (Player[client].StageDetails != null)
         {
             Call_PushCell(TimeStage);
-            Call_PushCell(view_as<int>(Player[client].StageTimes));
+            Call_PushCell(view_as<int>(Player[client].StageDetails));
         }
         else
         {
@@ -523,18 +527,24 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
+
+    CSDetails details;
     
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
         Player[client].SetSpeed = true;
         Player[client].StageRunning = false;
-        Player[client].StageTimes.SetValue(iStage, 0.0);
+        Player[client].StageDetails.GetArray(iStage, details, sizeof(details));
+        details.Time = 0.0;
+        Player[client].StageDetails.SetArray(iStage, details, sizeof(details));
     }
 
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iCheckpoint > 0)
     {
         Player[client].CheckpointRunning = false;
-        Player[client].CheckpointTimes.SetValue(iCheckpoint, 0.0);
+        Player[client].CheckpointDetails.GetArray(iCheckpoint, details, sizeof(details));
+        details.Time = 0.0;
+        Player[client].CheckpointDetails.SetArray(iCheckpoint, details, sizeof(details));
     }
 
     if (fuckTimer_IsAntiJumpZone(zone, iBonus))
@@ -561,6 +571,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     int bonus = fuckTimer_GetZoneBonus(zone);
     bool bSkipAttempts = false;
 
+    CSDetails details;
+
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
         Player[client].Reset(.resetStartZoneTime = false);
@@ -570,26 +582,30 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
         if (Core.Stages.GetInt(bonus) > 0)
         {
-            if (Player[client].StageTimes == null)
+            if (Player[client].StageDetails == null)
             {
-                Player[client].StageTimes = new IntMap();
+                Player[client].StageDetails = new IntMap();
             }
 
             Player[client].Stage = 1;
             Player[client].StageRunning = true;
-            Player[client].StageTimes.SetValue(Player[client].Stage, 0.0);
+            Player[client].StageDetails.GetArray(Player[client].Stage, details, sizeof(details));
+            details.Time = 0.0;
+            Player[client].StageDetails.SetArray(Player[client].Stage, details, sizeof(details));
         }
 
         if (Core.Checkpoints.GetInt(bonus) > 0)
         {
-            if (Player[client].CheckpointTimes == null)
+            if (Player[client].CheckpointDetails == null)
             {
-                Player[client].CheckpointTimes = new IntMap();
+                Player[client].CheckpointDetails = new IntMap();
             }
 
             Player[client].Checkpoint = 0;
             Player[client].CheckpointRunning = true;
-            Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
+            Player[client].CheckpointDetails.GetArray(Player[client].Checkpoint, details, sizeof(details));
+            details.Time = 0.0;
+            Player[client].CheckpointDetails.SetArray(Player[client].Checkpoint, details, sizeof(details));
         }
 
         if (!Player[client].StageRunning)
@@ -607,22 +623,24 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     }
 
     int iStage = fuckTimer_GetStageByIndex(zone, Player[client].Bonus);
-    if (iStage > 1 && Player[client].StageTimes != null)
+    if (iStage > 1 && Player[client].StageDetails != null)
     {
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
-        Player[client].StageTimes.SetValue(Player[client].Stage, 0.0);
-
+        Player[client].StageDetails.GetArray(Player[client].Stage, details, sizeof(details));
+        details.Time = 0.0;
+        Player[client].StageDetails.SetArray(Player[client].Stage, details, sizeof(details));
         Player[client].BlockTeleport = false;
     }
 
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, Player[client].Bonus);
-    if (iCheckpoint > 1 && Player[client].CheckpointTimes != null)
+    if (iCheckpoint > 1 && Player[client].CheckpointDetails != null)
     {
         Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
-        Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
-
+        Player[client].CheckpointDetails.GetArray(Player[client].Checkpoint, details, sizeof(details));
+        details.Time = 0.0;
+        Player[client].CheckpointDetails.SetArray(Player[client].Checkpoint, details, sizeof(details));
         Player[client].BlockTeleport = false;
     }
 
@@ -688,7 +706,7 @@ public Action OnPostThinkPost(int client)
         return Plugin_Continue;
     }
 
-    float fTime = 0.0;
+    CSDetails details;
 
     if (Player[client].MainRunning)
     {
@@ -697,14 +715,16 @@ public Action OnPostThinkPost(int client)
 
     if (Player[client].CheckpointRunning)
     {   
-        fTime = Player[client].CheckpointTimes.GetFloat(Player[client].Checkpoint) + GetTickInterval();
-        Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, fTime);
+        Player[client].CheckpointDetails.GetArray(Player[client].Checkpoint, details, sizeof(details));
+        details.Time + GetTickInterval();
+        Player[client].CheckpointDetails.SetArray(Player[client].Checkpoint, details, sizeof(details));
     }
 
     if (Player[client].StageRunning)
     {   
-        fTime = Player[client].StageTimes.GetFloat(Player[client].Stage) + GetTickInterval();
-        Player[client].StageTimes.SetValue(Player[client].Stage, fTime);
+        Player[client].StageDetails.GetArray(Player[client].Stage, details, sizeof(details));
+        details.Time + GetTickInterval();
+        Player[client].StageDetails.SetArray(Player[client].Stage, details, sizeof(details));
     }
     
     return Plugin_Continue;
@@ -755,6 +775,8 @@ public any Native_GetClientTime(Handle plugin, int numParams)
 
     int level = GetNativeCell(3);
 
+    CSDetails details;
+
     if (type == TimeMain)
     {
         if (Player[client].Time > 0.0)
@@ -764,16 +786,18 @@ public any Native_GetClientTime(Handle plugin, int numParams)
     }
     else if (type == TimeCheckpoint)
     {
-        if (Player[client].CheckpointTimes != null)
+        if (Player[client].CheckpointDetails != null)
         {
-            return Player[client].CheckpointTimes.GetFloat(level);
+            Player[client].CheckpointDetails.GetArray(level, details, sizeof(details));
+            return details.Time;
         }
     }
     else if (type == TimeStage)
     {
-        if (Player[client].StageTimes != null)
+        if (Player[client].StageDetails != null)
         {
-            return Player[client].StageTimes.GetFloat(level);
+            Player[client].StageDetails.GetArray(level, details, sizeof(details));
+            return details.Time;
         }
     }
 
@@ -788,11 +812,11 @@ public int Native_IsClientTimeRunning(Handle plugin, int numParams)
     {
         return true;
     }
-    else if (Player[client].CheckpointTimes != null)
+    else if (Player[client].CheckpointDetails != null)
     {
         return true;
     }
-    else if (Player[client].StageTimes != null)
+    else if (Player[client].StageDetails != null)
     {
         return true;
     }
