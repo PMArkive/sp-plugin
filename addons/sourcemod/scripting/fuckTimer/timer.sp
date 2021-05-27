@@ -369,8 +369,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             return;
         }
 
-        float fBuffer = 0.0;
-        Player[client].StageTimes.GetValue(iStage, fBuffer);
+        float fBuffer = Player[client].StageTimes.GetFloat(iStage);
 
         if (fBuffer > 0.0)
         {
@@ -385,8 +384,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevStage = 1;
         }
 
-        float fTime;
-        Player[client].StageTimes.GetValue(iPrevStage, fTime);
+        float fTime = Player[client].StageTimes.GetFloat(iPrevStage);
         PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, fTime);
         Player[client].StageRunning = false;
 
@@ -418,8 +416,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         iCheckpoint = Player[client].Checkpoint + 1;
         Player[client].Stage = 0;
 
-        float fBuffer = 0.0;
-        Player[client].CheckpointTimes.GetValue(iCheckpoint, fBuffer);
+        float fBuffer = Player[client].CheckpointTimes.GetFloat(iCheckpoint);
 
         if (fBuffer > 0.0)
         {
@@ -433,8 +430,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             iPrevCheckpoint = 0;
         }
 
-        float fTime;
-        Player[client].CheckpointTimes.GetValue(iPrevCheckpoint, fTime);
+        float fTime = Player[client].CheckpointTimes.GetFloat(iPrevCheckpoint);
 
         // We increase this here, to show the correct Checkpoint Number in players chat
         iPrevCheckpoint++;
@@ -701,15 +697,13 @@ public Action OnPostThinkPost(int client)
 
     if (Player[client].CheckpointRunning)
     {   
-        Player[client].CheckpointTimes.GetValue(Player[client].Checkpoint, fTime);
-        fTime += GetTickInterval();
+        fTime = Player[client].CheckpointTimes.GetFloat(Player[client].Checkpoint) + GetTickInterval();
         Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, fTime);
     }
 
     if (Player[client].StageRunning)
     {   
-        Player[client].StageTimes.GetValue(Player[client].Stage, fTime);
-        fTime += GetTickInterval();
+        fTime = Player[client].StageTimes.GetFloat(Player[client].Stage) + GetTickInterval();
         Player[client].StageTimes.SetValue(Player[client].Stage, fTime);
     }
     
