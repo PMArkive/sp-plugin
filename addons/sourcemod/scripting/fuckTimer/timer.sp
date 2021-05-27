@@ -522,7 +522,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     int iBonus = 0;
     if (fuckTimer_IsStartZone(zone, iBonus))
     {
-        SetClientStartValues(client, iBonus);
+        SetClientStartValues(client, iBonus, true);
     }
 
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
@@ -567,7 +567,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
-        Player[client].Reset();
+        Player[client].Reset(.resetStartZoneTime = false);
 
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
@@ -716,9 +716,9 @@ public Action OnPostThinkPost(int client)
     return Plugin_Continue;
 }
 
-void SetClientStartValues(int client, int bonus)
+void SetClientStartValues(int client, int bonus, bool countTime = false)
 {
-    Player[client].Reset();
+    Player[client].Reset(.resetStartZoneTime = false);
 
     Player[client].SetSpeed = true;
 
