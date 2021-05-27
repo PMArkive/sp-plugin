@@ -81,6 +81,14 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
     }
 }
 
+public void OnMapStart()
+{
+    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    {
+        Zone[i].Reset();
+    }
+}
+
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
     StringMap smEffects = fuckZones_GetZoneEffects(entity);

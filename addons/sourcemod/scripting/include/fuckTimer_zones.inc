@@ -22,17 +22,22 @@ enum struct ZoneDetails
     int Checkpoint;
     int Stage;
 
-    /* void Init()
-    {
-        this.Checkpoints = new IntMap();
-        this.Stages = new IntMap();
-    }
-
     void Reset()
     {
-        delete this.Checkpoints;
-        delete this.Stages;
-    } */
+        this.Start = false;
+        this.End = false;
+        this.Misc = false;
+        this.Validator = false;
+        this.TeleToStart = false;
+        this.Stop = false;
+        this.AntiJump = false;
+        this.Checker = false;
+
+        this.Bonus = 0;
+        this.Validators = 0;
+        this.Checkpoint = 0;
+        this.Stage = 0;
+    }
 }
 
 forward void fuckTimer_OnEnteringZone(int client, int zone, const char[] name);
