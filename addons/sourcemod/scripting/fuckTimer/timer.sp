@@ -375,8 +375,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         if (details.Time > 0.0)
         {
-            details.Time = 0.0;
-            Player[client].StageDetails.SetArray(iStage, details, sizeof(details));
+            SetIntMapTime(Player[client].StageDetails, iStage, 0.0);
             return;
         }
 
@@ -423,8 +422,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         if (details.Time > 0.0)
         {
-            details.Time = 0.0;
-            Player[client].CheckpointDetails.SetArray(iStage, details, sizeof(details));
+            SetIntMapTime(Player[client].CheckpointDetails, iCheckpoint, 0.0);
         }
 
         int iPrevCheckpoint = iCheckpoint - 1;
@@ -528,23 +526,17 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
 
-    CSDetails details;
-    
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
     {
         Player[client].SetSpeed = true;
         Player[client].StageRunning = false;
-        Player[client].StageDetails.GetArray(iStage, details, sizeof(details));
-        details.Time = 0.0;
-        Player[client].StageDetails.SetArray(iStage, details, sizeof(details));
+        SetIntMapTime(Player[client].StageDetails, iStage, 0.0);
     }
 
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iCheckpoint > 0)
     {
         Player[client].CheckpointRunning = false;
-        Player[client].CheckpointDetails.GetArray(iCheckpoint, details, sizeof(details));
-        details.Time = 0.0;
-        Player[client].CheckpointDetails.SetArray(iCheckpoint, details, sizeof(details));
+        SetIntMapTime(Player[client].CheckpointDetails, iCheckpoint, 0.0);
     }
 
     if (fuckTimer_IsAntiJumpZone(zone, iBonus))
@@ -571,8 +563,6 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     int bonus = fuckTimer_GetZoneBonus(zone);
     bool bSkipAttempts = false;
 
-    CSDetails details;
-
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
         Player[client].Reset(.resetStartZoneTime = false);
@@ -589,9 +579,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
             Player[client].Stage = 1;
             Player[client].StageRunning = true;
-            Player[client].StageDetails.GetArray(Player[client].Stage, details, sizeof(details));
-            details.Time = 0.0;
-            Player[client].StageDetails.SetArray(Player[client].Stage, details, sizeof(details));
+            SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
         }
 
         if (Core.Checkpoints.GetInt(bonus) > 0)
@@ -603,9 +591,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
             Player[client].Checkpoint = 0;
             Player[client].CheckpointRunning = true;
-            Player[client].CheckpointDetails.GetArray(Player[client].Checkpoint, details, sizeof(details));
-            details.Time = 0.0;
-            Player[client].CheckpointDetails.SetArray(Player[client].Checkpoint, details, sizeof(details));
+            SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
         }
 
         if (!Player[client].StageRunning)
@@ -627,9 +613,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     {
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
-        Player[client].StageDetails.GetArray(Player[client].Stage, details, sizeof(details));
-        details.Time = 0.0;
-        Player[client].StageDetails.SetArray(Player[client].Stage, details, sizeof(details));
+        SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
         Player[client].BlockTeleport = false;
     }
 
@@ -638,9 +622,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     {
         Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
-        Player[client].CheckpointDetails.GetArray(Player[client].Checkpoint, details, sizeof(details));
-        details.Time = 0.0;
-        Player[client].CheckpointDetails.SetArray(Player[client].Checkpoint, details, sizeof(details));
+        SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
         Player[client].BlockTeleport = false;
     }
 
@@ -706,8 +688,6 @@ public Action OnPostThinkPost(int client)
         return Plugin_Continue;
     }
 
-    CSDetails details;
-
     if (Player[client].MainRunning)
     {
         Player[client].Time += GetTickInterval();
@@ -715,16 +695,12 @@ public Action OnPostThinkPost(int client)
 
     if (Player[client].CheckpointRunning)
     {   
-        Player[client].CheckpointDetails.GetArray(Player[client].Checkpoint, details, sizeof(details));
-        details.Time + GetTickInterval();
-        Player[client].CheckpointDetails.SetArray(Player[client].Checkpoint, details, sizeof(details));
+        SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, GetTickInterval());
     }
 
     if (Player[client].StageRunning)
     {   
-        Player[client].StageDetails.GetArray(Player[client].Stage, details, sizeof(details));
-        details.Time + GetTickInterval();
-        Player[client].StageDetails.SetArray(Player[client].Stage, details, sizeof(details));
+        SetIntMapTime(Player[client].StageDetails, Player[client].Stage, GetTickInterval());
     }
     
     return Plugin_Continue;
@@ -765,6 +741,23 @@ void LoadPlayer(int client)
     Player[client].Reset();
 
     SDKHook(client, SDKHook_PostThinkPost, OnPostThinkPost);
+}
+
+void SetIntMapTime(IntMap map, int key, float value)
+{
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    if (value == 0.0)
+    {
+        details.Time = value;
+    }
+    else
+    {
+        details.Time += value;
+    }
+
+    map.SetArray(key, details, sizeof(details));
 }
 
 public any Native_GetClientTime(Handle plugin, int numParams)
