@@ -13,6 +13,7 @@ enum struct PlayerData
     int Checkpoint;
     int Stage;
     int Bonus;
+    int MainAttempts;
 
     int Validator;
 
@@ -37,6 +38,7 @@ enum struct PlayerData
 
         this.Stage = 0;
         this.Bonus = 0;
+        this.MainAttempts = 0;
 
         this.Validator = 0;
 
@@ -553,6 +555,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     Player[client].BlockJump = false;
 
     int bonus = fuckTimer_GetZoneBonus(zone);
+    bool bSkipAttempts = false;
 
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
@@ -585,6 +588,17 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Player[client].CheckpointTimes.SetValue(Player[client].Checkpoint, 0.0);
         }
 
+        if (!Player[client].StageRunning)
+        {
+            Player[client].MainAttempts = 1;
+            bSkipAttempts = true;
+        }
+        else
+        {
+            // TODO: Stage Attempts set to 0
+            bSkipAttempts = true;
+        }
+
         Player[client].BlockTeleport = false;
     }
 
@@ -613,6 +627,18 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Call_StartForward(Core.OnClientTimerStart);
         Call_PushCell(client);
         Call_PushCell(Player[client].Bonus);
+
+        if (!bSkipAttempts)
+        {
+            if (!Player[client].StageRunning)
+            {
+                Player[client].MainAttempts++;
+            }
+            else
+            {
+                // TODO: Stage Attempts ++
+        }
+        }
 
         if (Player[client].Checkpoint > 0)
         {
