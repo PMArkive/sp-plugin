@@ -26,10 +26,12 @@ enum struct PlayerData
     bool BlockTeleport;
 
     float Time;
+    float StartZoneTime;
+
     IntMap StageTimes;
     IntMap CheckpointTimes;
 
-    void Reset(bool noCheckpoint = false)
+    void Reset(bool noCheckpoint = false, bool resetStartZoneTime = true)
     {
         if (!noCheckpoint)
         {
@@ -50,6 +52,12 @@ enum struct PlayerData
         this.BlockJump = false;
 
         this.Time = 0.0;
+
+        if (resetStartZoneTime)
+        {
+            this.StartZoneTime = 0.0;
+        }
+
         delete this.CheckpointTimes;
         delete this.StageTimes;
     }
@@ -725,6 +733,16 @@ void SetClientStartValues(int client, int bonus)
     else if (Core.Checkpoints.GetInt(bonus) > 0)
     {
         Player[client].Checkpoint = 0;
+    }
+
+    if (Player[client].StartZoneTime < 0.0)
+    {
+        Player[client].StartZoneTime = 0.0;
+    }
+
+    if (countTime)
+    {
+        Player[client].StartZoneTime += GetTickInterval();
     }
 }
 
