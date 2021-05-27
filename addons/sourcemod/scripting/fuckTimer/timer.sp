@@ -1,3 +1,11 @@
+/*
+
+    TODO:
+        - Stage Attempts
+        - Stage TimeInZones
+
+*/
+
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -601,7 +609,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         }
         else
         {
-            // TODO: Stage Attempts set to 0
+            SetIntMapAttempts(Player[client].StageDetails, 1, 1);
             bSkipAttempts = true;
         }
 
@@ -614,6 +622,12 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
         SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
+
+        if (GetIntMapAttempts(Player[client].StageDetails, iStage) < 1)
+        {
+            SetIntMapAttempts(Player[client].StageDetails, iStage, 1);
+        }
+
         Player[client].BlockTeleport = false;
     }
 
@@ -640,8 +654,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             }
             else
             {
-                // TODO: Stage Attempts ++
-        }
+                SetIntMapAttempts(Player[client].StageDetails, Player[client].Stage, GetIntMapAttempts(Player[client].StageDetails, iStage) + 1);
+            }
         }
 
         if (Player[client].Checkpoint > 0)
@@ -758,6 +772,22 @@ void SetIntMapTime(IntMap map, int key, float value)
     }
 
     map.SetArray(key, details, sizeof(details));
+}
+
+void SetIntMapAttempts(IntMap map, int key, int value)
+{
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+    details.Attempts = value;
+    map.SetArray(key, details, sizeof(details));
+}
+
+int GetIntMapAttempts(IntMap map, int key)
+{
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    return details.Attempts;
 }
 
 public any Native_GetClientTime(Handle plugin, int numParams)
