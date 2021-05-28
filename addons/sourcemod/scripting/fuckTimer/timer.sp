@@ -21,7 +21,7 @@ enum struct PlayerData
     int Checkpoint;
     int Stage;
     int Bonus;
-    int MainAttempts;
+    int Attempts;
 
     int Validator;
 
@@ -34,12 +34,12 @@ enum struct PlayerData
     bool BlockTeleport;
 
     float Time;
-    float StartZoneTime;
+    float TimeInZone;
 
     IntMap StageDetails;
     IntMap CheckpointDetails;
 
-    void Reset(bool noCheckpoint = false, bool resetStartZoneTime = true)
+    void Reset(bool noCheckpoint = false, bool resetTimeInZone = true)
     {
         if (!noCheckpoint)
         {
@@ -48,7 +48,7 @@ enum struct PlayerData
 
         this.Stage = 0;
         this.Bonus = 0;
-        this.MainAttempts = 0;
+        this.Attempts = 0;
 
         this.Validator = 0;
 
@@ -61,9 +61,9 @@ enum struct PlayerData
 
         this.Time = 0.0;
 
-        if (resetStartZoneTime)
+        if (resetTimeInZone)
         {
-            this.StartZoneTime = 0.0;
+            this.TimeInZone = 0.0;
         }
 
         delete this.CheckpointDetails;
@@ -105,6 +105,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
     CreateNative("fuckTimer_IsClientTimeRunning", Native_IsClientTimeRunning);
+
+    CreateNative("fuckTimer_GetClientTimeInZone", Native_GetClientTimeInZone);
+    CreateNative("fuckTimer_GetClientAttempts", Native_GetClientAttempts);
 
     CreateNative("fuckTimer_GetClientCheckpoint", Native_GetClientCheckpoint);
     CreateNative("fuckTimer_GetClientStage", Native_GetClientStage);
@@ -574,7 +577,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
-        Player[client].Reset(.resetStartZoneTime = false);
+        Player[client].Reset(.resetTimeInZone = false);
 
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
@@ -605,7 +608,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
         if (!Player[client].StageRunning)
         {
-            Player[client].MainAttempts = 1;
+            Player[client].Attempts = 1;
             bSkipAttempts = true;
         }
         else
@@ -651,7 +654,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         {
             if (!Player[client].StageRunning)
             {
-                Player[client].MainAttempts++;
+                Player[client].Attempts++;
             }
             else
             {
@@ -723,7 +726,7 @@ public Action OnPostThinkPost(int client)
 
 void SetClientStartValues(int client, int bonus, bool countTime = false)
 {
-    Player[client].Reset(.resetStartZoneTime = false);
+    Player[client].Reset(.resetTimeInZone = false);
 
     Player[client].SetSpeed = true;
 
@@ -740,14 +743,14 @@ void SetClientStartValues(int client, int bonus, bool countTime = false)
         Player[client].Checkpoint = 0;
     }
 
-    if (Player[client].StartZoneTime < 0.0)
+    if (Player[client].TimeInZone < 0.0)
     {
-        Player[client].StartZoneTime = 0.0;
+        Player[client].TimeInZone = 0.0;
     }
 
     if (countTime)
     {
-        Player[client].StartZoneTime += GetTickInterval();
+        Player[client].TimeInZone += GetTickInterval();
     }
 }
 
@@ -790,6 +793,14 @@ void SetIntMapTimeInZone(IntMap map, int key, float value)
     }
 
     map.SetArray(key, details, sizeof(details));
+}
+
+float GetIntMapTimeInZone(IntMap map, int key)
+{
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    return details.TimeInZone;
 }
 
 void SetIntMapAttempts(IntMap map, int key, int value)
@@ -864,6 +875,40 @@ public int Native_IsClientTimeRunning(Handle plugin, int numParams)
     }
 
     return false;
+}
+
+public any Native_GetClientTimeInZone(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    int level = GetNativeCell(2);
+
+    if (level == 0)
+    {
+        return Player[client].TimeInZone;
+    }
+    else if (level > 0)
+    {
+        return GetIntMapTimeInZone(Player[client].StageDetails, level);
+    }
+
+    return 0.0;
+}
+
+public int Native_GetClientAttempts(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    int level = GetNativeCell(2);
+
+    if (level == 0)
+    {
+        return Player[client].Attempts;
+    }
+    else if (level > 0)
+    {
+        return GetIntMapAttempts(Player[client].StageDetails, level);
+    }
+
+    return 0;
 }
 
 public int Native_GetClientCheckpoint(Handle plugin, int numParams)

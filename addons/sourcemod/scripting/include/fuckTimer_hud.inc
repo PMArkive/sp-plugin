@@ -32,6 +32,7 @@ enum eHUDKeys
     HKSpeed,
     HKTime = 10,
     HKStageTime,
+    HKTimeInZone,
     HKPersonalRecord = 20,
     HKServerRecord,
     HKRank,
@@ -39,6 +40,7 @@ enum eHUDKeys
     HKZone,
     HKMap,
     HKMapType,
+    HKAttempts,
     HKStyle = 40,
     HKCurrentStage = 50,
     HKValidator

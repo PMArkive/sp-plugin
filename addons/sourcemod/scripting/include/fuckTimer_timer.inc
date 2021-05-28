@@ -47,6 +47,12 @@ forward void fuckTimer_OnClientTimerEnd(int client, int bonus, float time, TimeT
 native float fuckTimer_GetClientTime(int client, TimeType type, int level = 0);
 native bool fuckTimer_IsClientTimeRunning(int client);
 
+/**
+ * We don't need TimeType here(?), because level 0 is non-staged maps and 1 (or higher) are the stage levels.
+ */
+native float fuckTimer_GetClientTimeInZone(int client, int level = 0);
+native int fuckTimer_GetClientAttempts(int client, int level = 0);
+
 native int fuckTimer_GetClientCheckpoint(int client);
 native int fuckTimer_GetClientStage(int client);
 native int fuckTimer_GetClientBonus(int client);
@@ -71,6 +77,8 @@ public void __pl_fuckTimer_timer_SetNTVOptional()
 {
     MarkNativeAsOptional("fuckTimer_GetClientTime");
     MarkNativeAsOptional("fuckTimer_IsClientTimeRunning");
+    MarkNativeAsOptional("fuckTimer_GetClientTimeInZone");
+    MarkNativeAsOptional("fuckTimer_GetClientAttempts");
 
     MarkNativeAsOptional("fuckTimer_GetClientCheckpoint");
     MarkNativeAsOptional("fuckTimer_GetClientStage");
