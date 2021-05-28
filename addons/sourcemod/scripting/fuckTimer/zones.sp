@@ -82,7 +82,7 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
 
 public void OnMapStart()
 {
-    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
         Zone[i].Reset();
     }
@@ -220,7 +220,7 @@ public void OnZoneEndTouch(int client, int entity, StringMap values)
 
 public int Native_GetStartZone(Handle plugin, int numParams)
 {
-    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
         if (Zone[i].Start && Zone[i].Bonus == GetNativeCell(1))
         {
@@ -233,7 +233,7 @@ public int Native_GetStartZone(Handle plugin, int numParams)
 
 public int Native_GetEndZone(Handle plugin, int numParams)
 {
-    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
         if (Zone[i].End && Zone[i].Bonus == GetNativeCell(1))
         {
@@ -354,7 +354,7 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
     int bonus = GetNativeCell(1);
     int checkpoint = GetNativeCell(2);
 
-    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
         if (Zone[i].Bonus == bonus && Zone[i].Checkpoint == checkpoint)
         {
@@ -370,7 +370,7 @@ public int Native_GetStageZone(Handle plugin, int numParams)
     int bonus = GetNativeCell(1);
     int stage = GetNativeCell(2);
 
-    for (int i = MaxClients; i <= MAX_ENTITIES; i++)
+    for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
         if (Zone[i].Bonus == bonus && Zone[i].Stage == stage)
         {
