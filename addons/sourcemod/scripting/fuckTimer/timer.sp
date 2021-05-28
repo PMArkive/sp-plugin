@@ -539,6 +539,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         Player[client].SetSpeed = true;
         Player[client].StageRunning = false;
         SetIntMapTime(Player[client].StageDetails, iStage, 0.0);
+        SetIntMapTimeInZone(Player[client].StageDetails, iStage, GetTickInterval());
     }
 
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iCheckpoint > 0)
@@ -774,9 +775,27 @@ void SetIntMapTime(IntMap map, int key, float value)
     map.SetArray(key, details, sizeof(details));
 }
 
+void SetIntMapTimeInZone(IntMap map, int key, float value)
+{
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    if (value == 0.0)
+    {
+        details.TimeInZone = value;
+    }
+    else
+    {
+        details.TimeInZone += value;
+    }
+
+    map.SetArray(key, details, sizeof(details));
+}
+
 void SetIntMapAttempts(IntMap map, int key, int value)
 {
     CSDetails details;
+    
     map.GetArray(key, details, sizeof(details));
     details.Attempts = value;
     map.SetArray(key, details, sizeof(details));

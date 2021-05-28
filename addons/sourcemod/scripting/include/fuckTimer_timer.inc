@@ -15,7 +15,7 @@ enum TimeType
 enum struct CSDetails
 {
     float Time;
-    float ZoneTime;
+    float TimeInZone;
 
     int Attempts;
 }
