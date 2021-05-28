@@ -260,7 +260,15 @@ public void OnGameFrame()
                 bReplaceBonus = true;
             }
         }
-        
+
+        FormatEx(sBuffer, sizeof(sBuffer), "Attempts: %d", fuckTimer_GetClientAttempts(client, iStage > 0 ? iStage : 0));
+        imBuffer.SetString(HKAttempts, sBuffer);
+
+        fTime = fuckTimer_GetClientTimeInZone(client, iStage > 0 ? iStage : 0);
+        GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
+        Format(sBuffer, sizeof(sBuffer), "Zone Time: %s", sBuffer);
+        imBuffer.SetString(HKTimeInZone, sBuffer);
+
         int iStartMatches = StrContains(Player[client].Zone, "start", false);
         bool bStartZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client)));
         int iEndMatches = StrContains(Player[client].Zone, "end", false);
