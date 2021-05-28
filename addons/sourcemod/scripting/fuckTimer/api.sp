@@ -39,8 +39,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
     fuckTimer_StartConfig("api");
-    Core.APIUrl = AutoExecConfig_CreateConVar("api_url", "", "API URL to the REST API. (example: https://api.domain.tld or https://domain.tld/api - Without ending (back)slash!)");
-    Core.APIKey = AutoExecConfig_CreateConVar("api_key", "", "Your API Key to get access to the REST API. Key must be at least 12 chars length.");
+    Core.APIUrl = AutoExecConfig_CreateConVar("api_url", "", "API URL to the REST API. (example: https://api.domain.tld or https://domain.tld/api - Without ending (back)slash!)", FCVAR_PROTECTED);
+    Core.APIKey = AutoExecConfig_CreateConVar("api_key", "", "Your API Key to get access to the REST API. Key must be at least 12 chars length.", FCVAR_PROTECTED);
     fuckTimer_EndConfig();
 }
 
