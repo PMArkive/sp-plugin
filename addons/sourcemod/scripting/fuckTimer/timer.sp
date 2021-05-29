@@ -39,7 +39,7 @@ enum struct PlayerData
     IntMap StageDetails;
     IntMap CheckpointDetails;
 
-    void Reset(bool noCheckpoint = false, bool resetTimeInZone = true)
+    void Reset(bool noCheckpoint = false, bool resetTimeInZone = true, bool resetAttempts = true)
     {
         if (!noCheckpoint)
         {
@@ -48,7 +48,11 @@ enum struct PlayerData
 
         this.Stage = 0;
         this.Bonus = 0;
-        this.Attempts = 0;
+        
+        if (resetAttempts)
+        {
+            this.Attempts = 0;
+        }
 
         this.Validator = 0;
 
@@ -523,15 +527,22 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 {
-    if (!IsPlayerAlive(client) || Player[client].Time == 0.0)
+    if (!IsPlayerAlive(client))
     {
+        return;
+    }
+
+    if (Player[client].Time == 0.0)
+    {
+        Player[client].TimeInZone += GetTickInterval();
+
         return;
     }
     
     int iBonus = 0;
     if (fuckTimer_IsStartZone(zone, iBonus))
     {
-        SetClientStartValues(client, iBonus, true);
+        SetClientStartValues(client, iBonus);
     }
 
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
@@ -577,7 +588,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
-        Player[client].Reset(.resetTimeInZone = false);
+        Player[client].Reset(.resetTimeInZone = false, .resetAttempts = false);
 
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
@@ -608,13 +619,19 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
         if (!Player[client].StageRunning)
         {
-            Player[client].Attempts = 1;
-            bSkipAttempts = true;
+            if (Player[client].Attempts < 0)
+            {
+                Player[client].Attempts = 0;
+                bSkipAttempts = true;
+            }
         }
         else
         {
-            SetIntMapAttempts(Player[client].StageDetails, 1, 1);
-            bSkipAttempts = true;
+            if (GetIntMapAttempts(Player[client].StageDetails, 1) < 0)
+            {
+                SetIntMapAttempts(Player[client].StageDetails, 1, 0);
+                bSkipAttempts = true;
+            }
         }
 
         Player[client].BlockTeleport = false;
@@ -627,9 +644,9 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].StageRunning = true;
         SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
 
-        if (GetIntMapAttempts(Player[client].StageDetails, iStage) < 1)
+        if (GetIntMapAttempts(Player[client].StageDetails, iStage) < 0)
         {
-            SetIntMapAttempts(Player[client].StageDetails, iStage, 1);
+            SetIntMapAttempts(Player[client].StageDetails, iStage, 0);
         }
 
         Player[client].BlockTeleport = false;
@@ -724,9 +741,9 @@ public Action OnPostThinkPost(int client)
     return Plugin_Continue;
 }
 
-void SetClientStartValues(int client, int bonus, bool countTime = false)
+void SetClientStartValues(int client, int bonus)
 {
-    Player[client].Reset(.resetTimeInZone = false);
+    Player[client].Reset(.resetTimeInZone = false, .resetAttempts = false);
 
     Player[client].SetSpeed = true;
 
@@ -748,10 +765,12 @@ void SetClientStartValues(int client, int bonus, bool countTime = false)
         Player[client].TimeInZone = 0.0;
     }
 
-    if (countTime)
+    if (Player[client].Attempts < 0)
     {
-        Player[client].TimeInZone += GetTickInterval();
+        Player[client].Attempts = 0;
     }
+
+    Player[client].TimeInZone += GetTickInterval();
 }
 
 void LoadPlayer(int client)
@@ -763,6 +782,11 @@ void LoadPlayer(int client)
 
 void SetIntMapTime(IntMap map, int key, float value)
 {
+    if (map == null)
+    {
+        return;
+    }
+
     CSDetails details;
     map.GetArray(key, details, sizeof(details));
 
@@ -780,6 +804,11 @@ void SetIntMapTime(IntMap map, int key, float value)
 
 void SetIntMapTimeInZone(IntMap map, int key, float value)
 {
+    if (map == null)
+    {
+        return;
+    }
+
     CSDetails details;
     map.GetArray(key, details, sizeof(details));
 
@@ -797,6 +826,11 @@ void SetIntMapTimeInZone(IntMap map, int key, float value)
 
 float GetIntMapTimeInZone(IntMap map, int key)
 {
+    if (map == null)
+    {
+        return  0.0;
+    }
+
     CSDetails details;
     map.GetArray(key, details, sizeof(details));
 
@@ -805,15 +839,26 @@ float GetIntMapTimeInZone(IntMap map, int key)
 
 void SetIntMapAttempts(IntMap map, int key, int value)
 {
+    if (map == null)
+    {
+        return;
+    }
+
     CSDetails details;
-    
     map.GetArray(key, details, sizeof(details));
+
     details.Attempts = value;
+
     map.SetArray(key, details, sizeof(details));
 }
 
 int GetIntMapAttempts(IntMap map, int key)
 {
+    if (map == null)
+    {
+        return 0;
+    }
+
     CSDetails details;
     map.GetArray(key, details, sizeof(details));
 
