@@ -613,6 +613,14 @@ public Action Command_HUDMove(int client, int args)
     FormatEx(sDisplay, sizeof(sDisplay), "StageTime");
     menu.AddItem(sNumber, sDisplay);
 
+    IntToString(HKTimeInZone, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "TimeInZone");
+    menu.AddItem(sNumber, sDisplay);
+
+    IntToString(HKAttempts, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Attempts");
+    menu.AddItem(sNumber, sDisplay);
+
     IntToString(HKPersonalRecord, sNumber, sizeof(sNumber));
     FormatEx(sDisplay, sizeof(sDisplay), "PersonalRecord");
     menu.AddItem(sNumber, sDisplay);
