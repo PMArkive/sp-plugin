@@ -402,8 +402,14 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         Player[client].StageDetails.GetArray(iPrevStage, details, sizeof(details));
-        PrintToChatAll("%N's time for%s Stage %d: %.3f", client, iBonus ? " Bonus" : "", iPrevStage, details.Time);
+        PrintToChatAll("%N's time for%s Stage %d: %.3f. (Attempts: %d, Time in Zone: %.3f)", client, iBonus ? " Bonus" : "", iPrevStage, details.Time, Player[client].Attempts, Player[client].TimeInZone);
         Player[client].StageRunning = false;
+
+        SetIntMapAttempts(Player[client].StageDetails, iPrevStage, Player[client].Attempts);
+        SetIntMapTimeInZone(Player[client].StageDetails, iPrevStage, Player[client].TimeInZone);
+
+        Player[client].Attempts = 0;
+        Player[client].TimeInZone = 0.0;
 
         Call_StartForward(Core.OnClientZoneTouchStart);
         Call_PushCell(client);
@@ -553,7 +559,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         Player[client].SetSpeed = true;
         Player[client].StageRunning = false;
         SetIntMapTime(Player[client].StageDetails, iStage, 0.0);
-        SetIntMapTimeInZone(Player[client].StageDetails, iStage, GetTickInterval());
+        Player[client].TimeInZone += GetTickInterval();
     }
 
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iCheckpoint > 0)
@@ -617,21 +623,10 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
         }
 
-        if (!Player[client].StageRunning)
+        if (Player[client].Attempts < 0)
         {
-            if (Player[client].Attempts < 0)
-            {
-                Player[client].Attempts = 0;
-                bSkipAttempts = true;
-            }
-        }
-        else
-        {
-            if (GetIntMapAttempts(Player[client].StageDetails, 1) < 0)
-            {
-                SetIntMapAttempts(Player[client].StageDetails, 1, 0);
-                bSkipAttempts = true;
-            }
+            Player[client].Attempts = 0;
+            bSkipAttempts = true;
         }
 
         Player[client].BlockTeleport = false;
@@ -640,14 +635,14 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     int iStage = fuckTimer_GetStageByIndex(zone, Player[client].Bonus);
     if (iStage > 1 && Player[client].StageDetails != null)
     {
+        if (Player[client].Stage < iStage)
+        {
+            Player[client].Attempts = 0;
+        }
+        
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
         SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
-
-        if (GetIntMapAttempts(Player[client].StageDetails, iStage) < 0)
-        {
-            SetIntMapAttempts(Player[client].StageDetails, iStage, 0);
-        }
 
         Player[client].BlockTeleport = false;
     }
@@ -667,16 +662,9 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Call_PushCell(client);
         Call_PushCell(Player[client].Bonus);
 
-        if (!bSkipAttempts)
+        if (!bSkipAttempts && iCheckpoint == 0)
         {
-            if (!Player[client].StageRunning)
-            {
-                Player[client].Attempts++;
-            }
-            else
-            {
-                SetIntMapAttempts(Player[client].StageDetails, Player[client].Stage, GetIntMapAttempts(Player[client].StageDetails, iStage) + 1);
-            }
+            Player[client].Attempts++;
         }
 
         if (Player[client].Checkpoint > 0)
@@ -812,14 +800,7 @@ void SetIntMapTimeInZone(IntMap map, int key, float value)
     CSDetails details;
     map.GetArray(key, details, sizeof(details));
 
-    if (value == 0.0)
-    {
-        details.TimeInZone = value;
-    }
-    else
-    {
-        details.TimeInZone += value;
-    }
+    details.TimeInZone = value;
 
     map.SetArray(key, details, sizeof(details));
 }

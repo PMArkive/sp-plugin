@@ -261,10 +261,10 @@ public void OnGameFrame()
             }
         }
 
-        FormatEx(sBuffer, sizeof(sBuffer), "Attempts: %d", fuckTimer_GetClientAttempts(client, iStage > 0 ? iStage : 0));
+        FormatEx(sBuffer, sizeof(sBuffer), "Attempts: %d", fuckTimer_GetClientAttempts(client));
         imBuffer.SetString(HKAttempts, sBuffer);
 
-        fTime = fuckTimer_GetClientTimeInZone(client, iStage > 0 ? iStage : 0);
+        fTime = fuckTimer_GetClientTimeInZone(client);
         GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "Zone Time: %s", sBuffer);
         imBuffer.SetString(HKTimeInZone, sBuffer);
