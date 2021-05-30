@@ -101,11 +101,11 @@ stock void SetClientSpeed(int client, int maxspeed = 0)
 
     float fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
 
-    float fMaxSpeed = PRESPEED_LIMIT;
+    float fMaxSpeed = PRESPEED_LIMIT * 1.0;
 
     if (maxspeed > PRESPEED_LIMIT)
     {
-        fMaxSpeed = maxspeed;
+        fMaxSpeed = maxspeed * 1.0;
     }
 
     if (fSpeed > fMaxSpeed)
