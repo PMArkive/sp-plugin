@@ -542,7 +542,7 @@ void PrintCSGOHUDText(int client, const char[] format, any ...)
     EndMessage();
 }
 
-stock void GetTimeBySeconds(int client = 0, float seconds, char[] time, int length, eHUDTime format = HTMinimal, bool show0Hours = false)
+void GetTimeBySeconds(int client = 0, float seconds, char[] time, int length, eHUDTime format = HTMinimal, bool show0Hours = false)
 {
     if (client > 0)
     {
