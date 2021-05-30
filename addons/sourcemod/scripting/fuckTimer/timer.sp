@@ -22,8 +22,8 @@ enum struct PlayerData
     int Stage;
     int Bonus;
     int Attempts;
-
     int Validator;
+    int Zone;
 
     bool MainRunning;
     bool CheckpointRunning;
@@ -55,6 +55,7 @@ enum struct PlayerData
         }
 
         this.Validator = 0;
+        this.Zone = 0;
 
         this.MainRunning = false;
         this.CheckpointRunning = false;
@@ -249,7 +250,9 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     {
         if (Player[client].SetSpeed)
         {
-            SetClientSpeed(client);
+            int iMaxSpeed = fuckTimer_GetZoneMaxSpeed(Player[client].Zone);
+
+            SetClientSpeed(client, iMaxSpeed);
         }
 
         if (Player[client].BlockJump && buttons & IN_JUMP)
@@ -268,6 +271,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     {
         return;
     }
+
+    Player[client].Zone = zone;
 
     int iBonus = 0;
 
@@ -572,6 +577,8 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     {
         Player[client].BlockJump = true;
     }
+
+    Player[client].Zone = zone;
 }
 
 public void fuckTimer_OnClientTeleport(int client, int level)
@@ -702,6 +709,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     }
 
     Call_Finish();
+
+    Player[client].Zone = 0;
 }
 
 public Action OnPostThinkPost(int client)
