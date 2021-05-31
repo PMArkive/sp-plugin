@@ -36,6 +36,14 @@ enum struct PlayerData
     float Time;
     float TimeInZone;
 
+    float StartEndPosition[3];
+    float StartEndAngle[3];
+    float StartEndVelocity[3];
+
+    float EndStartPosition[3];
+    float EndStartAngle[3];
+    float EndStartVelocity[3];
+
     IntMap StageDetails;
     IntMap CheckpointDetails;
 
@@ -70,6 +78,13 @@ enum struct PlayerData
         {
             this.TimeInZone = 0.0;
         }
+
+        this.StartEndPosition = {0.0, 0.0, 0.0};
+        this.StartEndAngle = {0.0, 0.0, 0.0};
+        this.StartEndVelocity = {0.0, 0.0, 0.0};
+        this.EndStartPosition = {0.0, 0.0, 0.0};
+        this.EndStartAngle = {0.0, 0.0, 0.0};
+        this.EndStartVelocity = {0.0, 0.0, 0.0};
 
         delete this.CheckpointDetails;
         delete this.StageDetails;
@@ -506,6 +521,10 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             PrintToChatAll("%N's time for Bonus %d: %.3f", client, iPrevBonus, Player[client].Time);
         }
 
+        GetClientPosition(client, Player[client].EndStartPosition);
+        GetClientAngle(client, Player[client].EndStartAngle);
+        GetClientVelocity(client, Player[client].EndStartVelocity);
+
         Call_StartForward(Core.OnClientTimerEnd);
         Call_PushCell(client);
         Call_PushCell(Player[client].Bonus);
@@ -605,6 +624,10 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
+
+        GetClientPosition(client, Player[client].StartEndPosition);
+        GetClientAngle(client, Player[client].StartEndAngle);
+        GetClientVelocity(client, Player[client].StartEndVelocity);
 
         if (Core.Stages.GetInt(bonus) > 0)
         {

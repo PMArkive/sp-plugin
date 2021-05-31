@@ -168,14 +168,14 @@ stock float GetServerTickrate()
     return 1.0 / GetTickInterval();
 }
 
-stock void GetClientOrigin(int client, float origin[3])
+stock void GetClientPosition(int client, float position[3])
 {
-    GetClientAbsOrigin(client, origin);
+    GetClientAbsOrigin(client, position);
 }
 
-stock void GetClientAngles(int client, float angles[3])
+stock void GetClientAngle(int client, float angle[3])
 {
-    GetClientEyeAngles(client, angles);
+    GetClientEyeAngles(client, angle);
 }
 
 stock void GetClientVelocity(int client, float velocity[3])
