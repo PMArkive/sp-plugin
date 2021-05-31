@@ -17,6 +17,14 @@ enum struct CSDetails
     float Time;
     float TimeInZone;
 
+    float StartPosition[3];
+    float StartAngle[3];
+    float StartVelocity[3];
+
+    float EndPosition[3];
+    float EndAngle[3];
+    float EndVelocity[3];
+
     int Attempts;
 }
 
