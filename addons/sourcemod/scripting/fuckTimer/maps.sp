@@ -33,7 +33,9 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    CreateNative("fuckTimer_GetCurrentMapId", Native_GetCurrentMapId);
     CreateNative("fuckTimer_GetCurrentMapTier", Native_GetCurrentMapTier);
+
     CreateNative("fuckTimer_GetMapTiers", Native_GetMapTiers);
 
     RegPluginLibrary("fuckTimer_maps");
@@ -219,6 +221,11 @@ int GetMapTier(const char[] map)
     delete kv;
 
     return iTier;
+}
+
+public int Native_GetCurrentMapId(Handle plugin, int numParams)
+{
+    return Map.Id;
 }
 
 public int Native_GetCurrentMapTier(Handle plugin, int numParams)
