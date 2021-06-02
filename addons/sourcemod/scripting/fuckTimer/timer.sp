@@ -532,7 +532,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         map.SetString("PlayerName", sBuffer);
 
         fuckTimer_GetClientSetting(client, "Style", sBuffer);
-        map.SetValue("PlayerId", StringToInt(sBuffer));
+        map.SetValue("StyleId", StringToInt(sBuffer));
 
         map.SetValue("MapId", fuckTimer_GetCurrentMapId());
 
