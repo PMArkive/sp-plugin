@@ -17,6 +17,7 @@
 #include <fuckTimer_styles>
 #include <fuckTimer_zones>
 #include <fuckTimer_timer>
+#include <fuckTImer_maps>
 
 enum struct PlayerData
 {
@@ -540,6 +541,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         fuckTimer_GetClientSetting(client, "Style", sBuffer);
         map.SetValue("PlayerId", StringToInt(sBuffer));
+
+        map.SetValue("MapId", fuckTimer_GetCurrentMapId());
 
         map.SetValue("ZoneNormal", Player[client].Bonus);
         
