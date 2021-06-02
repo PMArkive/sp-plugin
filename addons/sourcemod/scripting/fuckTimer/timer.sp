@@ -558,6 +558,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         // TODO: record.Tickrate
         map.SetValue("Duration", Player[client].Time);
+        map.SetValue("Attempts", Player[client].Attempts);
         map.SetArray("StartPosition", Player[client].StartPosition, 3);
         map.SetArray("StartAngle", Player[client].StartAngle, 3);
         map.SetArray("StartVelocity", Player[client].StartVelocity, 3);
