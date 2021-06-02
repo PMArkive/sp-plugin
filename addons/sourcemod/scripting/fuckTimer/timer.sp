@@ -1,11 +1,3 @@
-/*
-
-    TODO:
-        - Stage Attempts
-        - Stage TimeInZones
-
-*/
-
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -559,7 +551,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             map.SetValue("Type", TimeMain);
         }
 
-        // TODO: record.Tickrate
+        map.SetValue("Tickrate", GetServerTickrate());
         map.SetValue("Duration", Player[client].Time);
         map.SetValue("Attempts", Player[client].Attempts);
         map.SetArray("StartPosition", Player[client].StartPosition, 3);
