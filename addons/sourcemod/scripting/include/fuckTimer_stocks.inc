@@ -5,7 +5,10 @@
 
 #include <autoexecconfig>
 #include <sdktools>
+#include <multicolors>
 #include <fuckTimer_hud>
+#include <fuckTimer_styles>
+#include <fuckTimer_timer>
 
 #define FUCKTIMER_PLUGIN_NAME "fuckTimer - "
 #define FUCKTIMER_PLUGIN_AUTHOR "fuckTimer Contributors"
@@ -27,6 +30,24 @@
 #define MAX_ENTITIES 2048
 
 #define fuckTimer_LoopClients(%1,%2,%3) for(int %1 = 1; %1 <= MaxClients; %1++) if(fuckTimer_IsClientValid(%1, %2, %3))
+
+enum struct RecordData
+{
+    int PlayerId;
+    char PlayerName[MAX_NAME_LENGTH];
+    Styles Style;
+    int ZoneNormal;
+    TimeType Type;
+    int Tickrate;
+    float Duration;
+    float StartPosition[3];
+    float StartAngle[3];
+    float StartVelocity[3];
+    float EndPosition[3];
+    float EndAngle[3];
+    float EndVelocity[3];
+    IntMap Details;
+}
 
 stock void fuckTimer_StartConfig(char[] file, char[] directory = "fuckTimer")
 {
