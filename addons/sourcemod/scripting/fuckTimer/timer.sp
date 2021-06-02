@@ -567,11 +567,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         
         if (Player[client].CheckpointDetails != null)
         {
-            map.SetValue("Details", view_as<int>(CloneHandle(Player[client].CheckpointDetails)));
+            map.SetValue("Details", view_as<int>(Player[client].CheckpointDetails));
         }
         else if (Player[client].StageDetails != null)
         {
-            map.SetValue("Details", view_as<int>(CloneHandle(Player[client].StageDetails)));
+            map.SetValue("Details", view_as<int>(Player[client].StageDetails));
         }
         else
         {
@@ -582,12 +582,19 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Call_PushCell(client);
         Call_PushCell(view_as<int>(map));
         Call_Finish();
+
+        RequestFrame(Frame_DeleteStringMap, map);
         
         Player[client].MainRunning = false;
 
         Player[client].Reset(true);
         Player[client].Bonus = bonus;
     }
+}
+
+public void Frame_DeleteStringMap(StringMap map)
+{
+    delete map;
 }
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
