@@ -12,7 +12,9 @@
 #include <sourcemod>
 #include <sdkhooks>
 #include <fuckZones>
+#include <fuckTimer_players>
 #include <fuckTimer_stocks>
+#include <fuckTimer_styles>
 #include <fuckTimer_zones>
 #include <fuckTimer_timer>
 
@@ -122,7 +124,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     Core.OnClientTimerStart = new GlobalForward("fuckTimer_OnClientTimerStart", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     Core.OnClientZoneTouchStart = new GlobalForward("fuckTimer_OnClientZoneTouchStart", ET_Ignore, Param_Cell, Param_Cell,  Param_Cell, Param_Cell, Param_Cell, Param_Float);
     Core.OnClientZoneTouchEnd = new GlobalForward("fuckTimer_OnClientZoneTouchEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-    Core.OnClientTimerEnd = new GlobalForward("fuckTimer_OnClientTimerEnd", ET_Ignore, Param_Cell, Param_Cell, Param_Float, Param_Cell, Param_Cell);
+    Core.OnClientTimerEnd = new GlobalForward("fuckTimer_OnClientTimerEnd", ET_Ignore, Param_Cell, Param_Any);
 
     CreateNative("fuckTimer_GetClientTime", Native_GetClientTime);
     CreateNative("fuckTimer_IsClientTimeRunning", Native_IsClientTimeRunning);
@@ -529,27 +531,56 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         GetClientAngle(client, Player[client].EndAngle);
         GetClientVelocity(client, Player[client].EndVelocity);
 
-        Call_StartForward(Core.OnClientTimerEnd);
-        Call_PushCell(client);
-        Call_PushCell(Player[client].Bonus);
-        Call_PushFloat(Player[client].Time);
+        StringMap map;
+        map.SetValue("PlayerId", GetSteamAccountID(client));
 
-        if (Player[client].CheckpointDetails != null)
+        char sBuffer[MAX_NAME_LENGTH];
+        GetClientName(client, sBuffer, sizeof(sBuffer));
+        map.SetString("PlayerName", sBuffer);
+
+        fuckTimer_GetClientSetting(client, "Style", sBuffer);
+        map.SetValue("PlayerId", StringToInt(sBuffer));
+
+        map.SetValue("ZoneNormal", Player[client].Bonus);
+        
+        if (iCheckpoint > 0)
         {
-            Call_PushCell(TimeCheckpoint);
-            Call_PushCell(view_as<int>(Player[client].CheckpointDetails));
+            map.SetValue("Type", TimeCheckpoint);
         }
-        else if (Player[client].StageDetails != null)
+        else if (iStage > 0)
         {
-            Call_PushCell(TimeStage);
-            Call_PushCell(view_as<int>(Player[client].StageDetails));
+            map.SetValue("Type", TimeStage);
         }
         else
         {
-            Call_PushCell(TimeType);
-            Call_PushCell(0);
+            map.SetValue("Type", TimeMain);
         }
 
+        // TODO: record.Tickrate
+        map.SetValue("Duration", Player[client].Time);
+        map.SetArray("StartPosition", Player[client].StartPosition, 3);
+        map.SetArray("StartAngle", Player[client].StartAngle, 3);
+        map.SetArray("StartVelocity", Player[client].StartVelocity, 3);
+        map.SetArray("EndPosition", Player[client].EndPosition, 3);
+        map.SetArray("EndAngle", Player[client].EndAngle, 3);
+        map.SetArray("EndVelocity", Player[client].EndVelocity, 3);
+        
+        if (Player[client].CheckpointDetails != null)
+        {
+            map.SetValue("Details", view_as<int>(CloneHandle(Player[client].CheckpointDetails)));
+        }
+        else if (Player[client].StageDetails != null)
+        {
+            map.SetValue("Details", view_as<int>(CloneHandle(Player[client].StageDetails)));
+        }
+        else
+        {
+            map.SetValue("Details", 0);
+        }
+
+        Call_StartForward(Core.OnClientTimerEnd);
+        Call_PushCell(client);
+        Call_PushCell(view_as<int>(map));
         Call_Finish();
         
         Player[client].MainRunning = false;

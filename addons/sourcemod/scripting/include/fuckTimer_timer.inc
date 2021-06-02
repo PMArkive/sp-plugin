@@ -46,7 +46,7 @@ forward void fuckTimer_OnClientZoneTouchEnd(int client, int bonus, TimeType type
 /**
  * Value of each IntMap details value is the CSDetails enum struct, get the enum struct with IntMap.GetArray.
  */
-forward void fuckTimer_OnClientTimerEnd(int client, int bonus, float time, TimeType type, IntMap details);
+forward void fuckTimer_OnClientTimerEnd(int client, StringMap record);
 
 /**
  * For TimeMain is the level parameter useless, it just return the current running time.
