@@ -571,11 +571,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         
         if (Player[client].CheckpointDetails != null)
         {
-            map.SetValue("Details", view_as<int>(Player[client].CheckpointDetails));
+            map.SetValue("Details", view_as<any>(Player[client].CheckpointDetails));
         }
         else if (Player[client].StageDetails != null)
         {
-            map.SetValue("Details", view_as<int>(Player[client].StageDetails));
+            map.SetValue("Details", view_as<any>(Player[client].StageDetails));
         }
         else
         {

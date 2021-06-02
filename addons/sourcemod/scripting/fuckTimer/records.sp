@@ -30,14 +30,14 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
     StringMap record = view_as<StringMap>(CloneHandle(temp));
 
-    int iDetails;
+    any aDetails;
     IntMap imDetails;
 
-    record.GetValue("Details", iDetails);
+    record.GetValue("Details", aDetails);
 
-    if (iDetails != 0)
+    if (aDetails != 0)
     {
-        imDetails = view_as<IntMap>(CloneHandle(view_as<Handle>(iDetails)));
+        imDetails = view_as<IntMap>(CloneHandle(aDetails));
         delete imDetails;
     }
 
