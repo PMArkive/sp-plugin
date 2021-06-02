@@ -26,7 +26,7 @@ public void __pl_fuckTimer_players_SetNTVOptional()
 public SharedPlugin __pl_fuckTimer_players = 
 {
     name = "fuckTimer_players",
-    file = "hud.smx",
+    file = "players.smx",
 #if defined REQUIRE_PLUGIN
     required = 1,
 #else
