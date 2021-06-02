@@ -28,6 +28,7 @@ methodmap IntMapSnapshot < Handle
         
         char buffer[255];
         view_as<StringMapSnapshot>(this).GetKey(index, buffer, sizeof(buffer));
+
         return StringToInt(buffer);
     }
 }
@@ -48,8 +49,8 @@ methodmap IntMap < Handle
     // @return           True on success, false on failure.
     public bool SetValue(int key, any value, bool replace = true)
     {
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         return view_as<StringMap>(this).SetValue(buffer, value, replace);
     }
     
@@ -62,8 +63,8 @@ methodmap IntMap < Handle
     // @return           True on success, false on failure.
     public bool SetArray(int key, const any[] array, int num_items, bool replace = true)
     {
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         return view_as<StringMap>(this).SetArray(buffer, array, num_items, replace);
     }
     
@@ -75,8 +76,8 @@ methodmap IntMap < Handle
     // @return           True on success, false on failure.
     public bool SetString(int key, const char[] value, bool replace = true)
     {
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         return view_as<StringMap>(this).SetString(buffer, value, replace);
     }
     
@@ -87,8 +88,8 @@ methodmap IntMap < Handle
     public int GetInt(int key)
     {
         int value;
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         bool success = view_as<StringMap>(this).GetValue(buffer, value);
 
         if (success)
@@ -106,8 +107,8 @@ methodmap IntMap < Handle
     public float GetFloat(int key)
     {
         float value;
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         bool success = view_as<StringMap>(this).GetValue(buffer, value);
 
         if (success)
@@ -126,8 +127,8 @@ methodmap IntMap < Handle
     //                   as an array or string (not a value).
     public bool GetValue(int key, any& value)
     {
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         return view_as<StringMap>(this).GetValue(buffer, value);
     }
     
@@ -141,8 +142,8 @@ methodmap IntMap < Handle
     //                   as a value or string (not an array).
     public bool GetArray(int key, any[] array, int max_size, int& size = 0)
     {
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         return view_as<StringMap>(this).GetArray(buffer, array, max_size, size);
     }
     
@@ -156,8 +157,8 @@ methodmap IntMap < Handle
     //                   as a value or array (not a string).
     public bool GetString(int key, char[] value, int max_size, int& size = 0)
     {
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         return view_as<StringMap>(this).GetString(buffer, value, max_size, size);
     }
     
@@ -167,8 +168,8 @@ methodmap IntMap < Handle
     // @return           True on success, false if the value was never set.
     public bool Remove(int key)
     {
-        char buffer[6];
-        Keyize(key, buffer);
+        char buffer[255];
+        IntToString(key, buffer, sizeof(buffer));
         return view_as<StringMap>(this).Remove(buffer);
     }
     
@@ -192,15 +193,4 @@ methodmap IntMap < Handle
             return view_as<StringMap>(this).Size;
         }
     }
-}
-
-stock void Keyize(any key, char buffer[6]) 
-{
-    int i = key;
-    buffer[0] = ((i >>> 28) & 0x7F) | 0x80; 
-    buffer[1] = ((i >>> 21) & 0x7F) | 0x80; 
-    buffer[2] = ((i >>> 14) & 0x7F) | 0x80; 
-    buffer[3] = ((i >>> 7) & 0x7F) | 0x80;
-    buffer[4] = (i & 0x7F) | 0x80;
-    buffer[5] = 0x00;
 }

@@ -100,14 +100,14 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     IntMap imDetails;
     if (aDetails != 0)
     {
+        int iPoint;
         imDetails = view_as<IntMap>(CloneHandle(aDetails));
-
         IntMapSnapshot snap = imDetails.Snapshot();
 
         CSDetails details;
         for (int i = 0; i < snap.Length; i++)
         {
-            int iPoint = snap.GetKey(i);
+            iPoint = snap.GetKey(i);
             imDetails.GetArray(iPoint, details, sizeof(details));
 
             PrintToConsoleAll("%s %d: Time: %.3f, ", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Time);
