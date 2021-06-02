@@ -17,7 +17,7 @@
 #include <fuckTimer_styles>
 #include <fuckTimer_zones>
 #include <fuckTimer_timer>
-#include <fuckTImer_maps>
+#include <fuckTimer_maps>
 
 enum struct PlayerData
 {
