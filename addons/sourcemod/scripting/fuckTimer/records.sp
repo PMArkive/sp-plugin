@@ -26,8 +26,10 @@ public void fuckTimer_OnAPIReady()
     Core.HTTPClient = fuckTimer_GetHTTPClient();
 }
 
-public void fuckTimer_OnClientTimerEnd(int client, StringMap record)
+public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
+    StringMap record = view_as<StringMap>(CloneHandle(temp));
+
     int iDetails;
     IntMap imDetails;
 
@@ -35,7 +37,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap record)
 
     if (iDetails != 0)
     {
-        imDetails = view_as<IntMap>(iDetails);
+        imDetails = view_as<IntMap>(CloneHandle(view_as<Handle>(iDetails)));
         delete imDetails;
     }
 
