@@ -55,7 +55,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetCheckpointByIndex", Native_GetCheckpointByIndex);
     CreateNative("fuckTimer_GetStageByIndex", Native_GetStageByIndex);
 
-    CreateNative("fuckTimer_GetZoneMaxSpeed", Native_GetZoneMaxSpeed);
+    CreateNative("fuckTimer_GetZonePreSpeed", Native_GetZonePreSpeed);
+    CreateNative("fuckTimer_GetZoneMaxVelocity", Native_GetZoneMaxVelocity);
 
     RegPluginLibrary("fuckTimer_zones");
 
@@ -161,8 +162,11 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
         }
     }
 
-    GetfuckTimerZoneValue(smEffects, "MaxSpeed", sValue, sizeof(sValue));
-    Zone[entity].MaxSpeed = StringToInt(sValue);
+    GetfuckTimerZoneValue(smEffects, "PreSpeed", sValue, sizeof(sValue));
+    Zone[entity].PreSpeed = StringToInt(sValue);
+
+    GetfuckTimerZoneValue(smEffects, "MaxVelocity", sValue, sizeof(sValue));
+    Zone[entity].MaxVelocity = StringToInt(sValue);
 }
 
 public void fuckZones_OnEffectsReady()
@@ -185,7 +189,8 @@ public void fuckZones_OnEffectsReady()
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Checker", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Validator", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "AntiJump", "0");
-    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "MaxSpeed", "0");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "PreSpeed", "0");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "MaxVelocity", "0");
 }
 
 public void OneZoneStartTouch(int client, int entity, StringMap values)
@@ -408,7 +413,12 @@ public int Native_GetStageByIndex(Handle plugin, int numParams)
     return Zone[iEntity].Stage;
 }
 
-public int Native_GetZoneMaxSpeed(Handle plugin, int numParams)
+public int Native_GetZonePreSpeed(Handle plugin, int numParams)
 {
-    return Zone[GetNativeCell(1)].MaxSpeed;
+    return Zone[GetNativeCell(1)].PreSpeed;
+}
+
+public int Native_GetZoneMaxVelocity(Handle plugin, int numParams)
+{
+    return Zone[GetNativeCell(1)].MaxVelocity;
 }

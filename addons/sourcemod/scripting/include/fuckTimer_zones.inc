@@ -22,7 +22,8 @@ enum struct ZoneDetails
     int Checkpoint;
     int Stage;
 
-    int MaxSpeed;
+    int PreSpeed;
+    int MaxVelocity;
 
     void Reset()
     {
@@ -40,7 +41,8 @@ enum struct ZoneDetails
         this.Checkpoint = 0;
         this.Stage = 0;
 
-        this.MaxSpeed = 0;
+        this.PreSpeed = 0;
+        this.MaxVelocity = 0;
     }
 }
 
@@ -121,7 +123,8 @@ native int fuckTimer_GetCheckpointByIndex(int zone, int &bonus);
  * Paramter bonus will be set.
  */
 native int fuckTimer_GetStageByIndex(int zone, int &bonus);
-native int fuckTimer_GetZoneMaxSpeed(int zone);
+native int fuckTimer_GetZonePreSpeed(int zone);
+native int fuckTimer_GetZoneMaxVelocity(int zone);
 
 stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
 {
@@ -169,7 +172,9 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
 
     MarkNativeAsOptional("fuckTimer_GetCheckpointByIndex");
     MarkNativeAsOptional("fuckTimer_GetStageByIndex");
-    MarkNativeAsOptional("fuckTimer_GetZoneMaxSpeed");
+
+    MarkNativeAsOptional("fuckTimer_GetZonePreSpeed");
+    MarkNativeAsOptional("fuckTimer_GetZoneMaxVelocity");
 }
 #endif
 
