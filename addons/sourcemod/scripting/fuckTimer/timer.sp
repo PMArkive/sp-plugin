@@ -423,7 +423,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         SetIntMapAttempts(Player[client].StageDetails, iPrevStage, Player[client].Attempts);
         SetIntMapTimeInZone(Player[client].StageDetails, iPrevStage, Player[client].TimeInZone);
-        SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, iPrevStage, true);
+        SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, iPrevStage, false);
 
         Player[client].Attempts = 0;
         Player[client].TimeInZone = 0.0;
@@ -481,7 +481,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, details.Time);
-        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, iPrevCheckpoint, true);
+        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, iPrevCheckpoint, false);
 
         Player[client].CheckpointRunning = false;
 
@@ -678,7 +678,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Player[client].Stage = 1;
             Player[client].StageRunning = true;
             SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
-            SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, false);
+            SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
         }
 
         if (Core.Checkpoints.GetInt(bonus) > 0)
@@ -691,7 +691,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Player[client].Checkpoint = 0;
             Player[client].CheckpointRunning = true;
             SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
-            SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+            SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint + 1, true);
         }
 
         if (Player[client].Attempts < 0)
@@ -714,7 +714,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
         SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
-        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+        SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
 
         Player[client].BlockTeleport = false;
     }
@@ -725,7 +725,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
         SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
-        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint + 1, true);
         Player[client].BlockTeleport = false;
     }
 
