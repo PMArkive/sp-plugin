@@ -111,8 +111,13 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
             imDetails.GetArray(iPoint, details, sizeof(details));
 
             PrintToConsoleAll("%s %d: Time: %.3f, ", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Time);
-            PrintToConsoleAll("%s %d: TimeInZone: %.3f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.TimeInZone);
-            PrintToConsoleAll("%s %d: Attempts: %d", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Attempts);
+
+            if (tType == TimeStage)
+            {
+                PrintToConsoleAll("%s %d: TimeInZone: %.3f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.TimeInZone);
+                PrintToConsoleAll("%s %d: Attempts: %d", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Attempts);
+            }
+            
             PrintToConsoleAll("%s %d: StartPosition[0]: %.5f, StartPosition[1]: %.5f, StartPosition[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
             PrintToConsoleAll("%s %d: StartAngle[0]: %.5f, StartAngle[1]: %.5f, StartAngle[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.StartAngle[0], details.StartAngle[1], details.StartAngle[2]);
             PrintToConsoleAll("%s %d: StartVelocity[0]: %.5f, StartVelocity[1]: %.5f, StartVelocity[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.StartVelocity[0], details.StartVelocity[1], details.StartVelocity[2]);
