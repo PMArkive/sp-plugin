@@ -81,8 +81,6 @@ public void OnPluginStart()
     HookEvent("player_activate", Event_PlayerActivate);
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
-
-    GetHTTPClient();
 }
 
 public void OnConfigsExecuted()
@@ -92,12 +90,6 @@ public void OnConfigsExecuted()
         PrintToServer("OnConfigsExecuted: %N", client);
     }
 }
-
-public void fuckTimer_OnAPIReady()
-{
-    GetHTTPClient();
-}
-
 public void fuckTimer_OnClientRestart(int client)
 {
     int iZone = fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client));
@@ -369,10 +361,7 @@ void LoadPlayer(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/Id/%d", GetSteamAccountID(client));
 
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-    }
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
-    Core.HTTPClient.Get(sEndpoint, GetPlayerData, GetClientUserId(client));
+    request.Get(GetPlayerData, GetClientUserId(client));
 }

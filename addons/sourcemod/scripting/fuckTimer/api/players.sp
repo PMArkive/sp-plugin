@@ -1,22 +1,3 @@
-void GetHTTPClient()
-{
-    bool bSkip = true;
-
-    if (fuckTimer_GetHTTPClient() != null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-        bSkip = false;
-    }
-
-    if (!bSkip)
-    {
-        fuckTimer_LoopClients(client, true, true)
-        {
-            LoadPlayer(client);
-        }
-    }
-}
-
 public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
@@ -69,8 +50,9 @@ void PreparePlayerPostData(int client)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player");
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
-    Core.HTTPClient.Post(sEndpoint, jPlayer, PostPlayerData, GetClientUserId(client));
+    request.Post(jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;
 }
 
@@ -99,10 +81,11 @@ void LoadPlayerSetting(int client)
 {
     char sEndpoint[MAX_URL_LENGTH];
     Format(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d", GetSteamAccountID(client));
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
     LogMessage(sEndpoint);
 
-    Core.HTTPClient.Get(sEndpoint, GetPlayerSetting, GetClientUserId(client));
+    request.Get(GetPlayerSetting, GetClientUserId(client));
 }
 
 public void GetPlayerSetting(HTTPResponse response, int userid, const char[] error)
@@ -177,8 +160,9 @@ void PreparePlayerPostSetting(int client, const char[] setting)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings");
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
-    Core.HTTPClient.Post(sEndpoint, jSetting, PostPlayerSetting, GetClientUserId(client));
+    request.Post(jSetting, PostPlayerSetting, GetClientUserId(client));
 
     delete jSetting;
 }
@@ -218,12 +202,13 @@ void SetPlayerSetting(int client, const char[] setting, const char[] value)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d/Setting/%s", GetSteamAccountID(client), setting);
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(client));
     pack.WriteString(setting);
     pack.WriteString(value);
-    Core.HTTPClient.Patch(sEndpoint, jSetting, PatchPlayerSetting, pack);
+    request.Patch(jSetting, PatchPlayerSetting, pack);
 
     delete jSetting;
 }
