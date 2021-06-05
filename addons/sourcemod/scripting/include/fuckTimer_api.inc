@@ -11,6 +11,15 @@
 native bool fuckTimer_GetAPIUrl(char[] url);
 native HTTPClient fuckTimer_NewHTTPRequest(const char[] url, int length = MAX_URL_LENGTH);
 
+stock HTTPRequest fuckTimer_NewCloudHTTPRequest(const char[] endpoint)
+{
+    char sUrl[MAX_URL_LENGTH];
+    FormatEx(sUrl, sizeof(sUrl), "%s/%s", FUCKTIMER_BASE_CLOUD_URL, endpoint);
+
+    HTTPRequest request = new HTTPRequest(sUrl);
+
+    return request;
+}
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_api_SetNTVOptional()

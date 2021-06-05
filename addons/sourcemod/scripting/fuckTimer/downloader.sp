@@ -66,16 +66,6 @@ public void OnMapStart()
     RequestFrame(Frame_DownloadZone);
 }
 
-HTTPRequest GetNewHTTPRequest(const char[] endpoint)
-{
-    char sUrl[MAX_URL_LENGTH];
-    FormatEx(sUrl, sizeof(sUrl), "%s/%s", FUCKTIMER_BASE_CLOUD_URL, endpoint);
-
-    HTTPRequest request = new HTTPRequest(sUrl);
-
-    return request;
-}
-
 public void Frame_DownloadZone()
 {
     char sMap[64];
@@ -93,7 +83,7 @@ public void Frame_DownloadZone()
     
     char sEndpoint[128];
     FormatEx(sEndpoint, sizeof(sEndpoint), "fZones/%s.zon", sMap);
-    HTTPRequest request =  GetNewHTTPRequest(sEndpoint);
+    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteString(sMap);
@@ -123,7 +113,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
 
         char sEndpoint[128];
         FormatEx(sEndpoint, sizeof(sEndpoint), "Stripper/global_filters.cfg");
-        HTTPRequest request =  GetNewHTTPRequest(sEndpoint);
+        HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
         pack = new DataPack();
         pack.WriteString(sMap);
@@ -197,7 +187,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
 
     char sEndpoint[128];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Stripper/%s.cfg", sMap);
-    HTTPRequest request =  GetNewHTTPRequest(sEndpoint);
+    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     pack = new DataPack();
     pack.WriteString(sMap);
