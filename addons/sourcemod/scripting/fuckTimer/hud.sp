@@ -195,7 +195,13 @@ public void OnGameFrame()
 
         bool bReplaceBonus = true;
 
-        int iCheckpoint = fuckTimer_GetClientCheckpoint(client);
+        int iCheckpoint = fuckTimer_GetClientCheckpoint(client) - 1;
+
+        if (iCheckpoint  < 0)
+        {
+            iCheckpoint = 0;
+        }
+
         int iStage = fuckTimer_GetClientStage(client);
         float fCPStageTime = 0.0;
 

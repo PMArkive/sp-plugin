@@ -476,9 +476,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         Player[client].CheckpointDetails.GetArray(iPrevCheckpoint, details, sizeof(details));
 
-        // We increase this here, to show the correct Checkpoint Number in players chat
-        iPrevCheckpoint++;
-
         if (iPrevCheckpoint > Core.Checkpoints.GetInt(iBonus))
         {
             iPrevCheckpoint = Core.Checkpoints.GetInt(iBonus);
@@ -569,46 +566,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         
         if (Player[client].CheckpointDetails != null)
         {
-            /* This won't work
-            IntMap imTemp = view_as<IntMap>(CloneHandle(Player[client].CheckpointDetails));
-            IntMapSnapshot snap = imTemp.Snapshot();
-
-            int iPoint;
-            CSDetails csTemp1;
-            CSDetails csTemp2;
-
-            for (int i = 0; i < snap.Length; i++)
-            {
-                iPoint = snap.GetKey(i);
-
-                // Ignore already max. checkpoint
-                if (iPoint == snap.Length-1)
-                {
-                    PrintToServer("YES - iPoint: %d, Length: %d", iPoint, snap.Length);
-                    continue;
-                }
-
-                // Get cp time, which will be increased by 1
-                imTemp.GetArray(iPoint, csTemp1, sizeof(csTemp1));
-
-                // Remove CP0
-                if (iPoint == 0)
-                {
-                    Player[client].CheckpointDetails.Remove(iPoint);
-                }
-
-                PrintToServer("CP: %d, Time: %.3f", iPoint, csTemp1.Time);
-
-                // Set time cp + 1
-                int iNew = iPoint + 1;
-                Player[client].CheckpointDetails.GetArray(iNew, csTemp2, sizeof(csTemp2));
-                csTemp2.Time = csTemp1.Time;
-                Player[client].CheckpointDetails.SetArray(iNew, csTemp2, sizeof(csTemp2));
-            }
-
-            delete imTemp;
-            delete snap; */
-
             map.SetValue("Details", view_as<any>(Player[client].CheckpointDetails));
         }
         else if (Player[client].StageDetails != null)
@@ -733,7 +690,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
                 Player[client].CheckpointDetails = new IntMap();
             }
 
-            Player[client].Checkpoint = 0;
+            Player[client].Checkpoint = 1;
             Player[client].CheckpointRunning = true;
             SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
             SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint + 1, true);
@@ -770,7 +727,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
         SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
-        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint + 1, true);
+        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint, true);
+        
         Player[client].BlockTeleport = false;
     }
 
