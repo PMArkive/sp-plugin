@@ -4,6 +4,7 @@
 #include <sourcemod>
 #include <ripext>
 #include <fuckTimer_stocks>
+#include <fuckTimer_api>
 
 enum struct PluginData
 {
@@ -65,12 +66,14 @@ public void OnMapStart()
     RequestFrame(Frame_DownloadZone);
 }
 
-void CheckHTTPClient()
+HTTPRequest GetNewHTTPRequest(const char[] endpoint)
 {
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = new HTTPClient(FUCKTIMER_BASE_CLOUD_URL);
-    }
+    char sUrl[MAX_URL_LENGTH];
+    FormatEx(sUrl, sizeof(sUrl), "%s/%s", FUCKTIMER_BASE_CLOUD_URL, endpoint);
+
+    HTTPRequest request = new HTTPRequest(sUrl);
+
+    return request;
 }
 
 public void Frame_DownloadZone()
@@ -88,14 +91,14 @@ public void Frame_DownloadZone()
         DeleteFile(sFile);
     }
     
-    char sCloudPath[128];
-    FormatEx(sCloudPath, sizeof(sCloudPath), "fZones/%s.zon", sMap);
-
-    CheckHTTPClient();
+    char sEndpoint[128];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "fZones/%s.zon", sMap);
+    HTTPRequest request =  GetNewHTTPRequest(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteString(sMap);
-    Core.HTTPClient.DownloadFile(sCloudPath, sFile, OnZoneDownload, pack);
+
+    request.DownloadFile(sFile, OnZoneDownload, pack);
 }
 
 public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
@@ -112,19 +115,21 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
         LogMessage("[fuckTimer.Downloader] Download global_filters.cfg...");
 
-        char sCloudPath[128];
-        FormatEx(sCloudPath, sizeof(sCloudPath), "Stripper/global_filters.cfg");
+        
 
         char sFile[PLATFORM_MAX_PATH + 1];
         FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
-
         bool bExist = FileExists(sFile);
+
+        char sEndpoint[128];
+        FormatEx(sEndpoint, sizeof(sEndpoint), "Stripper/global_filters.cfg");
+        HTTPRequest request =  GetNewHTTPRequest(sEndpoint);
 
         pack = new DataPack();
         pack.WriteString(sMap);
         pack.WriteCell(bExist);
         
-        Core.HTTPClient.DownloadFile(sCloudPath, sFile, OnStripperGlobalDownload, pack);
+        request.DownloadFile(sFile, OnStripperGlobalDownload, pack);
 
         CallZoneDownload(sMap, true);
     }
@@ -186,20 +191,20 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
     
     LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", sMap);
 
-    char sCloudPath[128];
-    FormatEx(sCloudPath, sizeof(sCloudPath), "Stripper/%s.cfg", sMap);
-
     char sFile[PLATFORM_MAX_PATH + 1];
     FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
-
     bool bMapExist = FileExists(sFile);
+
+    char sEndpoint[128];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Stripper/%s.cfg", sMap);
+    HTTPRequest request =  GetNewHTTPRequest(sEndpoint);
 
     pack = new DataPack();
     pack.WriteString(sMap);
     pack.WriteCell(bExist);
     pack.WriteCell(bMapExist);
     
-    Core.HTTPClient.DownloadFile(sCloudPath, sFile, OnStripperMapDownload, pack);
+    request.DownloadFile(sFile, OnStripperMapDownload, pack);
 }
 
 public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[] error)
