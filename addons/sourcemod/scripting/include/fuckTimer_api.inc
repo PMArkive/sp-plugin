@@ -21,6 +21,20 @@ stock HTTPRequest fuckTimer_NewCloudHTTPRequest(const char[] endpoint)
     return request;
 }
 
+stock HTTPRequest fuckTimer_NewAPIHTTPRequest(const char[] endpoint)
+{
+    char sBase[1024];
+    fuckTimer_GetAPIUrl(sBase);
+
+    char sUrl[MAX_URL_LENGTH];
+    FormatEx(sUrl, sizeof(sUrl), "%s/%s", sBase, endpoint);
+
+    HTTPRequest request = fuckTimer_NewHTTPRequest(sUrl);
+
+    return request;
+}
+
+
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_api_SetNTVOptional()
 {

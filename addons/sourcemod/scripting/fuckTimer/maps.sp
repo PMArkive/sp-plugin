@@ -84,12 +84,9 @@ void LoadMapData(const char[] map)
     DataPack pack = new DataPack();
     pack.WriteString(map);
 
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-    }
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
-    Core.HTTPClient.Get(sEndpoint, GetMapData, pack);
+    request.Get(GetMapData, pack);
 }
 
 public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
@@ -128,11 +125,6 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
 
 void PrepareMapPostData(const char[] map)
 {
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-    }
-
     int iTier = GetMapTier(map);
 
     JSONObject jMap = new JSONObject();
@@ -142,11 +134,12 @@ void PrepareMapPostData(const char[] map)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteString(map);
 
-    Core.HTTPClient.Post(sEndpoint, jMap, PostMapData, pack);
+    request.Post(jMap, PostMapData, pack);
     delete jMap;
 }
 
@@ -244,11 +237,7 @@ public any Native_GetMapTiers(Handle plugin, int numParams)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Map/MatchName/%s", sName);
-
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-    }
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
     
     DataPack pack = new DataPack();
     if (client > 0 && IsClientInGame(client))
@@ -262,7 +251,7 @@ public any Native_GetMapTiers(Handle plugin, int numParams)
     pack.WriteString(sName);
     pack.WriteCell(view_as<int>(plugin));
     pack.WriteFunction(fCallback);
-    Core.HTTPClient.Get(sEndpoint, GetMapsData, pack);
+    request.Get(GetMapsData, pack);
 }
 
 public void GetMapsData(HTTPResponse response, DataPack pack, const char[] error)
