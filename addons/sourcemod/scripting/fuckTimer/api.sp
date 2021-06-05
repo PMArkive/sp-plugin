@@ -7,12 +7,10 @@
 
 enum struct PluginData
 {
-    HTTPClient HTTPClient;
-
-    GlobalForward OnAPIReady;
-
     ConVar APIUrl;
     ConVar APIKey;
+    ConVar MetaModVersion;
+    ConVar SourceModVersion;
 }
 PluginData Core;
 
@@ -27,9 +25,7 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    Core.OnAPIReady = new GlobalForward("fuckTimer_OnAPIReady", ET_Ignore);
-
-    CreateNative("fuckTimer_GetHTTPClient", Native_GetHTTPClient);
+    CreateNative("fuckTimer_NewHTTPRequest", Native_NewHTTPRequest);
 
     RegPluginLibrary("fuckTimer_api");
 
@@ -46,59 +42,54 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
-    if (Core.HTTPClient == null)
+    Core.MetaModVersion = FindConVar("metamod_version");
+
+    if (Core.MetaModVersion == null)
     {
-        char sAPI[MAX_URL_LENGTH];
-
-        Core.APIUrl.GetString(sAPI, sizeof(sAPI));
-
-        if (strlen(sAPI) < 2)
-        {
-            SetFailState("[API.OnConfigsExecuted] Can't receive api url.");
-            return;
-        }
-
-        Core.HTTPClient = new HTTPClient(sAPI);
-
-        char sKey[MAX_URL_LENGTH];
-        Core.APIKey.GetString(sKey, sizeof(sKey));
-
-        if (strlen(sKey) < 2)
-        {
-            SetFailState("[API.OnConfigsExecuted] Can't receive api key.");
-            return;
-        }
-
-        char sBuffer[128];
-
-        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sKey);
-        Core.HTTPClient.SetHeader("Authorization", sBuffer);
-
-        char sMetaMod[12], sSourceMod[24];
-        ConVar cBuffer = FindConVar("metamod_version");
-
-        if (cBuffer != null)
-        {
-            cBuffer.GetString(sMetaMod, sizeof(sMetaMod));
-        }
-
-        cBuffer = FindConVar("sourcemod_version");
-
-        if (cBuffer != null)
-        {
-            cBuffer.GetString(sSourceMod, sizeof(sSourceMod));
-        }
-
-        char sUserAgent[128];
-        FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
-        Core.HTTPClient.SetHeader("User-Agent", sUserAgent);
+        SetFailState("Can not find the convar \"metamod_version\".");
     }
 
-    Call_StartForward(Core.OnAPIReady);
-    Call_Finish();
+    Core.SourceModVersion = FindConVar("sourcemod_version");
+
+    if (Core.SourceModVersion == null)
+    {
+        SetFailState("Can not find the convar \"sourcemod_version\".");
+    }
 }
 
-public any Native_GetHTTPClient(Handle plugin, int numParams)
+public any Native_NewHTTPRequest(Handle plugin, int numParams)
 {
-    return Core.HTTPClient;
+    char sAPI[MAX_URL_LENGTH];
+    Core.APIUrl.GetString(sAPI, sizeof(sAPI));
+
+    if (strlen(sAPI) < 2)
+    {
+        SetFailState("[API.Native_NewHTTPRequest] Can not receive API Url.");
+        return;
+    }
+
+    HTTPRequest request = new HTTPRequest(sAPI);
+
+    char sKey[MAX_URL_LENGTH];
+    Core.APIKey.GetString(sKey, sizeof(sKey));
+
+    if (strlen(sKey) < 2)
+    {
+        SetFailState("[API.Native_NewHTTPRequest] Can not receive API Key.");
+        return;
+    }
+
+    char sBuffer[128];
+
+    FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sKey);
+    request.SetHeader("Authorization", sBuffer);
+
+    char sMetaMod[12], sSourceMod[24];
+
+    Core.MetaModVersion.GetString(sMetaMod, sizeof(sMetaMod));
+    Core.SourceModVersion.GetString(sSourceMod, sizeof(sSourceMod));
+
+    char sUserAgent[128];
+    FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
+    request.SetHeader("User-Agent", sUserAgent);
 }

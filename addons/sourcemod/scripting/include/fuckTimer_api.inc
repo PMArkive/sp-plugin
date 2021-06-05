@@ -5,14 +5,12 @@
 
 #include <ripext>
 
-forward void fuckTimer_OnAPIReady();
-
-native HTTPClient fuckTimer_GetHTTPClient();
+native HTTPClient fuckTimer_NewHTTPRequest();
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_api_SetNTVOptional()
 {
-    MarkNativeAsOptional("fuckTimer_GetHTTPClient");
+    MarkNativeAsOptional("fuckTimer_NewHTTPRequest");
 }
 #endif
 
