@@ -6,12 +6,6 @@
 #include <fuckTimer_api>
 #include <fuckTimer_timer>
 
-enum struct PluginData
-{
-    HTTPClient HTTPClient;
-}
-PluginData Core;
-
 public Plugin myinfo =
 {
     name = FUCKTIMER_PLUGIN_NAME ... "Records",
@@ -20,11 +14,6 @@ public Plugin myinfo =
     version = FUCKTIMER_PLUGIN_VERSION,
     url = FUCKTIMER_PLUGIN_URL
 };
-
-public void fuckTimer_OnAPIReady()
-{
-    Core.HTTPClient = fuckTimer_GetHTTPClient();
-}
 
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {

@@ -9,7 +9,7 @@
 #define FUCKTIMER_BASE_CLOUD_URL "https://fucktimer.cloud/file"
 
 native bool fuckTimer_GetAPIUrl(char[] url);
-native HTTPClient fuckTimer_NewHTTPRequest(const char[] url, int length = MAX_URL_LENGTH);
+native HTTPRequest fuckTimer_NewHTTPRequest(const char[] url, int length = MAX_URL_LENGTH);
 
 stock HTTPRequest fuckTimer_NewCloudHTTPRequest(const char[] endpoint)
 {

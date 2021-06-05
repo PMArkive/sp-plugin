@@ -72,8 +72,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-    GetHTTPClient();
-
     fuckTimer_StartConfig("hud");
     Core.cvTitle = AutoExecConfig_CreateConVar("hud_title", "fuckTimer.com", "Choose your hud title, this can't changed by players.");
     Core.cvTitle.AddChangeHook(OnCvarChange);
@@ -108,11 +106,6 @@ public void OnMapStart()
 
     IntToString(view_as<int>(false), sBuffer, sizeof(sBuffer));
     fuckTimer_RegisterSetting("HUDShowTime0Hours", sBuffer);
-}
-
-public void fuckTimer_OnAPIReady()
-{
-    GetHTTPClient();
 }
 
 public void OnCvarChange(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -607,10 +600,20 @@ void LoadPlayer(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", GetSteamAccountID(client));
 
-    if (Core.HTTPClient == null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-    }
+    HTTPRequest request = NewHTTPRequest(sEndpoint);
 
-    Core.HTTPClient.Get(sEndpoint, GetPlayerHudSettings, GetClientUserId(client));
+    request.Get(GetPlayerHudSettings, GetClientUserId(client));
+}
+
+HTTPRequest NewHTTPRequest(const char[] endpoint)
+{
+    char sBase[1024];
+    fuckTimer_GetAPIUrl(sBase);
+
+    char sUrl[MAX_URL_LENGTH];
+    FormatEx(sUrl, sizeof(sUrl), "%s/%s", sBase, endpoint);
+
+    HTTPRequest request = fuckTimer_NewHTTPRequest(sUrl);
+
+    return request;
 }

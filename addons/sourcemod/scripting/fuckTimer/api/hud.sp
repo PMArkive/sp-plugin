@@ -1,22 +1,3 @@
-void GetHTTPClient()
-{
-    bool bSkip = true;
-
-    if (Core.HTTPClient == null && fuckTimer_GetHTTPClient() != null)
-    {
-        Core.HTTPClient = fuckTimer_GetHTTPClient();
-        bSkip = false;
-    }
-
-    if (!bSkip)
-    {
-        fuckTimer_LoopClients(client, true, true)
-        {
-            LoadPlayer(client);
-        }
-    }
-}
-
 public void GetPlayerHudSettings(HTTPResponse response, int userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
@@ -130,7 +111,9 @@ void PreparePlayerPostHudSettings(int client, char[] layout = "default")
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", iAccountID);
 
-    Core.HTTPClient.Post(sEndpoint, jArray, PostPlayerHudSettings, GetClientUserId(client));
+    HTTPRequest request = NewHTTPRequest(sEndpoint);
+
+    request.Post(jArray, PostPlayerHudSettings, GetClientUserId(client));
 
     for (int i = 0; i < jArray.Length; i++)
     {
@@ -187,7 +170,9 @@ void PatchPlayerHUDKeys(int client, HUDEntry entry[2])
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d/", GetSteamAccountID(client));
 
-    Core.HTTPClient.Patch(sEndpoint, jArray, PatchPlayerHUDKey, GetClientUserId(client));
+    HTTPRequest request = NewHTTPRequest(sEndpoint);
+
+    request.Patch(jArray, PatchPlayerHUDKey, GetClientUserId(client));
 
     for (int i = 0; i < jArray.Length; i++)
     {
