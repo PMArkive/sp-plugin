@@ -41,23 +41,6 @@ public void OnPluginStart()
     fuckTimer_EndConfig();
 }
 
-public void OnConfigsExecuted()
-{
-    Core.MetaModVersion = FindConVar("metamod_version");
-
-    if (Core.MetaModVersion == null)
-    {
-        SetFailState("Can not find the convar \"metamod_version\".");
-    }
-
-    Core.SourceModVersion = FindConVar("sourcemod_version");
-
-    if (Core.SourceModVersion == null)
-    {
-        SetFailState("Can not find the convar \"sourcemod_version\".");
-    }
-}
-
 public any Native_GetAPIUrl(Handle plugin, int numParams)
 {
     char sUrl[MAX_URL_LENGTH];
@@ -89,9 +72,19 @@ public any Native_NewHTTPRequest(Handle plugin, int numParams)
         request.SetHeader("Authorization", sBuffer);
 
         char sMetaMod[12];
+        Core.MetaModVersion = FindConVar("metamod_version");
+        if (Core.MetaModVersion == null)
+        {
+            SetFailState("Can not find the convar \"metamod_version\".");
+        }
         Core.MetaModVersion.GetString(sMetaMod, sizeof(sMetaMod));
 
         char sSourceMod[24];
+        Core.SourceModVersion = FindConVar("sourcemod_version");
+        if (Core.SourceModVersion == null)
+        {
+            SetFailState("Can not find the convar \"sourcemod_version\".");
+        }
         Core.SourceModVersion.GetString(sSourceMod, sizeof(sSourceMod));
 
         char sUserAgent[128];
