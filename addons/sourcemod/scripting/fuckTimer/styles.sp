@@ -33,10 +33,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-public void fuckTimer_OnAPIReady()
+public void OnConfigsExecuted()
 {
-    Core.HTTPClient = fuckTimer_GetHTTPClient();
-
     LoadStyles();
 }
 
@@ -44,8 +42,9 @@ void LoadStyles()
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Style");
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
 
-    Core.HTTPClient.Get(sEndpoint, GetAllStyles);
+    request.Get(GetAllStyles);
 }
 
 public void GetAllStyles(HTTPResponse response, any value, const char[] error)
