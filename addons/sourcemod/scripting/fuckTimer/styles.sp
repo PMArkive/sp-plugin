@@ -61,6 +61,7 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
         return;
     }
 
+    delete Core.Styles;
     Core.Styles = new IntMap();
 
     JSONObject jsonObject = null;
