@@ -61,7 +61,7 @@ public any Native_NewHTTPRequest(Handle plugin, int numParams)
     if (strlen(sKey) < 2)
     {
         SetFailState("[API.Native_NewHTTPRequest] Can not receive API Key.");
-        return;
+        return 0;
     }
 
     char sBuffer[128];
@@ -91,4 +91,6 @@ public any Native_NewHTTPRequest(Handle plugin, int numParams)
         FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
         request.SetHeader("User-Agent", sUserAgent);
     }
+
+    return request;
 }
