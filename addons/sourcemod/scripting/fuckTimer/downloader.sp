@@ -9,8 +9,6 @@
 enum struct PluginData
 {
     GlobalForward OnZoneDownload;
-    
-    HTTPClient HTTPClient;
 
     char Name[32];
 }

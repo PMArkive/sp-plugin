@@ -15,8 +15,6 @@ MapData Map;
 
 enum struct PluginData
 {
-    HTTPClient HTTPClient;
-
     bool API;
     bool Zones;
 }

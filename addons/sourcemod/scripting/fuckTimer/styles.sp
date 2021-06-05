@@ -8,8 +8,6 @@
 
 enum struct PluginData
 {
-    HTTPClient HTTPClient;
-
     IntMap Styles;
 }
 PluginData Core;

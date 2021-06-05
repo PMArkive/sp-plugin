@@ -41,8 +41,6 @@ PlayerData Player[MAXPLAYERS + 1];
 
 enum struct PluginData
 {
-    HTTPClient HTTPClient;
-
     ConVar cvTitle;
 
     char Title[32];

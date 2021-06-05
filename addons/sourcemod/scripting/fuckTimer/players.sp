@@ -38,8 +38,6 @@ PlayerData Player[MAXPLAYERS + 1];
 enum struct PluginData
 {
     StringMap Settings;
-
-    HTTPClient HTTPClient;
 }
 PluginData Core;
 
