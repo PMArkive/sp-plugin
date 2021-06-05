@@ -25,6 +25,7 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    CreateNative("fuckTimer_GetAPIUrl", Native_GetAPIUrl);
     CreateNative("fuckTimer_NewHTTPRequest", Native_NewHTTPRequest);
 
     RegPluginLibrary("fuckTimer_api");
@@ -57,18 +58,19 @@ public void OnConfigsExecuted()
     }
 }
 
+public any Native_GetAPIUrl(Handle plugin, int numParams)
+{
+    char sUrl[MAX_URL_LENGTH];
+    Core.APIUrl.GetString(sUrl, sizeof(sUrl));
+    SetNativeString(1, sUrl, sizeof(sUrl));
+}
+
 public any Native_NewHTTPRequest(Handle plugin, int numParams)
 {
-    char sAPI[MAX_URL_LENGTH];
-    Core.APIUrl.GetString(sAPI, sizeof(sAPI));
+    char[] sUrl = new char[GetNativeCell(2)];
+    GetNativeString(1, sUrl, GetNativeCell(2));
 
-    if (strlen(sAPI) < 2)
-    {
-        SetFailState("[API.Native_NewHTTPRequest] Can not receive API Url.");
-        return;
-    }
-
-    HTTPRequest request = new HTTPRequest(sAPI);
+    HTTPRequest request = new HTTPRequest(sUrl);
 
     char sKey[MAX_URL_LENGTH];
     Core.APIKey.GetString(sKey, sizeof(sKey));
@@ -81,15 +83,19 @@ public any Native_NewHTTPRequest(Handle plugin, int numParams)
 
     char sBuffer[128];
 
-    FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sKey);
-    request.SetHeader("Authorization", sBuffer);
+    if (StrContains(sUrl, "fucktimer.cloud", false) == -1)
+    {
+        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sKey);
+        request.SetHeader("Authorization", sBuffer);
 
-    char sMetaMod[12], sSourceMod[24];
+        char sMetaMod[12];
+        Core.MetaModVersion.GetString(sMetaMod, sizeof(sMetaMod));
 
-    Core.MetaModVersion.GetString(sMetaMod, sizeof(sMetaMod));
-    Core.SourceModVersion.GetString(sSourceMod, sizeof(sSourceMod));
+        char sSourceMod[24];
+        Core.SourceModVersion.GetString(sSourceMod, sizeof(sSourceMod));
 
-    char sUserAgent[128];
-    FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
-    request.SetHeader("User-Agent", sUserAgent);
+        char sUserAgent[128];
+        FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
+        request.SetHeader("User-Agent", sUserAgent);
+    }
 }

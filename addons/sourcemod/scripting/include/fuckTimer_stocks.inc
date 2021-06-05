@@ -15,7 +15,6 @@
 #define FUCKTIMER_PLUGIN_DESCRIPTION ""
 #define FUCKTIMER_PLUGIN_VERSION "1.0.0-devvvvvvvvvvvvvvvv"
 #define FUCKTIMER_PLUGIN_URL "github.com/fuckTimer"
-#define FUCKTIMER_BASE_CLOUD_URL "https://fucktimer.cloud/file"
 #define FUCKTIMER_EFFECT_NAME "fuckTimer"
 
 #define MAX_SETTING_LENGTH 16

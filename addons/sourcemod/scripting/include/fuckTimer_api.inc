@@ -5,13 +5,17 @@
 
 #include <ripext>
 
-native HTTPClient fuckTimer_NewHTTPRequest();
 #define MAX_URL_LENGTH 2048
+#define FUCKTIMER_BASE_CLOUD_URL "https://fucktimer.cloud/file"
+
+native bool fuckTimer_GetAPIUrl(char[] url);
+native HTTPClient fuckTimer_NewHTTPRequest(const char[] url, int length = MAX_URL_LENGTH);
 
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_api_SetNTVOptional()
 {
+    MarkNativeAsOptional("fuckTimer_GetAPIUrl");
     MarkNativeAsOptional("fuckTimer_NewHTTPRequest");
 }
 #endif
