@@ -6,6 +6,8 @@
 #include <ripext>
 
 native HTTPClient fuckTimer_NewHTTPRequest();
+#define MAX_URL_LENGTH 2048
+
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_api_SetNTVOptional()

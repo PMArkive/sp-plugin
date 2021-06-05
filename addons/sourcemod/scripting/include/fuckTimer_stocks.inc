@@ -18,7 +18,6 @@
 #define FUCKTIMER_BASE_CLOUD_URL "https://fucktimer.cloud/file"
 #define FUCKTIMER_EFFECT_NAME "fuckTimer"
 
-#define MAX_URL_LENGTH 256
 #define MAX_SETTING_LENGTH 16
 #define MAX_SETTING_VALUE_LENGTH 32
 #define MAX_HUD_KEY_LENGTH 32
