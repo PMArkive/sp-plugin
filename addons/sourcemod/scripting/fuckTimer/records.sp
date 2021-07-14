@@ -15,8 +15,11 @@ public Plugin myinfo =
     url = FUCKTIMER_PLUGIN_URL
 };
 
+
+
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
+    // TODO: ZoneOrdinal 0 = Main, 1 or higher is CP/Stage
     StringMap record = view_as<StringMap>(CloneHandle(temp));
 
     int iPlayerId;
@@ -41,7 +44,21 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
     TimeType tType;
     record.GetValue("Type", tType);
-    PrintToConsoleAll("Main: Type: %d", tType);
+
+    char sType[12];
+    if (tType == TimeMain)
+    {
+        FormatEx(sType, sizeof(sType), "Main");
+    }
+    else if (tType == TimeCheckpoint)
+    {
+        FormatEx(sType, sizeof(sType), "Checkpoint");
+    }
+    else if (tType == TimeStage)
+    {
+        FormatEx(sType, sizeof(sType), "Stage");
+    }
+    PrintToConsoleAll("Main: Type: %d (String: %s)", tType, sType);
 
     float fTickrate;
     record.GetValue("Tickrate", fTickrate);
