@@ -6,7 +6,7 @@
 #include <ripext>
 
 #define MAX_URL_LENGTH 2048
-#define FUCKTIMER_BASE_CLOUD_URL "https://fucktimer.cloud/file"
+#define FUCKTIMER_BASE_CLOUD_URL "https://raw.githubusercontent.com/fuckTimer"
 
 native bool fuckTimer_GetAPIUrl(char[] url);
 native HTTPRequest fuckTimer_NewHTTPRequest(const char[] url, int length = MAX_URL_LENGTH);

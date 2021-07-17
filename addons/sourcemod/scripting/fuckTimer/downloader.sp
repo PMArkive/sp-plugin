@@ -80,7 +80,7 @@ public void Frame_DownloadZone()
     }
     
     char sEndpoint[128];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "fZones/%s.zon", sMap);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/%s.zon", sMap); // TODO: Tier X?
     HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     DataPack pack = new DataPack();
@@ -110,7 +110,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         bool bExist = FileExists(sFile);
 
         char sEndpoint[128];
-        FormatEx(sEndpoint, sizeof(sEndpoint), "Stripper/global_filters.cfg");
+        FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/global_filters.cfg");
         HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
         pack = new DataPack();
@@ -184,7 +184,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
     bool bMapExist = FileExists(sFile);
 
     char sEndpoint[128];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Stripper/%s.cfg", sMap);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/%s.cfg", sMap);
     HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     pack = new DataPack();
