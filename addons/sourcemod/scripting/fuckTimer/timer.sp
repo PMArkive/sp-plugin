@@ -15,6 +15,10 @@
 #include <fuckTimer_timer>
 #include <fuckTimer_maps>
 
+#define OFFSET_START 0
+#define OFFSET_END 1
+#define OFFSET_MAX 2
+
 enum struct PlayerData
 {
     int Checkpoint;
@@ -34,6 +38,13 @@ enum struct PlayerData
 
     float Time;
     float TimeInZone;
+
+    // Variables for Offset calculation
+    float Fraction;
+    float Origin1[3];
+    float Origin2[3];
+    float Offset[OFFSET_MAX]; // 0 - Start, 1 - End
+    bool GetOffset;
 
     float StartPosition[3];
     float StartAngle[3];
@@ -78,6 +89,12 @@ enum struct PlayerData
             this.TimeInZone = 0.0;
         }
 
+        this.Fraction = 0.0;
+        this.Origin1 = {0.0, 0.0, 0.0};
+        this.Origin2 = {0.0, 0.0, 0.0};
+        this.Offset = { 0.0, 0.0 };
+        this.GetOffset = false;
+
         this.StartPosition = {0.0, 0.0, 0.0};
         this.StartAngle = {0.0, 0.0, 0.0};
         this.StartVelocity = {0.0, 0.0, 0.0};
@@ -106,6 +123,8 @@ enum struct PluginData
     GlobalForward OnClientTimerEnd;
 }
 PluginData Core;
+
+#include "timer/native.sp"
 
 public Plugin myinfo =
 {
@@ -506,6 +525,12 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     
     if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && Player[client].Time > 0.0)
     {
+        CalculateTickIntervalOffset(client, true);
+
+        Player[client].Time += Player[client].Offset[OFFSET_START];
+        Player[client].Time -= GetTickInterval();
+        Player[client].Time += Player[client].Offset[OFFSET_END];
+
         if (Player[client].Bonus == 0)
         {
             PrintToChat(client, "End Time: %.3f", Player[client].Time);
@@ -665,6 +690,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
+        Player[client].GetOffset = true;
 
         GetClientPosition(client, Player[client].StartPosition);
         GetClientAngle(client, Player[client].StartAngle);
@@ -789,8 +815,18 @@ public Action OnPostThinkPost(int client)
         return Plugin_Continue;
     }
 
+    Player[client].Origin2 = Player[client].Origin1;
+    GetEntPropVector(client, Prop_Data, "m_vecOrigin", Player[client].Origin1);
+
     if (Player[client].MainRunning)
     {
+        if (Player[client].GetOffset)
+        {
+            Player[client].GetOffset = false;
+
+            CalculateTickIntervalOffset(client, false);
+        }
+
         Player[client].Time += GetTickInterval();
     }
 
@@ -950,137 +986,49 @@ int GetIntMapAttempts(IntMap map, int key)
     return details.Attempts;
 }
 
-public any Native_GetClientTime(Handle plugin, int numParams)
+// Thanks to bhoptimer for this code.
+// Source: https://github.com/shavitush/bhoptimer/blob/e6de599808b5a8c1b2e74729da0820e73392cdce/addons/sourcemod/scripting/shavit-core.sp#L3487
+// Reference: https://github.com/momentum-mod/game/blob/5e2d1995ca7c599907980ee5b5da04d7b5474c61/mp/src/game/server/momentum/mom_timer.cpp#L388
+void CalculateTickIntervalOffset(int client, bool end)
 {
-    int client = GetNativeCell(1);
+    float fOrigin[3];
+    float fMins[3];
+    float fMaxs[3];
 
-    TimeType type = GetNativeCell(2);
+    GetEntPropVector(client, Prop_Send, "m_vecOrigin", fOrigin);
+    GetEntPropVector(client, Prop_Send, "m_vecMins", fMins);
+    GetEntPropVector(client, Prop_Send, "m_vecMaxs", fMaxs);
 
-    int level = GetNativeCell(3);
-
-    CSDetails details;
-
-    if (type == TimeMain)
+    if (!end)
     {
-        if (Player[client].Time > 0.0)
-        {
-            return Player[client].Time;
-        }
+        TR_EnumerateEntitiesHull(fOrigin, Player[client].Origin2, fMins, fMaxs, PARTITION_TRIGGER_EDICTS, TREnumTrigger, client);
     }
-    else if (type == TimeCheckpoint)
+    else
     {
-        if (Player[client].CheckpointDetails != null)
-        {
-            Player[client].CheckpointDetails.GetArray(level, details, sizeof(details));
-            return details.Time;
-        }
-    }
-    else if (type == TimeStage)
-    {
-        if (Player[client].StageDetails != null)
-        {
-            Player[client].StageDetails.GetArray(level, details, sizeof(details));
-            return details.Time;
-        }
+        TR_EnumerateEntitiesHull(Player[client].Origin1, fOrigin, fMins, fMaxs, PARTITION_TRIGGER_EDICTS, TREnumTrigger, client);
     }
 
-    return 0.0;
+    float offset = Player[client].Fraction * GetTickInterval();
+
+    Player[client].Offset[end ? OFFSET_END : OFFSET_START] = offset;
 }
 
-public int Native_IsClientTimeRunning(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
+bool TREnumTrigger(int entity, int client) {
 
-    if (Player[client].Time > 0.0)
-    {
-        return true;
-    }
-    else if (Player[client].CheckpointDetails != null)
-    {
-        return true;
-    }
-    else if (Player[client].StageDetails != null)
-    {
+    if (entity <= MaxClients) {
         return true;
     }
 
-    return false;
-}
+    char sClass[32];
+    GetEntityClassname(entity, sClass, sizeof(sClass));
 
-public any Native_GetClientTimeInZone(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-    int level = GetNativeCell(2);
-
-    if (level == 0)
+    if(StrContains(sClass, "trigger_multiple") > -1)
     {
-        return Player[client].TimeInZone;
+        TR_ClipCurrentRayToEntity(MASK_ALL, entity);
+        
+        Player[client].Fraction = TR_GetFraction();
+
+        return false;
     }
-    else if (level > 0)
-    {
-        return GetIntMapTimeInZone(Player[client].StageDetails, level);
-    }
-
-    return 0.0;
-}
-
-public int Native_GetClientAttempts(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-    int level = GetNativeCell(2);
-
-    if (level == 0)
-    {
-        return Player[client].Attempts;
-    }
-    else if (level > 0)
-    {
-        return GetIntMapAttempts(Player[client].StageDetails, level);
-    }
-
-    return 0;
-}
-
-public int Native_GetClientCheckpoint(Handle plugin, int numParams)
-{
-    return Player[GetNativeCell(1)].Checkpoint;
-}
-
-public int Native_GetClientStage(Handle plugin, int numParams)
-{
-    return Player[GetNativeCell(1)].Stage;
-}
-
-public int Native_GetClientBonus(Handle plugin, int numParams)
-{
-    return Player[GetNativeCell(1)].Bonus;
-}
-
-public int Native_GetClientValidator(Handle plugin, int numParams)
-{
-    return Player[GetNativeCell(1)].Validator;
-}
-
-public int Native_GetAmountOfCheckpoints(Handle plugin, int numParams)
-{
-    int iBonus = GetNativeCell(1);
-    return Core.Checkpoints.GetInt(iBonus);
-}
-
-public int Native_GetAmountOfStages(Handle plugin, int numParams)
-{
-    int iBonus = GetNativeCell(1);
-    return Core.Stages.GetInt(iBonus);
-}
-
-public int Native_GetAmountOfBonus(Handle plugin, int numParams)
-{
-    return Core.Bonus;
-}
-
-public int Native_ResetClientTimer(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-
-    Player[client].Reset();
+    return true;
 }
