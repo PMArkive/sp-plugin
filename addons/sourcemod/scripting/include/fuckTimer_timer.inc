@@ -5,6 +5,10 @@
 
 #include <intmap>
 
+#define OFFSET_START 0
+#define OFFSET_END 1
+#define OFFSET_MAX 2
+
 enum TimeType
 {
     TimeMain = 0,
@@ -16,6 +20,11 @@ enum struct CSDetails
 {
     float Time;
     float TimeInZone;
+
+    // Variables for Offset calculation
+    float Fraction;
+    float Offset[OFFSET_MAX]; // 0 - Start, 1 - End
+    bool GetOffset;
 
     float StartPosition[3];
     float StartAngle[3];

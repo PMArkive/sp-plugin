@@ -10,14 +10,9 @@
 #include <fuckZones>
 #include <fuckTimer_players>
 #include <fuckTimer_stocks>
-#include <fuckTimer_styles>
 #include <fuckTimer_zones>
 #include <fuckTimer_timer>
 #include <fuckTimer_maps>
-
-#define OFFSET_START 0
-#define OFFSET_END 1
-#define OFFSET_MAX 2
 
 enum struct PlayerData
 {
@@ -41,10 +36,10 @@ enum struct PlayerData
 
     // Variables for Offset calculation
     float Fraction;
-    float Origin1[3];
-    float Origin2[3];
     float Offset[OFFSET_MAX]; // 0 - Start, 1 - End
     bool GetOffset;
+    float Origin1[3];
+    float Origin2[3];
 
     float StartPosition[3];
     float StartAngle[3];

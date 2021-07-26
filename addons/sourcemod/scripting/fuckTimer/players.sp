@@ -5,11 +5,8 @@
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
-#include <fuckTimer_hud>
-#include <fuckTimer_timer>
 #include <fuckTimer_zones>
 #include <fuckTimer_players>
-#include <fuckTimer_styles>
 #include <fuckTimer_commands>
 
 #define MAX_DOT -0.75

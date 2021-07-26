@@ -4,7 +4,6 @@
 #include <sourcemod>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
-#include <fuckTimer_downloader>
 
 enum struct MapData {
     int Id;
