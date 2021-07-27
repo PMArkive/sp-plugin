@@ -436,6 +436,12 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         Player[client].StageDetails.GetArray(iPrevStage, details, sizeof(details));
+        CalculateTickIntervalOffsetCS(client, Player[client].StageDetails, iPrevStage, true);
+        details.Time += GetIntMapOffset(Player[client].StageDetails, iPrevStage, OFFSET_START);
+        details.Time -= GetTickInterval();
+        details.Time += GetIntMapOffset(Player[client].StageDetails, iPrevStage, OFFSET_END);
+        Player[client].StageDetails.SetArray(iPrevStage, details, sizeof(details));
+
         PrintToChatAll("%N's time for%s Stage %d: %.3f. (Attempts: %d, Time in Zone: %.3f)", client, iBonus ? " Bonus" : "", iPrevStage, details.Time, Player[client].Attempts, Player[client].TimeInZone);
         Player[client].StageRunning = false;
 
@@ -494,6 +500,12 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         {
             iPrevCheckpoint = Core.Checkpoints.GetInt(iBonus);
         }
+
+        CalculateTickIntervalOffsetCS(client, Player[client].CheckpointDetails, iPrevCheckpoint, true);
+        details.Time += GetIntMapOffset(Player[client].CheckpointDetails, iPrevCheckpoint, OFFSET_START);
+        details.Time -= GetTickInterval();
+        details.Time += GetIntMapOffset(Player[client].CheckpointDetails, iPrevCheckpoint, OFFSET_END);
+        Player[client].CheckpointDetails.SetArray(iPrevCheckpoint, details, sizeof(details));
 
         PrintToChatAll("%N's time for%s Checkpoint %d: %.3f", client, iBonus ? " Bonus" : "", iPrevCheckpoint, details.Time);
         SetIntMapTime(Player[client].CheckpointDetails, iPrevCheckpoint, details.Time, false);
@@ -738,6 +750,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].StageRunning = true;
         SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
         SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
+        SetIntMapGetOffset(Player[client].StageDetails, Player[client].Stage, true);
 
         Player[client].BlockTeleport = false;
     }
@@ -749,6 +762,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].CheckpointRunning = true;
         SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
         SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint, true);
+        SetIntMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint, true);
         
         Player[client].BlockTeleport = false;
     }
@@ -826,12 +840,24 @@ public Action OnPostThinkPost(int client)
     }
 
     if (Player[client].CheckpointRunning)
-    {   
+    {
+        if (GetIntMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint))
+        {
+            CalculateTickIntervalOffsetCS(client, Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+            SetIntMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+        }
+
         SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, GetTickInterval());
     }
 
     if (Player[client].StageRunning)
-    {   
+    {
+        if (GetIntMapGetOffset(Player[client].StageDetails, Player[client].Stage))
+        {
+            CalculateTickIntervalOffsetCS(client, Player[client].StageDetails, Player[client].Stage, false);
+            SetIntMapGetOffset(Player[client].StageDetails, Player[client].Stage, false);
+        }
+
         SetIntMapTime(Player[client].StageDetails, Player[client].Stage, GetTickInterval());
     }
     
@@ -940,6 +966,47 @@ void SetIntMapPositionAngleVelocity(int client, IntMap map, int key, bool start)
     map.SetArray(key, details, sizeof(details));
 }
 
+bool GetIntMapGetOffset(IntMap map, int key)
+{
+    if (map == null)
+    {
+        return false;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    return details.GetOffset;
+}
+
+bool SetIntMapGetOffset(IntMap map, int key, bool status)
+{
+    if (map == null)
+    {
+        return false;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+    details.GetOffset = status;
+    map.SetArray(key, details, sizeof(details));
+
+    return details.GetOffset;
+}
+
+float GetIntMapOffset(IntMap map, int key, int offset)
+{
+    if (map == null)
+    {
+        return 0.0;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    return details.Offset[offset];
+}
+
 float GetIntMapTimeInZone(IntMap map, int key)
 {
     if (map == null)
@@ -1003,9 +1070,7 @@ void CalculateTickIntervalOffset(int client, bool end)
         TR_EnumerateEntitiesHull(Player[client].Origin1, fOrigin, fMins, fMaxs, PARTITION_TRIGGER_EDICTS, TREnumTrigger, client);
     }
 
-    float offset = Player[client].Fraction * GetTickInterval();
-
-    Player[client].Offset[end ? OFFSET_END : OFFSET_START] = offset;
+    Player[client].Offset[end ? OFFSET_END : OFFSET_START] = Player[client].Fraction * GetTickInterval();
 }
 
 bool TREnumTrigger(int entity, int client) {
@@ -1022,6 +1087,53 @@ bool TREnumTrigger(int entity, int client) {
         TR_ClipCurrentRayToEntity(MASK_ALL, entity);
         
         Player[client].Fraction = TR_GetFraction();
+
+        return false;
+    }
+    return true;
+}
+
+void CalculateTickIntervalOffsetCS(int client, IntMap map, int key, bool end)
+{
+    float fFraction;
+    float fOrigin[3];
+    float fMins[3];
+    float fMaxs[3];
+
+    GetEntPropVector(client, Prop_Send, "m_vecOrigin", fOrigin);
+    GetEntPropVector(client, Prop_Send, "m_vecMins", fMins);
+    GetEntPropVector(client, Prop_Send, "m_vecMaxs", fMaxs);
+
+    if (!end)
+    {
+        TR_EnumerateEntitiesHull(fOrigin, Player[client].Origin2, fMins, fMaxs, PARTITION_TRIGGER_EDICTS, TREnumTriggerCS, fFraction);
+    }
+    else
+    {
+        TR_EnumerateEntitiesHull(Player[client].Origin1, fOrigin, fMins, fMaxs, PARTITION_TRIGGER_EDICTS, TREnumTriggerCS, fFraction);
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+    details.Fraction = fFraction;
+    details.Offset[end ? OFFSET_END : OFFSET_START] = details.Fraction * GetTickInterval();
+    map.SetArray(key, details, sizeof(details));
+}
+
+bool TREnumTriggerCS(int entity, float fraction) {
+
+    if (entity <= MaxClients) {
+        return true;
+    }
+
+    char sClass[32];
+    GetEntityClassname(entity, sClass, sizeof(sClass));
+
+    if(StrContains(sClass, "trigger_multiple") > -1)
+    {
+        TR_ClipCurrentRayToEntity(MASK_ALL, entity);
+        
+        fraction = TR_GetFraction();
 
         return false;
     }
