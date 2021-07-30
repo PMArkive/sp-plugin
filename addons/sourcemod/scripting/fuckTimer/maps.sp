@@ -4,7 +4,6 @@
 #include <sourcemod>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
-#include <fuckTimer_downloader>
 
 enum struct MapData {
     int Id;
@@ -15,10 +14,11 @@ MapData Map;
 
 enum struct PluginData
 {
-    bool API;
-    bool Zones;
+    char Name[64];
 
     StringMap MapTiers;
+
+    GlobalForward OnZoneDownload;
 }
 PluginData Core;
 
@@ -43,7 +43,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-public void OnPluginStart()
+public void OnAllPluginsLoaded()
 {
     DownloadMapTiers();
 }
@@ -128,57 +128,88 @@ void ParseMapTiersFile()
 
         LogMessage("maptiers.txt parsed and informations was saved.");
 
-        fuckTimer_StartZoneDownload();
+        UnloadFuckZones();
+        AddMapsToDatabase();
     }
 }
 
-public void fuckTimer_OnAPIReady()
+// TODO:
+void AddMapsToDatabase()
 {
-    Core.API = true;
-
-    char sMap[MAX_NAME_LENGTH];
-    fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
-    ArePluginsReady(sMap);
+ /*
+    + Name
+    + Tier
+    - MapAuthor
+    - ZoneAuthor
+ */
 }
 
-public void fuckTimer_OnZoneDownload(const char[] map, bool success)
+UnloadFuckZones()
 {
-    if (!success)
+    bool bFound = false;
+    Handle hPlugin = null;
+    Handle hIter = GetPluginIterator();
+
+    while (MorePlugins(hIter))
     {
-        SetFailState("[Maps.fuckTimer_OnZoneDownload] Can not add/update map.");
+        hPlugin = ReadPlugin(hIter);
+        GetPluginFilename(hPlugin, Core.Name, sizeof(Core.Name));
+
+        if (StrContains(Core.Name, "fuckZones.smx", false) != -1)
+        {
+            bFound = true;
+            break;
+        }
+    }
+
+    if (!bFound)
+    {
+        SetFailState("Plugin \"fuckZones\" not found! Please install \"fuckZones\" to use \"fuckTimer\".");
         return;
     }
 
-    Core.Zones = true;
+    delete hIter;
+    delete hPlugin;
 
-    ArePluginsReady(map);
-}
-
-void ArePluginsReady(const char[] map)
-{
-    if (Core.API && Core.Zones)
-    {
-        LoadMapData(map);
-
-        Core.API = false;
-        Core.Zones = false;
-    }
-}
-
-void LoadMapData(const char[] map)
-{
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", map);
+    ServerCommand("sm plugins unload %s", Core.Name);
     
-    DataPack pack = new DataPack();
-    pack.WriteString(map);
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Get(GetMapData, pack);
+    DownloadZoneFile();
 }
 
-public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
+void DownloadZoneFile()
+{
+    char sMap[64];
+    fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
+
+    LogMessage("[fuckTimer.Downloader] Download %s.zon...", sMap);
+    
+    char sFile[PLATFORM_MAX_PATH + 1];
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
+
+    if (FileExists(sFile))
+    {
+        DeleteFile(sFile);
+    }
+
+    int iTier = 0;
+    Core.MapTiers.GetValue(sMap, iTier);
+
+    if (iTier == 0)
+    {
+        SetFailState("Can not find map tier for \"%s\".", sMap);
+    }
+    
+    char sEndpoint[128];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/Tier %d/%s.zon", iTier, sMap);
+    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
+
+    DataPack pack = new DataPack();
+    pack.WriteString(sMap);
+
+    request.DownloadFile(sFile, OnZoneDownload, pack);
+}
+
+public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
     pack.Reset();
 
@@ -187,125 +218,157 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
 
     delete pack;
 
-    if (response.Status != HTTPStatus_OK)
+    if (status == HTTPStatus_OK)
     {
-        if (response.Status == HTTPStatus_NotFound)
+        LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
+        LogMessage("[fuckTimer.Downloader] Download global_filters.cfg...");
+
+        
+
+        char sFile[PLATFORM_MAX_PATH + 1];
+        FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
+        bool bExist = FileExists(sFile);
+
+        char sEndpoint[128];
+        FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/global_filters.cfg");
+        HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
+
+        pack = new DataPack();
+        pack.WriteString(sMap);
+        pack.WriteCell(bExist);
+        
+        request.DownloadFile(sFile, OnStripperGlobalDownload, pack);
+
+        CallZoneDownload(sMap, true);
+    }
+    else if (status == HTTPStatus_NotFound)
+    {
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
+
+        if (FileExists(sFile))
         {
-            LogMessage("[Maps.GetMapData] 404 Map Not Found, we'll add this map.");
-            PrepareMapPostData(sMap);
-            return;
+            DeleteFile(sFile);
         }
 
-        LogError("[Maps.GetMapData] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
-        return;
+        CallZoneDownload(sMap, false);
+        
+        SetFailState("Zone file \"%s.zon\" not found", sMap);
     }
-
-    JSONObject jMap = view_as<JSONObject>(response.Data);
-
-    char sName[MAX_NAME_LENGTH];
-    jMap.GetString("Name", sName, sizeof(sName));
-
-    Map.Id = jMap.GetInt("Id");
-    Map.Tier = jMap.GetInt("Tier");
-    Map.IsActive = jMap.GetBool("IsActive");
-
-    LogMessage("[Maps.GetMapData] Map Found. Name: %s, Id: %d, Tier: %d, Active: %d", sName, Map.Id, Map.Tier, Map.IsActive);
-}
-
-void PrepareMapPostData(const char[] map, int tier = 0)
-{
-    if (tier == 0)
+    else
     {
-        tier = GetMapTier(map);
+        CallZoneDownload(sMap, false);
+        
+        SetFailState("API is currently not available");
     }
-
-    JSONObject jMap = new JSONObject();
-    jMap.SetString("Name", map);
-    jMap.SetInt("Tier", tier);
-    jMap.SetBool("IsActive", true);
-
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    DataPack pack = new DataPack();
-    pack.WriteString(map);
-
-    request.Post(jMap, PostMapData, pack);
-    delete jMap;
 }
 
-public void PostMapData(HTTPResponse response, DataPack pack, const char[] error)
+public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
     pack.Reset();
 
     char sMap[64];
     pack.ReadString(sMap, sizeof(sMap));
 
-    delete pack;
-    delete response.Data;
+    bool bExist = pack.ReadCell();
 
-    if (response.Status != HTTPStatus_Created)
+    delete pack;
+
+    if (status == HTTPStatus_OK)
     {
-        LogError("[Maps.PostMapData] Can't post map data. Status Code: %d, Error: %s", response.Status, error);
+        LogMessage("[fuckTimer.Downloader] global_filters.cfg downloaded!");
+    }
+    else if (status == HTTPStatus_NotFound)
+    {
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
+
+        if (FileExists(sFile))
+        {
+            DeleteFile(sFile);
+        }
+
+        SetFailState("[fuckTimer.Downloader] global_filters.cfg doesn't exist!");
+        return;
+    }
+    else
+    {
+        SetFailState("API is currently not available");
+        return;
+    }
+    
+    LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", sMap);
+
+    char sFile[PLATFORM_MAX_PATH + 1];
+    FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
+    bool bMapExist = FileExists(sFile);
+
+    char sEndpoint[128];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/%s.cfg", sMap);
+    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
+
+    pack = new DataPack();
+    pack.WriteString(sMap);
+    pack.WriteCell(bExist);
+    pack.WriteCell(bMapExist);
+    
+    request.DownloadFile(sFile, OnStripperMapDownload, pack);
+}
+
+public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[] error)
+{
+    pack.Reset();
+
+    char sMap[64];
+    pack.ReadString(sMap, sizeof(sMap));
+
+    bool bExist = pack.ReadCell();
+    bool bMapExist = pack.ReadCell();
+
+    delete pack;
+
+    if (status == HTTPStatus_OK)
+    {
+        LogMessage("[fuckTimer.Downloader] %s.cfg downloaded!", sMap);
+    }
+    else if (status == HTTPStatus_NotFound)
+    {
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
+
+        if (FileExists(sFile))
+        {
+            DeleteFile(sFile);
+        }
+
+        LogMessage("[fuckTimer.Downloader] %s.cfg doesn't exist!", sMap);
+
+        // Set bMapExist to true to probably avoid infinity map reloading, because map doesn't exist on the server + cloud
+        // so bExistMap is always false and should result into infinity map reloading
+        bMapExist = true;
+    }
+    else
+    {
+        SetFailState("API is currently not available");
         return;
     }
 
-    LogMessage("[Maps.PostMapData] Success. Status Code: %d", response.Status);
+    if (!bExist || !bMapExist)
+    {
+        LogMessage("[fuckTimer.Downloader] Reloading map to activate stripper config(s)...");
+        ForceChangeLevel(sMap, "Stripper config(s) added");
+        return;
+    }
 
-    LoadMapData(sMap);
+    ServerCommand("sm plugins load %s", Core.Name);
 }
 
-// If (fuckTimer_)GetMapTIer returns 0 or lower -> invalid map, map not found or tier entry didn't exist in the zone file
-int GetMapTier(const char[] map)
+void CallZoneDownload(const char[] map, bool success)
 {
-    char sFile[PLATFORM_MAX_PATH + 1];
-    BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", map);
-
-    if (!FileExists(sFile))
-    {
-        SetFailState("[Maps.GetMapTier] Zone file \"%s\" not found.");
-        return 0;
-    }
-
-    KeyValues kv = new KeyValues("zones");
-
-    if (!kv.ImportFromFile(sFile))
-    {
-        delete kv;
-        
-        SetFailState("[Maps.GetMapTier] Can not data read from file.");
-        return 0;
-    }
-
-    if (!kv.JumpToKey("main0_start"))
-    {
-        delete kv;
-        
-        SetFailState("[Maps.GetMapTier] Can not find \"main0_start\" zone.");
-        return 0;
-    }
-
-    if (!kv.JumpToKey("effects"))
-    {
-        delete kv;
-        
-        SetFailState("[Maps.GetMapTier] Can not find \"effects\" key.");
-        return 0;
-    }
-
-    if (!kv.JumpToKey("fuckTimer"))
-    {
-        delete kv;
-        
-        SetFailState("[Maps.GetMapTier] Can not find \"fuckTimer\" effect.");
-        return 0;
-    }
-
-    int iTier = kv.GetNum("Tier");
-    delete kv;
-
-    return iTier;
+    Call_StartForward(Core.OnZoneDownload);
+    Call_PushString(map);
+    Call_PushCell(success);
+    Call_Finish();
 }
 
 public int Native_GetCurrentMapId(Handle plugin, int numParams)
