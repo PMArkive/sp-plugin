@@ -195,6 +195,8 @@ public void PostMaps(HTTPResponse response, any value, const char[] error)
 
     LogMessage("[Maps.PostMaps] Success. Status Code: %d", response.Status);
 
+    // TODO: Get Id and Tier for the current map?
+
     UnloadFuckZones();
 }
 
