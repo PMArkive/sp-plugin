@@ -17,14 +17,14 @@
 
 enum struct PlayerData
 {
-    bool IsActive;
+    int Status;
     bool InStage;
     
     StringMap Settings;
 
     void Reset()
     {
-        this.IsActive = false;
+        this.Status = 1;
         this.InStage = false;
 
         delete this.Settings;

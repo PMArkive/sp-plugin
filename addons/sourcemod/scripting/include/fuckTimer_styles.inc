@@ -8,7 +8,7 @@
 enum struct Style {
     int Id;
     char Name[MAX_STYLE_NAME_LENGTH];
-    bool IsActive;
+    bool Status;
 }
 
 enum Styles {

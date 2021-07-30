@@ -26,11 +26,11 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
     char sName[MAX_NAME_LENGTH];
     jPlayer.GetString("Name", sName, sizeof(sName));
 
-    Player[client].IsActive = jPlayer.GetBool("IsActive");
+    Player[client].Status = jPlayer.GetInt("Status");
 
     delete jPlayer;
 
-    LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].IsActive);
+    LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].Status);
 
     delete Player[client].Settings;
     Player[client].Settings = new StringMap();
@@ -46,7 +46,7 @@ void PreparePlayerPostData(int client)
     JSONObject jPlayer = new JSONObject();
     jPlayer.SetInt("Id", GetSteamAccountID(client));
     jPlayer.SetString("Name", sName);
-    jPlayer.SetBool("IsActive", true);
+    jPlayer.SetInt("Status", 0);
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player");

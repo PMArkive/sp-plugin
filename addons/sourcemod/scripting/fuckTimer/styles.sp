@@ -72,9 +72,9 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
 
         style.Id = jsonObject.GetInt("Id");
         jsonObject.GetString("Name", style.Name, sizeof(Style::Name));
-        style.IsActive = jsonObject.GetBool("IsActive");
+        style.Status = jsonObject.GetBool("Status");
 
-        LogMessage("[Styles.GetAllStyles] Style: %s (Id: %d, IsActive: %d)", style.Name, style.Id, style.IsActive);
+        LogMessage("[Styles.GetAllStyles] Style: %s (Id: %d, Status: %d)", style.Name, style.Id, style.Status);
 
         Core.Styles.SetArray(style.Id, style, sizeof(style));
 
