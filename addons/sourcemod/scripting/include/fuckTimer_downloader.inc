@@ -5,10 +5,12 @@
 
 forward void fuckTimer_OnZoneDownload(const char[] map, bool success);
 
+native void fuckTimer_StartZoneDownload();
+
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_download_SetNTVOptional()
 {
-    // MarkNativeAsOptional("<NativeName>");
+    MarkNativeAsOptional("fuckTimer_StartZoneDownload");
 }
 #endif
 

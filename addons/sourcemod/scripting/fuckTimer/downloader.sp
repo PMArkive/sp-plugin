@@ -27,6 +27,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
     Core.OnZoneDownload = new GlobalForward("fuckTimer_OnZoneDownload", ET_Ignore, Param_String, Param_Cell);
 
+    CreateNative("fuckTimer_StartZoneDownload", Native_StartZoneDownload);
+
     RegPluginLibrary("fuckTimer_downloader");
 
     return APLRes_Success;
@@ -60,11 +62,9 @@ public void OnMapStart()
     delete hPlugin;
 
     ServerCommand("sm plugins unload %s", Core.Name);
-
-    RequestFrame(Frame_DownloadZone);
 }
 
-public void Frame_DownloadZone()
+public int Native_StartZoneDownload(Handle plugin, int numParams)
 {
     char sMap[64];
     fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
