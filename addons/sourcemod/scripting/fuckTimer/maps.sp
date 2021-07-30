@@ -4,6 +4,7 @@
 #include <sourcemod>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
+#include <fuckTimer_downloader>
 
 enum struct MapData {
     int Id;
@@ -16,6 +17,8 @@ enum struct PluginData
 {
     bool API;
     bool Zones;
+
+    StringMap MapTiers;
 }
 PluginData Core;
 
@@ -40,11 +43,100 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
+public void OnPluginStart()
+{
+    DownloadMapTiers();
+}
+
+void DownloadMapTiers()
+{
+    char sFile[PLATFORM_MAX_PATH + 1];
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer");
+
+    if (!DirExists(sFile))
+    {
+        CreateDirectory(sFile, FPERM_U_READ|FPERM_U_WRITE|FPERM_U_EXEC|FPERM_G_READ|FPERM_G_EXEC|FPERM_O_READ|FPERM_O_EXEC);
+    }
+
+    Format(sFile, sizeof(sFile), "%s/maptiers.txt", sFile);
+
+    if (FileExists(sFile))
+    {
+        DeleteFile(sFile);
+    }
+    
+    char sEndpoint[128];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/maptiers.txt");
+    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
+    request.DownloadFile(sFile, OnMapTiersDownload);
+}
+
+public void OnMapTiersDownload(HTTPStatus status, any value, const char[] error)
+{
+    if (status == HTTPStatus_OK)
+    {
+        LogMessage("maptiers.txt downloaded. Let's parse the file...");
+        ParseMapTiersFile();
+
+    }
+    else if (status == HTTPStatus_NotFound)
+    {
+        SetFailState("Download failed! 404 - maptiers.txt not found.");
+    }
+    else
+    {
+        SetFailState("Something went wrong while downloading maptiers.txt. Status: %d, Error: %s", status, error);
+    }
+}
+
+void ParseMapTiersFile()
+{
+    delete Core.MapTiers;
+    Core.MapTiers = new StringMap();
+
+    char sFile[PLATFORM_MAX_PATH + 1];
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/maptiers.txt");
+
+    File fFile = OpenFile(sFile, "r");
+
+    if (fFile != null)
+    {
+        char sLine[MAX_NAME_LENGTH];
+        int iTier = 0;
+
+        while (!fFile.EndOfFile() && fFile.ReadLine(sLine, sizeof(sLine)))
+        {
+            if (sLine[0] == '#')
+            {
+                iTier = StringToInt(sLine[7]);
+
+                if (iTier == 0)
+                {
+                    SetFailState("Can not read map tier correctly.");
+                }
+            }
+            else if (strlen(sLine) > 1)
+            {
+                TrimString(sLine);
+                StripQuotes(sLine);
+
+                Core.MapTiers.SetValue(sLine, iTier);
+            }
+        }
+
+        delete fFile;
+
+        LogMessage("maptiers.txt parsed and informations was saved.");
+
+        fuckTimer_StartZoneDownload();
+    }
+}
+
 public void fuckTimer_OnAPIReady()
 {
     Core.API = true;
 
-    char sMap[32];
+    char sMap[MAX_NAME_LENGTH];
     fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
     ArePluginsReady(sMap);
 }
@@ -120,13 +212,16 @@ public void GetMapData(HTTPResponse response, DataPack pack, const char[] error)
     LogMessage("[Maps.GetMapData] Map Found. Name: %s, Id: %d, Tier: %d, Active: %d", sName, Map.Id, Map.Tier, Map.IsActive);
 }
 
-void PrepareMapPostData(const char[] map)
+void PrepareMapPostData(const char[] map, int tier = 0)
 {
-    int iTier = GetMapTier(map);
+    if (tier == 0)
+    {
+        tier = GetMapTier(map);
+    }
 
     JSONObject jMap = new JSONObject();
     jMap.SetString("Name", map);
-    jMap.SetInt("Tier", iTier);
+    jMap.SetInt("Tier", tier);
     jMap.SetBool("IsActive", true);
 
     char sEndpoint[MAX_URL_LENGTH];
@@ -232,83 +327,33 @@ public any Native_GetMapTiers(Handle plugin, int numParams)
 
     Function fCallback = GetNativeFunction(3);
 
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/MatchName/%s", sName);
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-    
-    DataPack pack = new DataPack();
-    if (client > 0 && IsClientInGame(client))
-    {
-        pack.WriteCell(GetClientUserId(client));
-    }
-    else
-    {
-        pack.WriteCell(0);
-    }
-    pack.WriteString(sName);
-    pack.WriteCell(view_as<int>(plugin));
-    pack.WriteFunction(fCallback);
-    request.Get(GetMapsData, pack);
-}
-
-public void GetMapsData(HTTPResponse response, DataPack pack, const char[] error)
-{
-    pack.Reset();
-
-    int userid = pack.ReadCell();
-
-    int client = userid == 0 ? 0 : GetClientOfUserId(userid);
-    
+    StringMapSnapshot snap = Core.MapTiers.Snapshot();
+    StringMap smList = new StringMap();
 
     char sMap[MAX_NAME_LENGTH];
-    pack.ReadString(sMap, sizeof(sMap));
+    int iTier = 0;
 
-    Handle hPlugin = view_as<Handle>(pack.ReadCell());
-
-    Function fCallback = pack.ReadFunction();
-
-    delete pack;
-
-    if (response.Status != HTTPStatus_OK)
+    for (int i = 0; i < snap.Length; i++)
     {
-        if (response.Status == HTTPStatus_NotFound)
+        snap.GetKey(i, sMap, sizeof(sMap));
+
+        if (StrContains(sMap, sName, false) != -1)
         {
-            LogMessage("[Maps.GetMapsData] 404 Map Not Found, we'll add this map.");
-            PrepareMapPostData(sMap);
-            return;
+            Core.MapTiers.GetValue(sMap, iTier);
+            smList.SetValue(sMap, iTier);
+
+            LogMessage("[Maps.Native_GetMapTiers] Name: %s, Tier: %d", sMap, iTier);
         }
 
-        LogError("[Maps.GetMapsData] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
-        return;
-    }
-
-    JSONArray jArray = view_as<JSONArray>(response.Data);
-    JSONObject jObj;
-
-    StringMap smTiers = new StringMap();
-
-    int iTier = 0;
-    char sName[MAX_NAME_LENGTH];
-
-    LogMessage("[Maps.GetMapsData] Found %d Maps", jArray.Length);
-    
-    for (int i = 0; i < jArray.Length; i++)
-    {
-        jObj = view_as<JSONObject>(jArray.Get(i));
-        jObj.GetString("Name", sName, sizeof(sName));
-        iTier = jObj.GetInt("Tier");
-
-        LogMessage("[Maps.GetMapsData] Name: %s, Tier: %d", sName, iTier);
-
-        smTiers.SetValue(sName, iTier);
-
+        sMap[0] = '\0';
         iTier = 0;
-        sName[0] = '\0';
-
-        delete jObj;
     }
 
-    Call_StartFunction(hPlugin, fCallback);
+    delete snap;
+
+    LogMessage("[Maps.Native_GetMapTiers] Found %d Maps", smList.Size);
+
+    Call_StartFunction(plugin, fCallback);
     if (client > 0 && IsClientInGame(client))
     {
         Call_PushCell(GetClientUserId(client));
@@ -317,6 +362,6 @@ public void GetMapsData(HTTPResponse response, DataPack pack, const char[] error
     {
         Call_PushCell(0);
     }
-    Call_PushCell(smTiers);
+    Call_PushCell(smList);
     Call_Finish();
 }
