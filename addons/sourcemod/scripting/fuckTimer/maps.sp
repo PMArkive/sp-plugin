@@ -33,6 +33,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    Core.OnZoneDownload = new GlobalForward("fuckTimer_OnZoneDownload", ET_Ignore, Param_String, Param_Cell);
+
     CreateNative("fuckTimer_GetCurrentMapId", Native_GetCurrentMapId);
     CreateNative("fuckTimer_GetCurrentMapTier", Native_GetCurrentMapTier);
 
