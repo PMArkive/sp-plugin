@@ -25,6 +25,9 @@ enum struct ZoneDetails
     int PreSpeed;
     int MaxVelocity;
 
+    char MapAuthor[MAX_NAME_LENGTH];
+    char ZoneAuthor[MAX_NAME_LENGTH];
+
     void Reset()
     {
         this.Start = false;
@@ -43,6 +46,9 @@ enum struct ZoneDetails
 
         this.PreSpeed = 0;
         this.MaxVelocity = 0;
+
+        this.MapAuthor[0] = '\0';
+        this.ZoneAuthor[0] = '\0';
     }
 }
 

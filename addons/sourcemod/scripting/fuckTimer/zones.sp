@@ -57,6 +57,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetZonePreSpeed", Native_GetZonePreSpeed);
     CreateNative("fuckTimer_GetZoneMaxVelocity", Native_GetZoneMaxVelocity);
 
+    CreateNative("fuckTimer_GetZoneMapAuthor", Native_GetZoneMapAuthor);
+    CreateNative("fuckTimer_GetZoneZoneAuthor", Native_GetZoneZoneAuthor);
+
     RegPluginLibrary("fuckTimer_zones");
 
     return APLRes_Success;
@@ -166,6 +169,9 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     GetfuckTimerZoneValue(smEffects, "MaxVelocity", sValue, sizeof(sValue));
     Zone[entity].MaxVelocity = StringToInt(sValue);
+
+    GetfuckTimerZoneValue(smEffects, "MapAuthor", Zone[entity].MapAuthor, sizeof(ZoneDetails::MapAuthor));
+    GetfuckTimerZoneValue(smEffects, "ZoneAuthor", Zone[entity].ZoneAuthor, sizeof(ZoneDetails::ZoneAuthor));
 }
 
 public void fuckZones_OnEffectsReady()
@@ -190,6 +196,9 @@ public void fuckZones_OnEffectsReady()
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "AntiJump", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "PreSpeed", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "MaxVelocity", "0");
+
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "MapAuthor", "n/a");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "ZoneAuthor", "n/a");
 }
 
 public void OneZoneStartTouch(int client, int entity, StringMap values)
@@ -420,4 +429,14 @@ public int Native_GetZonePreSpeed(Handle plugin, int numParams)
 public int Native_GetZoneMaxVelocity(Handle plugin, int numParams)
 {
     return Zone[GetNativeCell(1)].MaxVelocity;
+}
+
+public int Native_GetZoneMapAuthor(Handle plugin, int numParams)
+{
+    SetNativeString(2, Zone[GetNativeCell(1)].MapAuthor, GetNativeCell(3));
+}
+
+public int Native_GetZoneZoneAuthor(Handle plugin, int numParams)
+{
+    SetNativeString(2, Zone[GetNativeCell(1)].ZoneAuthor, GetNativeCell(3));
 }
