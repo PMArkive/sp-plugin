@@ -3,8 +3,6 @@
 #endif
 #define _fuckTimer_timer_included
 
-#include <intmap>
-
 #define OFFSET_START 0
 #define OFFSET_END 1
 #define OFFSET_MAX 2

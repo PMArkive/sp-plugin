@@ -6,6 +6,7 @@
 #include <autoexecconfig>
 #include <sdktools>
 #include <multicolors>
+#include <intmap>
 #include <fuckTimer_hud>
 #include <fuckTimer_styles>
 #include <fuckTimer_timer>

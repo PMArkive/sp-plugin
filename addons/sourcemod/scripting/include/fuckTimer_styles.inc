@@ -5,8 +5,6 @@
 
 #define MAX_STYLE_NAME_LENGTH 32
 
-#include <intmap>
-
 enum struct Style {
     int Id;
     char Name[MAX_STYLE_NAME_LENGTH];
