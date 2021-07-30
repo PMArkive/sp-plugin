@@ -8,7 +8,7 @@
 enum struct MapData {
     int Id;
     int Tier;
-    bool IsActive;
+    int Status;
 }
 MapData Map;
 
@@ -128,7 +128,6 @@ void ParseMapTiersFile()
 
         LogMessage("maptiers.txt parsed and informations was saved.");
 
-        UnloadFuckZones();
         AddMapsToDatabase();
     }
 }
@@ -136,12 +135,67 @@ void ParseMapTiersFile()
 // TODO:
 void AddMapsToDatabase()
 {
- /*
-    + Name
-    + Tier
-    - MapAuthor
-    - ZoneAuthor
- */
+    JSONArray jMaps = new JSONArray();
+    JSONObject jMap = null;
+
+    char sMap[MAX_NAME_LENGTH];
+    char sMapAuthor[MAX_NAME_LENGTH];
+    char sZoneAuthor[MAX_NAME_LENGTH];
+
+    int iTier = 0;
+
+    StringMapSnapshot snap = Core.MapTiers.Snapshot();
+
+    for (int i = 0; snap.Length; i++)
+    {
+        snap.GetKey(i, sMap, sizeof(sMap));
+        Core.MapTiers.GetValue(sMap, iTier);
+
+        GetAuthor(sMap, true, sMapAuthor, sizeof(sMapAuthor));
+        GetAuthor(sMap, false, sZoneAuthor, sizeof(sZoneAuthor));
+
+        jMap = new JSONObject();
+        jMap.SetString("Name", sMap);
+        jMap.SetInt("Tier", iTier);
+        jMap.SetInt("Status", 0);
+        jMap.SetString("MapAuthor", sMapAuthor);
+        jMap.SetString("ZoneAuthor", sZoneAuthor);
+
+        jMaps.Push(jMap);
+
+        sMap[0] = '\0';
+        sMapAuthor[0] = '\0';
+        sZoneAuthor[0] = '\0';
+        iTier = 0;
+    }
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
+
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
+
+    request.Post(jMaps, PostMaps);
+
+    for (int i = 0; i < jMaps.Length; i++)
+    {
+        jMap = view_as<JSONObject>(jMaps.Get(i));
+        delete jMap;
+    }
+
+    delete jMaps;
+}
+
+public void PostMaps(HTTPResponse response, any value, const char[] error)
+{
+    if (response.Status != HTTPStatus_Created)
+    {
+        LogError("[Maps.PostMaps] Can't post maps. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    LogMessage("[Maps.PostMaps] Success. Status Code: %d", response.Status);
+
+    UnloadFuckZones();
 }
 
 UnloadFuckZones()
@@ -369,6 +423,57 @@ void CallZoneDownload(const char[] map, bool success)
     Call_PushString(map);
     Call_PushCell(success);
     Call_Finish();
+}
+
+bool GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
+{
+    char sFile[PLATFORM_MAX_PATH + 1];
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", map);
+
+    if (!FileExists(sFile))
+    {
+        SetFailState("[Maps.GetAuthor] Zone file \"%s\" not found.");
+        return false;
+    }
+
+    KeyValues kv = new KeyValues("zones");
+
+    if (!kv.ImportFromFile(sFile))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetAuthor] Can not data read from file.");
+        return false;
+    }
+
+    if (!kv.JumpToKey("main0_start"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetAuthor] Can not find \"main0_start\" zone.");
+        return false;
+    }
+
+    if (!kv.JumpToKey("effects"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetAuthor] Can not find \"effects\" key.");
+        return false;
+    }
+
+    if (!kv.JumpToKey("fuckTimer"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetAuthor] Can not find \"fuckTimer\" effect.");
+        return false;
+    }
+
+    kv.GetString(mapAuthor ? "MapAuthor" : "ZoneAuthor", author, maxlen);
+
+    delete kv;
+    return strlen(author) > 1 ? true : false;
 }
 
 public int Native_GetCurrentMapId(Handle plugin, int numParams)
