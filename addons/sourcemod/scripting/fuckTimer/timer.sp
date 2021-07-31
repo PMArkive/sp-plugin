@@ -864,6 +864,16 @@ public Action OnPostThinkPost(int client)
     return Plugin_Continue;
 }
 
+public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damagetype)
+{
+    if(damagetype & DMG_FALL)
+    {
+        return Plugin_Handled;
+    }
+    
+    return Plugin_Continue;
+}
+
 void SetClientStartValues(int client, int bonus)
 {
     Player[client].Reset(.resetTimeInZone = false, .resetAttempts = false);
@@ -901,6 +911,7 @@ void LoadPlayer(int client)
     Player[client].Reset();
 
     SDKHook(client, SDKHook_PostThinkPost, OnPostThinkPost);
+    SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
 void SetIntMapTime(IntMap map, int key, float value, bool add = true)
