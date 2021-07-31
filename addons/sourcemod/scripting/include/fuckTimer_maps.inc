@@ -5,11 +5,16 @@
 
 typedef fuckTimer_OnGetMapTier = function void (int client, StringMap maps);
 
+enum MapStatus {
+    msActive = 0,
+    msInactive = 1
+}
+
 forward void fuckTimer_OnZoneDownload(const char[] map, bool success);
 
 native int fuckTimer_GetCurrentMapId();
 native int fuckTimer_GetCurrentMapTier();
-native int fuckTimer_GetCurrentMapStatus();
+native MapStatus fuckTimer_GetCurrentMapStatus();
 
 /*
  *   StringMap must be closed/freed with delete (or CloseHandle) in callback.

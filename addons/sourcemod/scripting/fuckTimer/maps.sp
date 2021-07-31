@@ -3,12 +3,15 @@
 
 #include <sourcemod>
 #include <fuckTimer_stocks>
+#include <fucktimer_maps>
 #include <fuckTimer_api>
 
 enum struct MapData {
     int Id;
     int Tier;
-    int Status;
+
+    MapStatus Status;
+
     char MapAuthor[MAX_NAME_LENGTH];
     char ZoneAuthor[MAX_NAME_LENGTH];
 }
@@ -350,7 +353,7 @@ public void GetMap(HTTPResponse response, int map, const char[] error)
 
     Map.Tier = jMap.GetInt("Tier");
 
-    Map.Status = jMap.GetInt("Status");
+    Map.Status = view_as<MapStatus>(jMap.GetInt("Status"));
 
     jMap.GetString("MapAuthor", Map.MapAuthor, sizeof(MapData::MapAuthor));
     jMap.GetString("ZoneAuthor", Map.ZoneAuthor, sizeof(MapData::ZoneAuthor));
@@ -578,7 +581,7 @@ public int Native_GetCurrentMapTier(Handle plugin, int numParams)
     return Map.Tier;
 }
 
-public int Native_GetCurrentMapStatus(Handle plugin, int numParams)
+public any Native_GetCurrentMapStatus(Handle plugin, int numParams)
 {
     return Map.Status;
 }
