@@ -340,7 +340,7 @@ public Action Command_Stage(int client, int args)
         fuckTimer_ResetClientTimer(client);
 
         char sStage[12];
-        GetCmdArg(2, sStage, sizeof(sStage));
+        GetCmdArg(1, sStage, sizeof(sStage));
 
         int iBonus = fuckTimer_GetClientBonus(client);
         int iStage = 0;
