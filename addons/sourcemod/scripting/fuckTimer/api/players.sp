@@ -45,6 +45,11 @@ void PreparePlayerPostData(int client)
 
     JSONObject jPlayer = new JSONObject();
     jPlayer.SetInt("Id", GetSteamAccountID(client));
+
+    char sCommunityId[32];
+    GetClientAuthId(client, AuthId_SteamID64, sCommunityId, sizeof(sCommunityId));
+    jPlayer.SetString("CommunityId", sCommunityId);
+
     jPlayer.SetString("Name", sName);
     jPlayer.SetInt("Status", 0);
 
