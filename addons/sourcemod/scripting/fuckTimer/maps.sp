@@ -169,7 +169,7 @@ UnloadFuckZones()
 
 void DownloadZoneFile()
 {
-    char sMap[64];
+    char sMap[MAX_NAME_LENGTH];
     fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
 
     LogMessage("[fuckTimer.Downloader] Download %s.zon...", sMap);
@@ -205,7 +205,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
     pack.Reset();
 
-    char sMap[64];
+    char sMap[MAX_NAME_LENGTH];
     pack.ReadString(sMap, sizeof(sMap));
 
     delete pack;
@@ -307,7 +307,7 @@ void AddMapsToDatabase()
     delete jMaps;
 }
 
-public void PostMaps(HTTPResponse response, any value, const char[] error)
+public void PostMaps(HTTPResponse response, int map, const char[] error)
 {
     if (response.Status != HTTPStatus_Created)
     {
@@ -317,14 +317,55 @@ public void PostMaps(HTTPResponse response, any value, const char[] error)
 
     LogMessage("[Maps.PostMaps] Success. Status Code: %d", response.Status);
 
-    // TODO: Get Id and Tier for the current map?
+    char sMap[MAX_NAME_LENGTH];
+    fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", sMap);
+
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
+
+    request.Get(GetMap);
+}
+
+public void GetMap(HTTPResponse response, int map, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        LogError("[Maps.GetMap] Can't get maps. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    LogMessage("[Maps.GetMap] Success. Status Code: %d", response.Status);
+
+    JSONObject jMap = view_as<JSONObject>(response.Data);
+
+    int iId = jMap.GetInt("Id");
+    Map.Id = iId;
+
+    char sName[MAX_NAME_LENGTH];
+    jMap.GetString("Name", sName, sizeof(sName));
+
+    int iTier = jMap.GetInt("Tier");
+    Map.Tier = iTier;
+
+    int iStatus = jMap.GetInt("Status");
+    Map.Status = iStatus;
+
+    char sMapAuthor[MAX_NAME_LENGTH];
+    jMap.GetString("MapAuthor", sMapAuthor, sizeof(sMapAuthor));
+
+    char sZoneAuthor[MAX_NAME_LENGTH];
+    jMap.GetString("ZoneAuthor", sZoneAuthor, sizeof(sZoneAuthor));
+
+    LogMessage("Id: %d (%d), Name: %s, Tier: %d (%d), Status: %d (%d), MapAuthor: %s, ZoneAuthor: %s", iId, Map.Id, sName, iTier, Map.Tier, iStatus, Map.Status, sMapAuthor, sZoneAuthor);
 }
 
 public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
     pack.Reset();
 
-    char sMap[64];
+    char sMap[MAX_NAME_LENGTH];
     pack.ReadString(sMap, sizeof(sMap));
 
     bool bExist = pack.ReadCell();
@@ -376,7 +417,7 @@ public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[]
 {
     pack.Reset();
 
-    char sMap[64];
+    char sMap[MAX_NAME_LENGTH];
     pack.ReadString(sMap, sizeof(sMap));
 
     bool bExist = pack.ReadCell();
