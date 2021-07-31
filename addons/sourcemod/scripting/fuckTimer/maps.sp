@@ -9,6 +9,8 @@ enum struct MapData {
     int Id;
     int Tier;
     int Status;
+    char MapAuthor[MAX_NAME_LENGTH];
+    char ZoneAuthor[MAX_NAME_LENGTH];
 }
 MapData Map;
 
@@ -341,25 +343,66 @@ public void GetMap(HTTPResponse response, int map, const char[] error)
 
     JSONObject jMap = view_as<JSONObject>(response.Data);
 
-    int iId = jMap.GetInt("Id");
-    Map.Id = iId;
+    Map.Id = jMap.GetInt("Id");
 
     char sName[MAX_NAME_LENGTH];
     jMap.GetString("Name", sName, sizeof(sName));
 
-    int iTier = jMap.GetInt("Tier");
-    Map.Tier = iTier;
+    Map.Tier = jMap.GetInt("Tier");
 
-    int iStatus = jMap.GetInt("Status");
-    Map.Status = iStatus;
+    Map.Status = jMap.GetInt("Status");
 
-    char sMapAuthor[MAX_NAME_LENGTH];
-    jMap.GetString("MapAuthor", sMapAuthor, sizeof(sMapAuthor));
+    jMap.GetString("MapAuthor", Map.MapAuthor, sizeof(MapData::MapAuthor));
+    jMap.GetString("ZoneAuthor", Map.ZoneAuthor, sizeof(MapData::ZoneAuthor));
 
-    char sZoneAuthor[MAX_NAME_LENGTH];
-    jMap.GetString("ZoneAuthor", sZoneAuthor, sizeof(sZoneAuthor));
+    if (StrEqual(Map.MapAuthor, "", false) || StrEqual(Map.MapAuthor, "n/a", false) || StrEqual(Map.ZoneAuthor, "", false) || StrEqual(Map.ZoneAuthor, "n/a", false))
+    {
+        LogMessage("Unknown map/zone author for %s. Checking zone file for updates...", sName);
+        UpdateAuthor(jMap);
+    }
 
-    LogMessage("Id: %d (%d), Name: %s, Tier: %d (%d), Status: %d (%d), MapAuthor: %s, ZoneAuthor: %s", iId, Map.Id, sName, iTier, Map.Tier, iStatus, Map.Status, sMapAuthor, sZoneAuthor);
+    jMap.GetString("MapAuthor", Map.MapAuthor, sizeof(MapData::MapAuthor));
+    jMap.GetString("ZoneAuthor", Map.ZoneAuthor, sizeof(MapData::ZoneAuthor));
+
+    LogMessage("Id: %d, Name: %s, Tier: %d, Status: %d, MapAuthor: %s, ZoneAuthor: %s", Map.Id, sName, Map.Tier, Map.Status, Map.MapAuthor, Map.ZoneAuthor);
+}
+
+void UpdateAuthor(JSONObject map)
+{
+    char sMap[MAX_NAME_LENGTH];
+    map.GetString("Name", sMap, sizeof(sMap));
+
+    char sBuffer[MAX_NAME_LENGTH];
+    GetAuthor(sMap, true, sBuffer, sizeof(sBuffer));
+
+    if (StrEqual(sBuffer, "", false) || StrEqual(sBuffer, "n/a", false))
+    {
+        LogMessage("No update available, we'll skip this step.");
+        return;
+    }
+
+    map.SetString("MapAuthor", sBuffer);
+
+    GetAuthor(sMap, false, sBuffer, sizeof(sBuffer));
+    map.SetString("ZoneAuthor", sBuffer);
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Id/%d", map.GetInt("id"));
+
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
+
+    request.Put(map, UpdateMap);
+}
+
+public void UpdateMap(HTTPResponse response, int map, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        LogError("[Maps.UpdateMap] Can't update map. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    LogMessage("[Maps.UpdateMap] Success. Status Code: %d", response.Status);
 }
 
 public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const char[] error)
