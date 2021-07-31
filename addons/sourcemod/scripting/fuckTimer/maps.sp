@@ -3,7 +3,7 @@
 
 #include <sourcemod>
 #include <fuckTimer_stocks>
-#include <fucktimer_maps>
+#include <fuckTimer_maps>
 #include <fuckTimer_api>
 
 enum struct MapData {
