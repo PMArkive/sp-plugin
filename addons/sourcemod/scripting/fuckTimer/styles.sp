@@ -22,8 +22,10 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    CreateNative("fuckTimer_GetStyleName", Native_GetStyleName);
     CreateNative("fuckTimer_GetStyles", Native_GetStyles);
+
+    CreateNative("fuckTimer_GetStyleName", Native_GetStyleName);
+    CreateNative("fuckTimer_GetStyleStatus", Native_GetStyleStatus);
 
     RegPluginLibrary("fuckTimer_styles");
 
@@ -72,7 +74,7 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
 
         style.Id = jsonObject.GetInt("Id");
         jsonObject.GetString("Name", style.Name, sizeof(Style::Name));
-        style.Status = jsonObject.GetBool("Status");
+        style.Status = view_as<StyleStatus>(jsonObject.GetBool("Status"));
 
         LogMessage("[Styles.GetAllStyles] Style: %s (Id: %d, Status: %d)", style.Name, style.Id, style.Status);
 
@@ -81,6 +83,12 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
         delete jsonObject;
     }
 }
+
+public any Native_GetStyles(Handle plugin, int numParams)
+{
+    return Core.Styles;
+}
+
 
 public int Native_GetStyleName(Handle plugin, int numParams)
 {
@@ -98,7 +106,17 @@ public int Native_GetStyleName(Handle plugin, int numParams)
     return false;
 }
 
-public any Native_GetStyles(Handle plugin, int numParams)
+public any Native_GetStyleStatus(Handle plugin, int numParams)
 {
-    return Core.Styles;
+    int iStyle = GetNativeCell(1);
+
+    Style style;
+    bool success = Core.Styles.GetArray(iStyle, style, sizeof(style));
+
+    if (success)
+    {
+        return style.Status;
+    }
+
+    return ssInactive;
 }

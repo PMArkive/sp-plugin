@@ -5,10 +5,17 @@
 
 #define MAX_STYLE_NAME_LENGTH 32
 
+enum StyleStatus {
+    ssActive = 0,
+    ssInactive = 1
+}
+
 enum struct Style {
     int Id;
+    
     char Name[MAX_STYLE_NAME_LENGTH];
-    bool Status;
+
+    StyleStatus Status;
 }
 
 enum Styles {
@@ -21,14 +28,18 @@ enum Styles {
     StyleSlowMotion
 }
 
-native bool fuckTimer_GetStyleName(Styles style, char[] name, int length);
 native IntMap fuckTimer_GetStyles();
+
+native bool fuckTimer_GetStyleName(Styles style, char[] name, int length);
+native StyleStatus fuckTimer_GetStyleStatus(int id);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_styles_SetNTVOptional()
 {
-    MarkNativeAsOptional("fuckTimer_GetStyleName");
     MarkNativeAsOptional("fuckTimer_GetStyles");
+
+    MarkNativeAsOptional("fuckTimer_GetStyleName");
+    MarkNativeAsOptional("fuckTimer_GetStyleStatus");
 }
 #endif
 
