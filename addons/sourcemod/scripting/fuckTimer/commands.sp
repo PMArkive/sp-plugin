@@ -577,7 +577,16 @@ public int Menu_ListHUDCommands(Menu menu, MenuAction action, int client, int pa
         char sParam[12];
         if (menu.GetItem(param, sParam, sizeof(sParam)))
         {
-            PrintToChat(client, "Read commands.sp, I placed a TODO note here."); // TODO: Add usage text as translation (as example: "Chat - CommandUsage - sm_hud", so "Chat - CommandUsage - %s", sParam)
+            char sPhrase[64];
+            FormatEx(sPhrase, sizeof(sPhrase), "Chat - Command Usage - %s", sParam);
+
+            if (!TranslationPhraseExists(sPhrase))
+            {
+                PrintToChat(client, "For this command it doesn't exist any usage informations.");
+            }
+
+            PrintToChat(client, "%T", sPhrase, client);
+
             ClientCommand(client, sParam);
         }
     }
