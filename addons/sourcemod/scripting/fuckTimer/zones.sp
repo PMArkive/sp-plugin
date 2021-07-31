@@ -93,6 +93,17 @@ public void OnMapStart()
     }
 }
 
+public void OnEntityDestroyed(int entity)
+{
+    char sClass[32];
+    GetEntityClassname(entity, sClass, sizeof(sClass));
+
+    if (StrEqual(sClass, "trigger_multiple", false))
+    {
+        Zone[entity].Reset();
+    }
+}
+
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
