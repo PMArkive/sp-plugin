@@ -83,11 +83,11 @@ public void OnMapTiersDownload(HTTPStatus status, any value, const char[] error)
     }
     else if (status == HTTPStatus_NotFound)
     {
-        SetFailState("Download failed! 404 - maptiers.txt not found.");
+        SetFailState("Download failed! 404 - maptiers.txt not found. Status Code: %d, Error: %s", status, error);
     }
     else
     {
-        SetFailState("Something went wrong while downloading maptiers.txt. Status: %d, Error: %s", status, error);
+        SetFailState("Something went wrong while downloading maptiers.txt.  Status Code: %d, Error: %s", status, error);
     }
 }
 
@@ -115,6 +115,7 @@ void ParseMapTiersFile()
                 if (iTier == 0)
                 {
                     SetFailState("Can not read map tier correctly.");
+                    return;
                 }
             }
             else if (strlen(sLine) > 1)
@@ -130,76 +131,8 @@ void ParseMapTiersFile()
 
         LogMessage("maptiers.txt parsed and informations was saved.");
 
-        AddMapsToDatabase();
+        UnloadFuckZones();
     }
-}
-
-// TODO:
-void AddMapsToDatabase()
-{
-    JSONArray jMaps = new JSONArray();
-    JSONObject jMap = null;
-
-    char sMap[MAX_NAME_LENGTH];
-    char sMapAuthor[MAX_NAME_LENGTH];
-    char sZoneAuthor[MAX_NAME_LENGTH];
-
-    int iTier = 0;
-
-    StringMapSnapshot snap = Core.MapTiers.Snapshot();
-
-    for (int i = 0; snap.Length; i++)
-    {
-        snap.GetKey(i, sMap, sizeof(sMap));
-        Core.MapTiers.GetValue(sMap, iTier);
-
-        GetAuthor(sMap, true, sMapAuthor, sizeof(sMapAuthor));
-        GetAuthor(sMap, false, sZoneAuthor, sizeof(sZoneAuthor));
-
-        jMap = new JSONObject();
-        jMap.SetString("Name", sMap);
-        jMap.SetInt("Tier", iTier);
-        jMap.SetInt("Status", 0);
-        jMap.SetString("MapAuthor", sMapAuthor);
-        jMap.SetString("ZoneAuthor", sZoneAuthor);
-
-        jMaps.Push(jMap);
-
-        sMap[0] = '\0';
-        sMapAuthor[0] = '\0';
-        sZoneAuthor[0] = '\0';
-        iTier = 0;
-    }
-
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Post(jMaps, PostMaps);
-
-    for (int i = 0; i < jMaps.Length; i++)
-    {
-        jMap = view_as<JSONObject>(jMaps.Get(i));
-        delete jMap;
-    }
-
-    delete jMaps;
-}
-
-public void PostMaps(HTTPResponse response, any value, const char[] error)
-{
-    if (response.Status != HTTPStatus_Created)
-    {
-        LogError("[Maps.PostMaps] Can't post maps. Status Code: %d, Error: %s", response.Status, error);
-        return;
-    }
-
-    LogMessage("[Maps.PostMaps] Success. Status Code: %d", response.Status);
-
-    // TODO: Get Id and Tier for the current map?
-
-    UnloadFuckZones();
 }
 
 UnloadFuckZones()
@@ -255,10 +188,11 @@ void DownloadZoneFile()
     if (iTier == 0)
     {
         SetFailState("Can not find map tier for \"%s\".", sMap);
+        return;
     }
     
     char sEndpoint[128];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/Tier %d/%s.zon", iTier, sMap);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/Tier%d/%s.zon", iTier, sMap);
     HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     DataPack pack = new DataPack();
@@ -281,7 +215,7 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
         LogMessage("[fuckTimer.Downloader] Download global_filters.cfg...");
 
-        
+        AddMapsToDatabase();
 
         char sFile[PLATFORM_MAX_PATH + 1];
         FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
@@ -317,8 +251,73 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
     {
         CallZoneDownload(sMap, false);
         
-        SetFailState("API is currently not available");
+        SetFailState("API is currently not available. Status Code: %d, Error: %s", status, error);
     }
+}
+
+void AddMapsToDatabase()
+{
+    JSONArray jMaps = new JSONArray();
+    JSONObject jMap = null;
+
+    char sMap[MAX_NAME_LENGTH];
+    char sMapAuthor[MAX_NAME_LENGTH];
+    char sZoneAuthor[MAX_NAME_LENGTH];
+
+    int iTier = 0;
+
+    StringMapSnapshot snap = Core.MapTiers.Snapshot();
+
+    for (int i = 0; i < snap.Length; i++)
+    {
+        snap.GetKey(i, sMap, sizeof(sMap));
+        Core.MapTiers.GetValue(sMap, iTier);
+
+        GetAuthor(sMap, true, sMapAuthor, sizeof(sMapAuthor));
+        GetAuthor(sMap, false, sZoneAuthor, sizeof(sZoneAuthor));
+
+        jMap = new JSONObject();
+        jMap.SetString("Name", sMap);
+        jMap.SetInt("Tier", iTier);
+        jMap.SetInt("Status", 0);
+        jMap.SetString("MapAuthor", sMapAuthor);
+        jMap.SetString("ZoneAuthor", sZoneAuthor);
+
+        jMaps.Push(jMap);
+
+        sMap[0] = '\0';
+        sMapAuthor[0] = '\0';
+        sZoneAuthor[0] = '\0';
+        iTier = 0;
+    }
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
+
+    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
+
+    request.Post(jMaps, PostMaps);
+
+    for (int i = 0; i < jMaps.Length; i++)
+    {
+        jMap = view_as<JSONObject>(jMaps.Get(i));
+        delete jMap;
+    }
+
+    delete jMaps;
+}
+
+public void PostMaps(HTTPResponse response, any value, const char[] error)
+{
+    if (response.Status != HTTPStatus_Created)
+    {
+        LogError("[Maps.PostMaps] Can't post maps. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    LogMessage("[Maps.PostMaps] Success. Status Code: %d", response.Status);
+
+    // TODO: Get Id and Tier for the current map?
 }
 
 public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const char[] error)
@@ -346,12 +345,12 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
             DeleteFile(sFile);
         }
 
-        SetFailState("[fuckTimer.Downloader] global_filters.cfg doesn't exist!");
+        SetFailState("[fuckTimer.Downloader] global_filters.cfg doesn't exist! Status Code: %d, Error: %s", status, error);
         return;
     }
     else
     {
-        SetFailState("API is currently not available");
+        SetFailState("API is currently not available. Status Code: %d, Error: %s", status, error);
         return;
     }
     
@@ -407,7 +406,7 @@ public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[]
     }
     else
     {
-        SetFailState("API is currently not available");
+        SetFailState("API is currently not available. Status Code: %d, Error: %s", status, error);
         return;
     }
 
@@ -429,15 +428,15 @@ void CallZoneDownload(const char[] map, bool success)
     Call_Finish();
 }
 
-bool GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
+void GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
 {
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", map);
 
     if (!FileExists(sFile))
     {
-        SetFailState("[Maps.GetAuthor] Zone file \"%s\" not found.");
-        return false;
+        FormatEx(author, maxlen, "n/a");
+        return;
     }
 
     KeyValues kv = new KeyValues("zones");
@@ -447,7 +446,7 @@ bool GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
         delete kv;
         
         SetFailState("[Maps.GetAuthor] Can not data read from file.");
-        return false;
+        return;
     }
 
     if (!kv.JumpToKey("main0_start"))
@@ -455,7 +454,7 @@ bool GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
         delete kv;
         
         SetFailState("[Maps.GetAuthor] Can not find \"main0_start\" zone.");
-        return false;
+        return;
     }
 
     if (!kv.JumpToKey("effects"))
@@ -463,7 +462,7 @@ bool GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
         delete kv;
         
         SetFailState("[Maps.GetAuthor] Can not find \"effects\" key.");
-        return false;
+        return;
     }
 
     if (!kv.JumpToKey("fuckTimer"))
@@ -471,13 +470,17 @@ bool GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
         delete kv;
         
         SetFailState("[Maps.GetAuthor] Can not find \"fuckTimer\" effect.");
-        return false;
+        return;
     }
 
     kv.GetString(mapAuthor ? "MapAuthor" : "ZoneAuthor", author, maxlen);
 
+    if (strlen(author) < 2)
+    {
+        FormatEx(author, maxlen, "n/a");
+    }
+
     delete kv;
-    return strlen(author) > 1 ? true : false;
 }
 
 public int Native_GetCurrentMapId(Handle plugin, int numParams)
