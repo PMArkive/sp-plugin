@@ -17,14 +17,14 @@
 
 enum struct PlayerData
 {
-    int Status;
+    PlayerStatus Status;
     bool InStage;
     
     StringMap Settings;
 
     void Reset()
     {
-        this.Status = 1;
+        this.Status = psInactive;
         this.InStage = false;
 
         delete this.Settings;
@@ -55,6 +55,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_GetClientSetting", Native_GetClientSetting);
     CreateNative("fuckTimer_SetClientSetting", Native_SetClientSetting);
+
+    CreateNative("fuckTimer_GetClientStatus", Native_GetClientStatus);
 
     RegPluginLibrary("fuckTimer_players");
 
@@ -338,6 +340,11 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
     Player[client].Settings.SetString(sSetting, sValue);
     PrintToServer("[Players.Native_SetClientSetting] Adding setting %s with value of %s", sSetting, sValue);
     SetPlayerSetting(client, sSetting, sValue);
+}
+
+public any Native_GetClientStatus(Handle plugin, int numParams)
+{
+    return Player[GetNativeCell(1)].Status;
 }
 
 void LoadPlayer(int client)

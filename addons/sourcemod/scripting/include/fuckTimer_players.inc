@@ -10,16 +10,27 @@ enum eInvalidKeyPref {
     IKNormal
 }
 
+enum PlayerStatus {
+    psActive = 0,
+    psInactive = 1
+}
+
 native void fuckTimer_RegisterSetting(const char[] setting, const char[] defaultValue);
+
 native bool fuckTimer_GetClientSetting(int client, const char[] setting, char[] value);
 native void fuckTimer_SetClientSetting(int client, const char[] setting, char[] value);
+
+native PlayerStatus fuckTimer_GetClientStatus(int client);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_players_SetNTVOptional()
 {
     MarkNativeAsOptional("fuckTimer_RegisterSetting");
+
     MarkNativeAsOptional("fuckTimer_GetClientSetting");
     MarkNativeAsOptional("fuckTimer_SetClientSetting");
+
+    MarkNativeAsOptional("fuckTimer_GetClientStatus");
 }
 #endif
 

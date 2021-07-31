@@ -26,7 +26,7 @@ public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
     char sName[MAX_NAME_LENGTH];
     jPlayer.GetString("Name", sName, sizeof(sName));
 
-    Player[client].Status = jPlayer.GetInt("Status");
+    Player[client].Status = view_as<PlayerStatus>(jPlayer.GetInt("Status"));
 
     delete jPlayer;
 
