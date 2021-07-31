@@ -379,7 +379,7 @@ public Action Command_Styles(int client, int args)
 
     if (imStyles.Size < 2)
     {
-        // TODO: Message?
+        ReplyToCommand(client, "No styles found.");
         return Plugin_Handled;
     }
 
