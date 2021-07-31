@@ -9,6 +9,7 @@ forward void fuckTimer_OnZoneDownload(const char[] map, bool success);
 
 native int fuckTimer_GetCurrentMapId();
 native int fuckTimer_GetCurrentMapTier();
+native int fuckTimer_GetCurrentMapStatus();
 
 /*
  *   StringMap must be closed/freed with delete (or CloseHandle) in callback.
@@ -20,6 +21,7 @@ public void __pl_fuckTimer_maps_SetNTVOptional()
 {
     MarkNativeAsOptional("fuckTimer_GetCurrentMapId");
     MarkNativeAsOptional("fuckTimer_GetCurrentMapTier");
+    MarkNativeAsOptional("fuckTimer_GetCurrentMapStatus");
 
     MarkNativeAsOptional("fuckTimer_GetMapTiers");
 }

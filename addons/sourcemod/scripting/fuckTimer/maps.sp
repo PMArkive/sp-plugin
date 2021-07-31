@@ -37,6 +37,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_GetCurrentMapId", Native_GetCurrentMapId);
     CreateNative("fuckTimer_GetCurrentMapTier", Native_GetCurrentMapTier);
+    CreateNative("fuckTimer_GetCurrentMapStatus", Native_GetCurrentMapStatus);
 
     CreateNative("fuckTimer_GetMapTiers", Native_GetMapTiers);
 
@@ -532,6 +533,11 @@ public int Native_GetCurrentMapId(Handle plugin, int numParams)
 public int Native_GetCurrentMapTier(Handle plugin, int numParams)
 {
     return Map.Tier;
+}
+
+public int Native_GetCurrentMapStatus(Handle plugin, int numParams)
+{
+    return Map.Status;
 }
 
 public any Native_GetMapTiers(Handle plugin, int numParams)
