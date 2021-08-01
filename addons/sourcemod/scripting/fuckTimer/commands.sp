@@ -115,7 +115,7 @@ public Action Command_Start(int client, int args)
     {
         ClientTeleport(client, 0);
 
-        fuckZones_TeleportClientToZoneIndex(client, iZone);
+        fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
     return Plugin_Handled;
@@ -148,7 +148,7 @@ public Action Command_End(int client, int args)
     {
         ClientTeleport(client, 0);
 
-        fuckZones_TeleportClientToZoneIndex(client, iZone);
+        fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
     return Plugin_Handled;
@@ -213,7 +213,7 @@ public Action Command_GoBack(int client, int args)
 
     if (iZone > 0)
     {
-        fuckZones_TeleportClientToZoneIndex(client, iZone);
+        fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
     return Plugin_Handled;
@@ -248,7 +248,7 @@ public Action Command_RestartStage(int client, int args)
 
     if (iZone > 0)
     {
-        fuckZones_TeleportClientToZoneIndex(client, iZone);
+        fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
     return Plugin_Handled;
@@ -315,7 +315,7 @@ public Action Command_Bonus(int client, int args)
 
     if (iZone > 0)
     {
-        fuckZones_TeleportClientToZoneIndex(client, iZone);
+        fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
     return Plugin_Handled;
@@ -361,7 +361,7 @@ public Action Command_Stage(int client, int args)
 
         if (iZone > 0)
         {
-            fuckZones_TeleportClientToZoneIndex(client, iZone);
+            fuckTimer_TeleportEntityToZone(client, iZone);
         }
     }
 

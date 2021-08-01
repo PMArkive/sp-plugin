@@ -352,7 +352,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
             if (iZone > 0)
             {
-                fuckZones_TeleportClientToZoneIndex(client, iZone);
+                fuckTimer_TeleportEntityToZone(client, iZone);
 
                 Player[client].BlockTeleport = true;
             }
@@ -377,7 +377,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
             if (iZone > 0)
             {
-                fuckZones_TeleportClientToZoneIndex(client, iZone);
+                fuckTimer_TeleportEntityToZone(client, iZone);
 
                 Player[client].BlockTeleport = true;
             }
@@ -824,7 +824,7 @@ public Action OnPostThinkPost(int client)
     }
 
     Player[client].Origin2 = Player[client].Origin1;
-    GetEntPropVector(client, Prop_Data, "m_vecOrigin", Player[client].Origin1);
+    GetEntPropVector(client, Prop_Send, "m_vecOrigin", Player[client].Origin1);
 
     if (Player[client].MainRunning)
     {
