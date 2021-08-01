@@ -30,6 +30,7 @@ enum struct PlayerData
     bool SetSpeed;
     bool BlockJump;
     bool BlockTeleport;
+    bool BlockStart;
 
     float Time;
     float TimeInZone;
@@ -76,6 +77,7 @@ enum struct PlayerData
 
         this.SetSpeed = false;
         this.BlockJump = false;
+        this.BlockStart = false;
 
         this.Time = 0.0;
 
@@ -166,6 +168,7 @@ public void OnPluginStart()
         LoadPlayer(client);
     }
 
+    HookEvent("round_end", Event_RoundEnd);
     HookEvent("player_activate", Event_PlayerActivate);
 }
 
@@ -264,6 +267,14 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     }
 
     delete snap;
+}
+
+public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+{
+    fuckTimer_LoopClients(client, false, false)
+    {
+        Player[client].Reset();
+    }
 }
 
 public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
@@ -402,7 +413,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
     CSDetails details;
     
-    if (iStage > 0)
+    if (Player[client].StageRunning && iStage > 0)
     {
         Player[client].Validator = 0;
         Player[client].SetSpeed = true;
@@ -470,7 +481,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         iCheckpoint = Player[client].Checkpoint;
     }
     
-    if (iCheckpoint > 0)
+    if (Player[client].CheckpointRunning && iCheckpoint > 0)
     {
         if (Player[client].CheckpointDetails == null)
         {
@@ -530,7 +541,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     
     int bonus = fuckTimer_GetZoneBonus(zone);
     
-    if (fuckTimer_IsEndZone(zone, Player[client].Bonus) && Player[client].Time > 0.0)
+    if (Player[client].MainRunning && fuckTimer_IsEndZone(zone, Player[client].Bonus) && Player[client].Time > 0.0)
     {
         CalculateTickIntervalOffset(client, true);
 
@@ -672,15 +683,26 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     Player[client].Zone = zone;
 }
 
-public void fuckTimer_OnClientTeleport(int client, int level)
+public void fuckTimer_OnClientCommand(int client, int level, bool start)
 {
     Player[client].Reset();
+
+    if (!start)
+    {
+        Player[client].BlockStart = true;
+    }
 }
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 {
     if (!IsPlayerAlive(client))
     {
+        return;
+    }
+    
+    if (Player[client].BlockStart)
+    {
+        Player[client].BlockStart = false;
         return;
     }
     
