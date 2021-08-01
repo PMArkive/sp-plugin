@@ -4,7 +4,7 @@
 #define _fuckTimer_commands_included
 
 forward void fuckTimer_OnClientRestart(int client);
-forward void fuckTimer_OnClientTeleport(int client, int level);
+forward void fuckTimer_OnClientCommand(int client, int level, bool start);
 
 native void fuckTimer_RestartClient(int client);
 
