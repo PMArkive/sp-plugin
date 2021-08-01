@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        SM_VERSION: [ '1.11' ]
+        SM_VERSION: [ '1.11.6732' ]
 
     steps:
       - uses: actions/checkout@v2
