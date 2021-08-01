@@ -824,7 +824,7 @@ public Action OnPostThinkPost(int client)
     }
 
     Player[client].Origin2 = Player[client].Origin1;
-    GetEntPropVector(client, Prop_Send, "m_vecOrigin", Player[client].Origin1);
+    GetEntPropVector(client, Prop_Data, "m_vecOrigin", Player[client].Origin1);
 
     if (Player[client].MainRunning)
     {
@@ -1056,9 +1056,9 @@ void CalculateTickIntervalOffset(int client, bool end)
     float fMins[3];
     float fMaxs[3];
 
-    GetEntPropVector(client, Prop_Send, "m_vecOrigin", fOrigin);
-    GetEntPropVector(client, Prop_Send, "m_vecMins", fMins);
-    GetEntPropVector(client, Prop_Send, "m_vecMaxs", fMaxs);
+    GetEntPropVector(client, Prop_Data, "m_vecOrigin", fOrigin);
+    GetEntPropVector(client, Prop_Data, "m_vecMins", fMins);
+    GetEntPropVector(client, Prop_Data, "m_vecMaxs", fMaxs);
 
     if (!end)
     {
@@ -1099,9 +1099,9 @@ void CalculateTickIntervalOffsetCS(int client, IntMap map, int key, bool end)
     float fMins[3];
     float fMaxs[3];
 
-    GetEntPropVector(client, Prop_Send, "m_vecOrigin", fOrigin);
-    GetEntPropVector(client, Prop_Send, "m_vecMins", fMins);
-    GetEntPropVector(client, Prop_Send, "m_vecMaxs", fMaxs);
+    GetEntPropVector(client, Prop_Data, "m_vecOrigin", fOrigin);
+    GetEntPropVector(client, Prop_Data, "m_vecMins", fMins);
+    GetEntPropVector(client, Prop_Data, "m_vecMaxs", fMaxs);
 
     if (!end)
     {

@@ -94,7 +94,7 @@ stock bool fuckTimer_IsClientValid(int client, bool bots = false, bool sourcetv 
 stock float GetClientSpeed(int client, eHUDSpeed eSpeed = HSXY)
 {
     float fVelocity[3];
-    GetEntPropVector(client, Prop_Send, "m_vecVelocity", fVelocity);
+    GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 
     float fSpeed = 0.0;
 
@@ -117,7 +117,7 @@ stock float GetClientSpeed(int client, eHUDSpeed eSpeed = HSXY)
 stock void SetClientSpeed(int client, int maxspeed = 0)
 {
     float fVelocity[3];
-    GetEntPropVector(client, Prop_Send, "m_vecVelocity", fVelocity);
+    GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 
     float fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
 
@@ -200,5 +200,5 @@ stock void GetClientAngle(int client, float angle[3])
 
 stock void GetClientVelocity(int client, float velocity[3])
 {
-    GetEntPropVector(client, Prop_Send, "m_vecVelocity", velocity);
+    GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
 }

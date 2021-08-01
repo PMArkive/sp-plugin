@@ -166,7 +166,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
             fEyeAngle[2] = 0.0;
 
             float fVelocity[3];
-            GetEntPropVector(client, Prop_Send, "m_vecVelocity", fVelocity);
+            GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
             fVelocity[2] = 0.0;
 
             float fLen = SquareRoot(fVelocity[0] * fVelocity[0] + fVelocity[1] * fVelocity[1]);
