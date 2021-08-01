@@ -558,6 +558,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         GetClientAngle(client, Player[client].EndAngle);
         GetClientVelocity(client, Player[client].EndVelocity);
 
+        map.SetValue("MapId", fuckTimer_GetCurrentMapId());
+
         StringMap map = new StringMap();
         map.SetValue("PlayerId", GetSteamAccountID(client));
 
@@ -568,9 +570,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         fuckTimer_GetClientSetting(client, "Style", sBuffer);
         map.SetValue("StyleId", StringToInt(sBuffer));
 
-        map.SetValue("MapId", fuckTimer_GetCurrentMapId());
-
-        map.SetValue("ZoneNormal", Player[client].Bonus);
+        map.SetValue("Level", Player[client].Bonus);
         
         if (iCheckpoint > 0)
         {

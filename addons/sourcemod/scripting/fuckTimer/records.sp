@@ -15,12 +15,13 @@ public Plugin myinfo =
     url = FUCKTIMER_PLUGIN_URL
 };
 
-
-
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
-    // TODO: ZoneOrdinal 0 = Main, 1 or higher is CP/Stage
     StringMap record = view_as<StringMap>(CloneHandle(temp));
+
+    int iMapId;
+    record.GetValue("MapId", iMapId);
+    PrintToConsoleAll("Main: MapId: %d", iMapId);
 
     int iPlayerId;
     record.GetValue("PlayerId", iPlayerId);
@@ -34,13 +35,9 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     record.GetValue("StyleId", iStyle);
     PrintToConsoleAll("Main: Style: %d", iStyle);
 
-    int iMapId;
-    record.GetValue("MapId", iMapId);
-    PrintToConsoleAll("Main: MapId: %d", iMapId);
-
-    int iZoneNormal;
-    record.GetValue("ZoneNormal", iZoneNormal);
-    PrintToConsoleAll("Main: ZoneNormal: %d", iZoneNormal);
+    int iLevel;
+    record.GetValue("Level", iLevel);
+    PrintToConsoleAll("Main: Level: %d", iLevel);
 
     TimeType tType;
     record.GetValue("Type", tType);
