@@ -60,6 +60,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetZoneMapAuthor", Native_GetZoneMapAuthor);
     CreateNative("fuckTimer_GetZoneZoneAuthor", Native_GetZoneZoneAuthor);
 
+    CreateNative("fuckTimer_GetZoneTeleportCoords", Native_GetZoneTeleportCoords);
+    CreateNative("fuckTimer_TeleportEntityToZone", Native_TeleportEntityToZone);
+
     RegPluginLibrary("fuckTimer_zones");
 
     return APLRes_Success;
@@ -469,4 +472,37 @@ public int Native_GetZoneMapAuthor(Handle plugin, int numParams)
 public int Native_GetZoneZoneAuthor(Handle plugin, int numParams)
 {
     SetNativeString(2, Zone[GetNativeCell(1)].ZoneAuthor, GetNativeCell(3));
+}
+
+public any Native_GetZoneTeleportCoords(Handle plugin, int numParams)
+{
+    int zone = GetNativeCell(1);
+
+    if (!IsValidEntity(zone))
+    {
+        return false;
+    }
+
+    if (Zone[zone].TeleportOrigin[0] == 0.0 && Zone[zone].TeleportOrigin[1] == 0.0 && Zone[zone].TeleportOrigin[2] == 0.0)
+    {
+        return false;
+    }
+
+    SetNativeArray(2, Zone[zone].TeleportOrigin, 3);
+    SetNativeArray(3, Zone[zone].TeleportAngles, 3);
+
+    return true;
+}
+
+public any Native_TeleportEntityToZone(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    int zone = GetNativeCell(2);
+
+    if (Zone[zone].TeleportOrigin[0] == 0.0 && Zone[zone].TeleportOrigin[1] == 0.0 && Zone[zone].TeleportOrigin[2] == 0.0)
+    {
+        fuckZones_TeleportClientToZoneIndex(client, zone);
+    }
+
+    TeleportEntity(client, Zone[zone].TeleportOrigin, Zone[zone].TeleportAngles);
 }

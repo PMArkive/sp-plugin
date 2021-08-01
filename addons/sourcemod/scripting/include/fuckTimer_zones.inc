@@ -137,6 +137,10 @@ native int fuckTimer_GetCheckpointByIndex(int zone, int &bonus);
 native int fuckTimer_GetStageByIndex(int zone, int &bonus);
 native int fuckTimer_GetZonePreSpeed(int zone);
 native int fuckTimer_GetZoneMaxVelocity(int zone);
+native void fuckTimer_GetZoneMapAuthor(int zone, char[] author, int maxlen);
+native void fuckTimer_GetZoneZoneAuthor(int zone, char[] author, int maxlen);
+native bool fuckTimer_GetZoneTeleportCoords(int zone, float[3] origin, float[3] angles);
+native void fuckTimer_TeleportEntityToZone(int client, int zone);
 
 stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
 {
@@ -187,6 +191,12 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
 
     MarkNativeAsOptional("fuckTimer_GetZonePreSpeed");
     MarkNativeAsOptional("fuckTimer_GetZoneMaxVelocity");
+
+    MarkNativeAsOptional("fuckTimer_GetZoneMapAuthor");
+    MarkNativeAsOptional("fuckTimer_GetZoneZoneAuthor");
+
+    MarkNativeAsOptional("fuckTimer_GetZoneTeleportCoords");
+    MarkNativeAsOptional("fuckTimer_TeleportEntityToZone");
 }
 #endif
 
