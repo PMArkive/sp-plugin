@@ -502,7 +502,8 @@ public any Native_TeleportEntityToZone(Handle plugin, int numParams)
     if (Zone[zone].TeleportOrigin[0] == 0.0 && Zone[zone].TeleportOrigin[1] == 0.0 && Zone[zone].TeleportOrigin[2] == 0.0)
     {
         fuckZones_TeleportClientToZoneIndex(client, zone);
+        return;
     }
-
+    
     TeleportEntity(client, Zone[zone].TeleportOrigin, Zone[zone].TeleportAngles);
 }
