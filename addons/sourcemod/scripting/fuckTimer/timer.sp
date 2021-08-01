@@ -558,9 +558,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         GetClientAngle(client, Player[client].EndAngle);
         GetClientVelocity(client, Player[client].EndVelocity);
 
-        map.SetValue("MapId", fuckTimer_GetCurrentMapId());
-
         StringMap map = new StringMap();
+        map.SetValue("MapId", fuckTimer_GetCurrentMapId());
         map.SetValue("PlayerId", GetSteamAccountID(client));
 
         char sBuffer[MAX_NAME_LENGTH];

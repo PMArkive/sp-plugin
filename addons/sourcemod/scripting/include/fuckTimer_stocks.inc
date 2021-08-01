@@ -35,7 +35,7 @@ enum struct RecordData
     int PlayerId;
     char PlayerName[MAX_NAME_LENGTH];
     Styles Style;
-    int ZoneNormal;
+    int Level;
     TimeType Type;
     int Tickrate;
     float Duration;
