@@ -28,6 +28,9 @@ enum struct ZoneDetails
     char MapAuthor[MAX_NAME_LENGTH];
     char ZoneAuthor[MAX_NAME_LENGTH];
 
+    float TeleportOrigin[3];
+    float TeleportAngles[3];
+
     void Reset()
     {
         this.Start = false;
@@ -49,6 +52,9 @@ enum struct ZoneDetails
 
         this.MapAuthor[0] = '\0';
         this.ZoneAuthor[0] = '\0';
+
+        this.TeleportOrigin = {0.0, 0.0, 0.0};
+        this.TeleportAngles = {0.0, 0.0, 0.0};
     }
 }
 

@@ -183,6 +183,25 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     GetfuckTimerZoneValue(smEffects, "MapAuthor", Zone[entity].MapAuthor, sizeof(ZoneDetails::MapAuthor));
     GetfuckTimerZoneValue(smEffects, "ZoneAuthor", Zone[entity].ZoneAuthor, sizeof(ZoneDetails::ZoneAuthor));
+
+    int iEntity = -1;
+
+    while ((iEntity = FindEntityByClassname(iEntity, "info_teleport_destination")) != -1)
+    {
+        float fOrigin[3];
+        GetEntPropVector(iEntity, Prop_Send, "m_vecOrigin", fOrigin);
+
+        if (fuckZones_IsPointInZone(entity, fOrigin))
+        {
+            float fAngles[3];
+            GetEntPropVector(iEntity, Prop_Send, "m_angRotation", fAngles);
+
+            Zone[entity].TeleportOrigin = fOrigin;
+            Zone[entity].TeleportAngles = fAngles;
+            
+            break;
+        }
+    }
 }
 
 public void fuckZones_OnEffectsReady()
