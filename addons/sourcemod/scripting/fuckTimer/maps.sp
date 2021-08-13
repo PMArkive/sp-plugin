@@ -24,6 +24,7 @@ enum struct PluginData
     StringMap MapTiers;
 
     GlobalForward OnZoneDownload;
+    GlobalForward OnMapDataLoaded;
 }
 PluginData Core;
 
@@ -39,6 +40,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     Core.OnZoneDownload = new GlobalForward("fuckTimer_OnZoneDownload", ET_Ignore, Param_String, Param_Cell);
+    Core.OnMapDataLoaded = new GlobalForward("fuckTimer_OnMapDataLoaded", ET_Ignore);
 
     CreateNative("fuckTimer_GetCurrentMapId", Native_GetCurrentMapId);
     CreateNative("fuckTimer_GetCurrentMapTier", Native_GetCurrentMapTier);
@@ -368,6 +370,9 @@ public void GetMap(HTTPResponse response, any value, const char[] error)
     jMap.GetString("ZoneAuthor", Map.ZoneAuthor, sizeof(MapData::ZoneAuthor));
 
     LogMessage("Id: %d, Name: %s, Tier: %d, Status: %d, MapAuthor: %s, ZoneAuthor: %s", Map.Id, sName, Map.Tier, Map.Status, Map.MapAuthor, Map.ZoneAuthor);
+
+    Call_StartForward(Core.OnMapDataLoaded);
+    Call_Finish();
 }
 
 void UpdateAuthor(JSONObject map)

@@ -11,6 +11,7 @@ enum MapStatus {
 }
 
 forward void fuckTimer_OnZoneDownload(const char[] map, bool success);
+forward void fuckTimer_OnMapDataLoaded();
 
 native int fuckTimer_GetCurrentMapId();
 native int fuckTimer_GetCurrentMapTier();
