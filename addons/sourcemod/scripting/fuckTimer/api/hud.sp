@@ -110,10 +110,7 @@ void PreparePlayerPostHudSettings(int client, char[] layout = "default")
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", iAccountID);
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Post(jArray, PostPlayerHudSettings, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(jArray, PostPlayerHudSettings, GetClientUserId(client));
 
     for (int i = 0; i < jArray.Length; i++)
     {
@@ -169,10 +166,7 @@ void PatchPlayerHUDKeys(int client, HUDEntry entry[2])
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d/", GetSteamAccountID(client));
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Patch(jArray, PatchPlayerHUDKey, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Patch(jArray, PatchPlayerHUDKey, GetClientUserId(client));
 
     for (int i = 0; i < jArray.Length; i++)
     {

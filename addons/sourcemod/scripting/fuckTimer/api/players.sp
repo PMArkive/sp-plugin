@@ -55,9 +55,7 @@ void PreparePlayerPostData(int client)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player");
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Post(jPlayer, PostPlayerData, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;
 }
 
@@ -86,11 +84,8 @@ void LoadPlayerSetting(int client)
 {
     char sEndpoint[MAX_URL_LENGTH];
     Format(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d", GetSteamAccountID(client));
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
     LogMessage(sEndpoint);
-
-    request.Get(GetPlayerSetting, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerSetting, GetClientUserId(client));
 }
 
 public void GetPlayerSetting(HTTPResponse response, any userid, const char[] error)
@@ -165,9 +160,7 @@ void PreparePlayerPostSetting(int client, const char[] setting)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings");
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Post(jSetting, PostPlayerSetting, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(jSetting, PostPlayerSetting, GetClientUserId(client));
 
     delete jSetting;
 }
@@ -207,13 +200,13 @@ void SetPlayerSetting(int client, const char[] setting, const char[] value)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d/Setting/%s", GetSteamAccountID(client), setting);
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
+    
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(client));
     pack.WriteString(setting);
     pack.WriteString(value);
-    request.Patch(jSetting, PatchPlayerSetting, pack);
+    
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Patch(jSetting, PatchPlayerSetting, pack);
 
     delete jSetting;
 }

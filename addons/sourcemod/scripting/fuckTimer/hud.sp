@@ -600,8 +600,5 @@ void LoadPlayer(int client)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", GetSteamAccountID(client));
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Get(GetPlayerHudSettings, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerHudSettings, GetClientUserId(client));
 }

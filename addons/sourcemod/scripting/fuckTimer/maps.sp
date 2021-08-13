@@ -301,10 +301,7 @@ void AddMapsToDatabase()
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Post(jMaps, PostMaps);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(jMaps, PostMaps);
 
     for (int i = 0; i < jMaps.Length; i++)
     {
@@ -330,10 +327,7 @@ public void PostMaps(HTTPResponse response, any value, const char[] error)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", sMap);
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Get(GetMap);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetMap);
 }
 
 public void GetMap(HTTPResponse response, any value, const char[] error)
@@ -396,10 +390,7 @@ void UpdateAuthor(JSONObject map)
 
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Id/%d", map.GetInt("id"));
-
-    HTTPRequest request = fuckTimer_NewAPIHTTPRequest(sEndpoint);
-
-    request.Put(map, UpdateMap);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(map, UpdateMap);
 }
 
 public void UpdateMap(HTTPResponse response, any value, const char[] error)
