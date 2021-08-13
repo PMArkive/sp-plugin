@@ -10,7 +10,9 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
 
     if (jsonArray.Length < 1)
     {
-        SetFailState("[Records.GetServerRecords] We didn't found any records for this map...");
+        LogMessage("[Records.GetServerRecords] We didn't found any records for this map...");
         return;
     }
+
+    LogMessage("[Records.GetServerRecords] We found %d records for this map", jsonArray.Length);
 }
