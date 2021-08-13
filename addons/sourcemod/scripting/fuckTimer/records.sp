@@ -4,7 +4,10 @@
 #include <sourcemod>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
+#include <fuckTimer_maps>
 #include <fuckTimer_timer>
+
+#include "api/records.sp"
 
 public Plugin myinfo =
 {
@@ -14,6 +17,14 @@ public Plugin myinfo =
     version = FUCKTIMER_PLUGIN_VERSION,
     url = FUCKTIMER_PLUGIN_URL
 };
+
+public void fuckTimer_OnMapDataLoaded()
+{
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
+
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetServerRecords);
+}
 
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
