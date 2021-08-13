@@ -116,7 +116,7 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
     RequestFrame(Frame_PlayerSpawn, event.GetInt("userid"));
 }
 
-public void Frame_PlayerSpawn(int userid)
+public void Frame_PlayerSpawn(any userid)
 {
     int client = GetClientOfUserId(userid);
 

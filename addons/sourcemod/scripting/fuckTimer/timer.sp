@@ -633,9 +633,9 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     }
 }
 
-public void Frame_DeleteStringMap(StringMap map)
+public void Frame_DeleteStringMap(any map)
 {
-    delete map;
+    delete view_as<StringMap>(map);
 }
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
@@ -1094,7 +1094,7 @@ void CalculateTickIntervalOffset(int client, bool end)
     Player[client].Offset[end ? OFFSET_END : OFFSET_START] = Player[client].Fraction * GetTickInterval();
 }
 
-bool TREnumTrigger(int entity, int client) {
+bool TREnumTrigger(int entity, any client) {
 
     if (entity <= MaxClients) {
         return true;
@@ -1141,7 +1141,7 @@ void CalculateTickIntervalOffsetCS(int client, IntMap map, int key, bool end)
     map.SetArray(key, details, sizeof(details));
 }
 
-bool TREnumTriggerCS(int entity, float fraction) {
+bool TREnumTriggerCS(int entity, any fraction) {
 
     if (entity <= MaxClients) {
         return true;

@@ -1,4 +1,4 @@
-public void GetPlayerData(HTTPResponse response, int userid, const char[] error)
+public void GetPlayerData(HTTPResponse response, any userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
@@ -61,7 +61,7 @@ void PreparePlayerPostData(int client)
     delete jPlayer;
 }
 
-public void PostPlayerData(HTTPResponse response, int userid, const char[] error)
+public void PostPlayerData(HTTPResponse response, any userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
@@ -93,7 +93,7 @@ void LoadPlayerSetting(int client)
     request.Get(GetPlayerSetting, GetClientUserId(client));
 }
 
-public void GetPlayerSetting(HTTPResponse response, int userid, const char[] error)
+public void GetPlayerSetting(HTTPResponse response, any userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
@@ -172,7 +172,7 @@ void PreparePlayerPostSetting(int client, const char[] setting)
     delete jSetting;
 }
 
-public void PostPlayerSetting(HTTPResponse response, int userid, const char[] error)
+public void PostPlayerSetting(HTTPResponse response, any userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
@@ -218,19 +218,19 @@ void SetPlayerSetting(int client, const char[] setting, const char[] value)
     delete jSetting;
 }
 
-public void PatchPlayerSetting(HTTPResponse response, DataPack pack, const char[] error)
+public void PatchPlayerSetting(HTTPResponse response, any pack, const char[] error)
 {
-    pack.Reset();
+    view_as<DataPack>(pack).Reset();
 
-    int client = GetClientOfUserId(pack.ReadCell());
+    int client = GetClientOfUserId(view_as<DataPack>(pack).ReadCell());
 
     char sSetting[MAX_SETTING_LENGTH];
-    pack.ReadString(sSetting, sizeof(sSetting));
+    view_as<DataPack>(pack).ReadString(sSetting, sizeof(sSetting));
 
     char sValue[MAX_SETTING_VALUE_LENGTH];
-    pack.ReadString(sValue, sizeof(sValue));
+    view_as<DataPack>(pack).ReadString(sValue, sizeof(sValue));
 
-    delete pack;
+    delete view_as<DataPack>(pack);
 
     if (client < 1)
     {

@@ -207,14 +207,14 @@ void DownloadZoneFile()
     request.DownloadFile(sFile, OnZoneDownload, pack);
 }
 
-public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
+public void OnZoneDownload(HTTPStatus status, any pack, const char[] error)
 {
-    pack.Reset();
+    view_as<DataPack>(pack).Reset();
 
     char sMap[MAX_NAME_LENGTH];
-    pack.ReadString(sMap, sizeof(sMap));
+    view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
 
-    delete pack;
+    delete view_as<DataPack>(pack);
 
     if (status == HTTPStatus_OK)
     {
@@ -231,11 +231,11 @@ public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
         FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/global_filters.cfg");
         HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
-        pack = new DataPack();
-        pack.WriteString(sMap);
-        pack.WriteCell(bExist);
+        DataPack dpPack = new DataPack();
+        dpPack.WriteString(sMap);
+        dpPack.WriteCell(bExist);
         
-        request.DownloadFile(sFile, OnStripperGlobalDownload, pack);
+        request.DownloadFile(sFile, OnStripperGlobalDownload, dpPack);
 
         CallZoneDownload(sMap, true);
     }
@@ -313,7 +313,7 @@ void AddMapsToDatabase()
     delete jMaps;
 }
 
-public void PostMaps(HTTPResponse response, int map, const char[] error)
+public void PostMaps(HTTPResponse response, any value, const char[] error)
 {
     if (response.Status != HTTPStatus_Created)
     {
@@ -334,7 +334,7 @@ public void PostMaps(HTTPResponse response, int map, const char[] error)
     request.Get(GetMap);
 }
 
-public void GetMap(HTTPResponse response, int map, const char[] error)
+public void GetMap(HTTPResponse response, any value, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {
@@ -397,7 +397,7 @@ void UpdateAuthor(JSONObject map)
     request.Put(map, UpdateMap);
 }
 
-public void UpdateMap(HTTPResponse response, int map, const char[] error)
+public void UpdateMap(HTTPResponse response, any value, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {
@@ -408,16 +408,16 @@ public void UpdateMap(HTTPResponse response, int map, const char[] error)
     LogMessage("[Maps.UpdateMap] Success. Status Code: %d", response.Status);
 }
 
-public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const char[] error)
+public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] error)
 {
-    pack.Reset();
+    view_as<DataPack>(pack).Reset();
 
     char sMap[MAX_NAME_LENGTH];
-    pack.ReadString(sMap, sizeof(sMap));
+    view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
 
-    bool bExist = pack.ReadCell();
+    bool bExist = view_as<DataPack>(pack).ReadCell();
 
-    delete pack;
+    delete view_as<DataPack>(pack);
 
     if (status == HTTPStatus_OK)
     {
@@ -452,25 +452,25 @@ public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const cha
     FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/%s.cfg", sMap);
     HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
-    pack = new DataPack();
-    pack.WriteString(sMap);
-    pack.WriteCell(bExist);
-    pack.WriteCell(bMapExist);
+    DataPack dpPack = new DataPack();
+    dpPack.WriteString(sMap);
+    dpPack.WriteCell(bExist);
+    dpPack.WriteCell(bMapExist);
     
-    request.DownloadFile(sFile, OnStripperMapDownload, pack);
+    request.DownloadFile(sFile, OnStripperMapDownload, dpPack);
 }
 
-public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[] error)
+public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] error)
 {
-    pack.Reset();
+    view_as<DataPack>(pack).Reset();
 
     char sMap[MAX_NAME_LENGTH];
-    pack.ReadString(sMap, sizeof(sMap));
+    view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
 
-    bool bExist = pack.ReadCell();
-    bool bMapExist = pack.ReadCell();
+    bool bExist = view_as<DataPack>(pack).ReadCell();
+    bool bMapExist = view_as<DataPack>(pack).ReadCell();
 
-    delete pack;
+    delete view_as<DataPack>(pack);
 
     if (status == HTTPStatus_OK)
     {
