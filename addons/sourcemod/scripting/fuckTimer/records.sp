@@ -63,6 +63,11 @@ public void fuckTimer_OnStylesLoaded()
 
 void CheckState()
 {
+    if (!Core.StylesLoaded || !Core.MapLoaded)
+    {
+        return;
+    }
+    
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetServerRecords);
