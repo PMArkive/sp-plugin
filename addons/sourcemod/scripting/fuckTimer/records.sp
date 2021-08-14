@@ -7,7 +7,22 @@
 #include <fuckTimer_maps>
 #include <fuckTimer_timer>
 
+IntMap g_imServerRecords[MAX_STYLES + 1] = { null, ... };
+
 #include "api/records.sp"
+
+enum struct PluginData
+{
+    bool MapLoaded;
+    bool StylesLoaded;
+
+    void Reset()
+    {
+        this.MapLoaded = false;
+        this.StylesLoaded = false;
+    }
+}
+PluginData Core;
 
 public Plugin myinfo =
 {
@@ -18,11 +33,38 @@ public Plugin myinfo =
     url = FUCKTIMER_PLUGIN_URL
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    CreateNative("fuckTimer_GetServerRecord", Native_GetServerRecord);
+
+    RegPluginLibrary("fuckTimer_records");
+
+    return APLRes_Success;
+}
+
+public void OnPluginStart()
+{
+    Core.Reset();
+}
+
 public void fuckTimer_OnMapDataLoaded()
+{
+    Core.MapLoaded = true;
+
+    CheckState();
+}
+
+public void fuckTimer_OnStylesLoaded()
+{
+    Core.StylesLoaded = true;
+
+    CheckState();
+}
+
+void CheckState()
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
-
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetServerRecords);
 }
 
@@ -72,9 +114,9 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     record.GetValue("Tickrate", fTickrate);
     PrintToConsoleAll("Main: Tickrate: %.2f", fTickrate);
 
-    float fDuration;
-    record.GetValue("Duration", fDuration);
-    PrintToConsoleAll("Main: Duration: %.3f", fDuration);
+    float fTime;
+    record.GetValue("Time", fTime);
+    PrintToConsoleAll("Main: Time: %.3f", fTime);
 
     float fTimeInZone;
     record.GetValue("TimeInZone", fTimeInZone);
@@ -145,4 +187,23 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     }
 
     delete record;
+}
+
+public any Native_GetServerRecord(Handle plugin, int numParams)
+{
+    Styles style = view_as<Styles>(GetNativeCell(1));
+    int iLevel = GetNativeCell(2);
+
+    if (g_imServerRecords[style] != null)
+    {
+        RecordData record;
+        if (g_imServerRecords[style].GetArray(iLevel, record, sizeof(record)))
+        {
+            SetNativeArray(3, record, sizeof(record));
+            return true;
+        }
+
+    }
+
+    return false;
 }
