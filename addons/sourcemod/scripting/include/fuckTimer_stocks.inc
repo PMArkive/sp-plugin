@@ -37,8 +37,11 @@ enum struct RecordData
     Styles Style;
     int Level;
     TimeType Type;
-    int Tickrate;
-    float Duration;
+    float Tickrate;
+    float Time;
+    float TimeInZone;
+    int Attempts;
+    int Status;
     float StartPosition[3];
     float StartAngle[3];
     float StartVelocity[3];
