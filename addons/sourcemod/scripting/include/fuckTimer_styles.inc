@@ -4,6 +4,7 @@
 #define _fuckTimer_styles_included
 
 #define MAX_STYLE_NAME_LENGTH 32
+#define MAX_STYLES 24
 
 enum StyleStatus {
     ssActive = 0,
@@ -27,6 +28,8 @@ enum Styles {
     StyleLowGravity,
     StyleSlowMotion
 }
+
+forward void fuckTimer_OnStylesLoaded();
 
 native IntMap fuckTimer_GetStyles();
 

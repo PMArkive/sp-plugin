@@ -8,6 +8,8 @@
 enum struct PluginData
 {
     IntMap Styles;
+
+    GlobalForward OnStylesLoaded;
 }
 PluginData Core;
 
@@ -22,6 +24,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    Core.OnStylesLoaded = new GlobalForward("fuckTimer_OnStylesLoaded", ET_Ignore);
+
     CreateNative("fuckTimer_GetStyles", Native_GetStyles);
 
     CreateNative("fuckTimer_GetStyleName", Native_GetStyleName);
@@ -80,6 +84,9 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
 
         delete jsonObject;
     }
+
+    Call_StartForward(Core.OnStylesLoaded);
+    Call_Finish();
 }
 
 public any Native_GetStyles(Handle plugin, int numParams)
