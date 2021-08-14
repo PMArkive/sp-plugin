@@ -7,6 +7,7 @@
 #include <fuckTimer_stocks>
 #include <fuckTimer_maps>
 #include <fuckTimer_zones>
+#include <fuckTimer_records>
 #include <fuckTimer_players>
 
 enum struct PlayerData
@@ -157,15 +158,6 @@ public void OnGameFrame()
         fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sSetting);
         FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", GetClientSpeed(client, view_as<eHUDSpeed>(StringToInt(sSpeed))), (view_as<bool>(StringToInt(sSetting)) ? " u/s" : ""));
         imBuffer.SetString(HKSpeed, sBuffer);
-
-        FormatEx(sBuffer, sizeof(sBuffer), "PR: None");
-        imBuffer.SetString(HKPersonalRecord, sBuffer);
-
-        FormatEx(sBuffer, sizeof(sBuffer), "SR: None");
-        imBuffer.SetString(HKServerRecord, sBuffer);
-
-        FormatEx(sBuffer, sizeof(sBuffer), "Rank: None");
-        imBuffer.SetString(HKRank, sBuffer);
         
         fuckTimer_GetClientSetting(client, "Style", sSetting);
         Styles style = view_as<Styles>(StringToInt(sSetting));
@@ -177,6 +169,25 @@ public void OnGameFrame()
         int iBonus = fuckTimer_GetClientBonus(client);
 
         fTime = fuckTimer_GetClientTime(client, TimeMain, iBonus);
+
+        FormatEx(sBuffer, sizeof(sBuffer), "PR: None");
+        imBuffer.SetString(HKPersonalRecord, sBuffer);
+
+        RecordData record;
+        if (fuckTimer_GetServerRecord(style, iBonus, record))
+        {
+            GetTimeBySeconds(client, record.Time, sBuffer, sizeof(sBuffer));
+            Format(sBuffer, sizeof(sBuffer), "SR: %s", sBuffer);
+        }
+        else
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "SR: None");
+        }
+
+        imBuffer.SetString(HKServerRecord, sBuffer);
+
+        FormatEx(sBuffer, sizeof(sBuffer), "Rank: None");
+        imBuffer.SetString(HKRank, sBuffer);
 
         GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
