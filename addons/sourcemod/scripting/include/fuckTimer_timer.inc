@@ -17,22 +17,22 @@ enum TimeType
 enum struct CSDetails
 {
     float Time;
-    float TimeInZone;
-
-    // Variables for Offset calculation
-    float Fraction;
-    float Offset[OFFSET_MAX]; // 0 - Start, 1 - End
-    bool GetOffset;
 
     float StartPosition[3];
     float StartAngle[3];
     float StartVelocity[3];
 
+    // Following block will only used for stages
+    int Attempts;
+    float TimeInZone;
     float EndPosition[3];
     float EndAngle[3];
     float EndVelocity[3];
 
-    int Attempts;
+    // Variables for Offset calculation
+    float Fraction;
+    float Offset[OFFSET_MAX]; // 0 - Start, 1 - End
+    bool GetOffset;
 }
 
 /**
