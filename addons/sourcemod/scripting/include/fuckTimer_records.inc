@@ -3,6 +3,10 @@
 #endif
 #define _fuckTimer_records_included
 
+/**
+ * IMPORTANT: Don't delete the Details IntMap! 
+ *
+ */
 native bool fuckTimer_GetServerRecord(Styles style, int level, any[] record);
 
 #if !defined REQUIRE_PLUGIN
