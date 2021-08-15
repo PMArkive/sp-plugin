@@ -75,30 +75,49 @@ void CheckState()
 
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
-    StringMap record = view_as<StringMap>(CloneHandle(temp));
-
-    int iMapId;
-    record.GetValue("MapId", iMapId);
-    PrintToConsoleAll("Main: MapId: %d", iMapId);
-
-    int iPlayerId;
-    record.GetValue("PlayerId", iPlayerId);
-    PrintToConsoleAll("Main: PlayerId: %d", iPlayerId);
-
-    char sPlayerName[MAX_NAME_LENGTH];
-    record.GetString("PlayerName", sPlayerName, sizeof(sPlayerName));
-    PrintToConsoleAll("Main: PlayerName: %s", sPlayerName);
+    StringMap smRecord = view_as<StringMap>(CloneHandle(temp));
 
     Styles iStyle;
-    record.GetValue("StyleId", iStyle);
+    smRecord.GetValue("StyleId", iStyle);
     PrintToConsoleAll("Main: Style: %d", iStyle);
 
     int iLevel;
-    record.GetValue("Level", iLevel);
+    smRecord.GetValue("Level", iLevel);
     PrintToConsoleAll("Main: Level: %d", iLevel);
 
+    float fTime;
+    smRecord.GetValue("Time", fTime);
+    PrintToConsoleAll("Main: Time: %.3f", fTime);
+
+    char sPlayerName[MAX_NAME_LENGTH];
+    smRecord.GetString("PlayerName", sPlayerName, sizeof(sPlayerName));
+    PrintToConsoleAll("Main: PlayerName: %s", sPlayerName);
+
+    if (g_imServerRecords[iStyle] != null)
+    {
+        RecordData record;
+        g_imServerRecords[iStyle].GetArray(iLevel, record, sizeof(record));
+
+        if (fTime < record.Time)
+        {
+            PrintToChatAll("%N has beaten %s's server record!", client, record.PlayerName);
+        }
+    }
+    else
+    {
+        PrintToChatAll("%N has set the server record!", client);
+    }
+
+    int iMapId;
+    smRecord.GetValue("MapId", iMapId);
+    PrintToConsoleAll("Main: MapId: %d", iMapId);
+
+    int iPlayerId;
+    smRecord.GetValue("PlayerId", iPlayerId);
+    PrintToConsoleAll("Main: PlayerId: %d", iPlayerId);
+
     TimeType tType;
-    record.GetValue("Type", tType);
+    smRecord.GetValue("Type", tType);
 
     char sType[12];
     if (tType == TimeMain)
@@ -116,47 +135,43 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     PrintToConsoleAll("Main: Type: %d (String: %s)", tType, sType);
 
     float fTickrate;
-    record.GetValue("Tickrate", fTickrate);
+    smRecord.GetValue("Tickrate", fTickrate);
     PrintToConsoleAll("Main: Tickrate: %.2f", fTickrate);
 
-    float fTime;
-    record.GetValue("Time", fTime);
-    PrintToConsoleAll("Main: Time: %.3f", fTime);
-
     float fTimeInZone;
-    record.GetValue("TimeInZone", fTimeInZone);
+    smRecord.GetValue("TimeInZone", fTimeInZone);
     PrintToConsoleAll("Main: TimeInZone: %.3f", fTimeInZone);
 
     int iAttempts;
-    record.GetValue("Attempts", iAttempts);
+    smRecord.GetValue("Attempts", iAttempts);
     PrintToConsoleAll("Main: Attempts: %d", iAttempts);
 
     float fStartPosition[3];
-    record.GetArray("StartPosition", fStartPosition, 3);
+    smRecord.GetArray("StartPosition", fStartPosition, 3);
     PrintToConsoleAll("Main: StartPosition[0]: %.5f, StartPosition[1]: %.5f, StartPosition[2]: %.5f", fStartPosition[0], fStartPosition[1], fStartPosition[2]);
 
     float fStartAngle[3];
-    record.GetArray("StartAngle", fStartAngle, 3);
+    smRecord.GetArray("StartAngle", fStartAngle, 3);
     PrintToConsoleAll("Main: StartAngle[0]: %.5f, StartAngle[1]: %.5f, StartAngle[2]: %.5f", fStartAngle[0], fStartAngle[1], fStartAngle[2]);
 
     float fStartVelocity[3];
-    record.GetArray("StartVelocity", fStartVelocity, 3);
+    smRecord.GetArray("StartVelocity", fStartVelocity, 3);
     PrintToConsoleAll("Main: StartVelocity[0]: %.5f, StartVelocity[1]: %.5f, StartVelocity[2]: %.5f", fStartVelocity[0], fStartVelocity[1], fStartVelocity[2]);
 
     float fEndPosition[3];
-    record.GetArray("EndPosition", fEndPosition, 3);
+    smRecord.GetArray("EndPosition", fEndPosition, 3);
     PrintToConsoleAll("Main: EndPosition[0]: %.5f, EndPosition[1]: %.5f, EndPosition[2]: %.5f", fEndPosition[0], fEndPosition[1], fEndPosition[2]);
 
     float fEndAngle[3];
-    record.GetArray("EndAngle", fEndAngle, 3);
+    smRecord.GetArray("EndAngle", fEndAngle, 3);
     PrintToConsoleAll("Main: EndAngle[0]: %.5f, EndAngle[1]: %.5f, EndAngle[2]: %.5f", fEndAngle[0], fEndAngle[1], fEndAngle[2]);
 
     float fEndVelocity[3];
-    record.GetArray("EndVelocity", fEndVelocity, 3);
+    smRecord.GetArray("EndVelocity", fEndVelocity, 3);
     PrintToConsoleAll("Main: EndVelocity[0]: %.5f, EndVelocity[1]: %.5f, EndVelocity[2]: %.5f", fEndVelocity[0], fEndVelocity[1], fEndVelocity[2]);
 
     any aDetails;
-    record.GetValue("Details", aDetails);
+    smRecord.GetValue("Details", aDetails);
 
     IntMap imDetails;
     if (aDetails != 0)
@@ -191,7 +206,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         delete imDetails;
     }
 
-    delete record;
+    delete smRecord;
 }
 
 public any Native_GetServerRecord(Handle plugin, int numParams)
