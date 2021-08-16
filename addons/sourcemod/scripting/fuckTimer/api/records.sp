@@ -87,8 +87,6 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
 
         LogMessage("Style: %d, Level: %d, Player: %s (Id: %d), Type: %s, Tickrate: %.1f, Time: %.3f, TimeInZone: %.3f, Attempts: %d, Status: %d", record.Style, record.Level, record.PlayerName, record.PlayerId, sType, record.Tickrate, record.Time, record.TimeInZone, record.Attempts, record.Status);
 
-        g_imServerRecords[record.Style].SetArray(record.Level, record, sizeof(record));
-
         if (record.Type == TimeCheckpoint || record.Type == TimeStage)
         {
             if (record.Details == null)
@@ -155,6 +153,8 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
 
             delete jCSRecords;
         }
+
+        g_imServerRecords[record.Style].SetArray(record.Level, record, sizeof(record));
 
         delete jMainRecord;
     }
