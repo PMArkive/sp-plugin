@@ -170,10 +170,18 @@ public void OnGameFrame()
 
         fTime = fuckTimer_GetClientTime(client, TimeMain, iBonus);
 
-        FormatEx(sBuffer, sizeof(sBuffer), "PR: None");
+        RecordData record;
+        if (fuckTimer_GetPlayerRecord(client, style, iBonus, record))
+        {
+            GetTimeBySeconds(client, record.Time, sBuffer, sizeof(sBuffer));
+            Format(sBuffer, sizeof(sBuffer), "PR: %s", sBuffer);
+        }
+        else
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "PR: None");
+        }
         imBuffer.SetString(HKPersonalRecord, sBuffer);
 
-        RecordData record;
         if (fuckTimer_GetServerRecord(style, iBonus, record))
         {
             GetTimeBySeconds(client, record.Time, sBuffer, sizeof(sBuffer));
@@ -183,7 +191,6 @@ public void OnGameFrame()
         {
             FormatEx(sBuffer, sizeof(sBuffer), "SR: None");
         }
-
         imBuffer.SetString(HKServerRecord, sBuffer);
 
         FormatEx(sBuffer, sizeof(sBuffer), "Rank: None");
