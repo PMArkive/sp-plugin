@@ -8,11 +8,13 @@
  *
  */
 native bool fuckTimer_GetServerRecord(Styles style, int level, any[] record);
+native bool fuckTimer_GetPlayerRecord(int client, Styles style, int level, any[] record);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_records_SetNTVOptional()
 {
     MarkNativeAsOptional("fuckTimer_GetServerRecord");
+    MarkNativeAsOptional("fuckTimer_GetPlayerRecord");
 }
 #endif
 

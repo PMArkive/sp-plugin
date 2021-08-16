@@ -42,6 +42,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     CreateNative("fuckTimer_GetServerRecord", Native_GetServerRecord);
+    CreateNative("fuckTimer_GetPlayerRecord", Native_GetPlayerRecord);
 
     RegPluginLibrary("fuckTimer_records");
 
@@ -90,13 +91,16 @@ public void OnClientDisconnect(int client)
 {
     for (int i = 0; i <= MAX_STYLES; i++)
     {
-        RecordData record;
-        IntMapSnapshot snap = Player[client].Records[i].Snapshot();
-
-        for (int j = 0; j < snap.Length; j++)
+        if (Player[client].Records[i] != null)
         {
-            Player[client].Records[i].GetArray(j, record, sizeof(record));
-            delete record.Details;
+            RecordData record;
+            IntMapSnapshot snap = Player[client].Records[i].Snapshot();
+
+            for (int j = 0; j < snap.Length; j++)
+            {
+                Player[client].Records[i].GetArray(j, record, sizeof(record));
+                delete record.Details;
+            }
         }
 
         delete Player[client].Records[i];
@@ -329,6 +333,26 @@ public any Native_GetServerRecord(Handle plugin, int numParams)
         if (Core.Records[style].GetArray(iLevel, record, sizeof(record)))
         {
             SetNativeArray(3, record, sizeof(record));
+            return true;
+        }
+
+    }
+
+    return false;
+}
+
+public any Native_GetPlayerRecord(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    Styles style = view_as<Styles>(GetNativeCell(2));
+    int iLevel = GetNativeCell(3);
+
+    if (Player[client].Records[style] != null)
+    {
+        RecordData record;
+        if (Player[client].Records[style].GetArray(iLevel, record, sizeof(record)))
+        {
+            SetNativeArray(4, record, sizeof(record));
             return true;
         }
 

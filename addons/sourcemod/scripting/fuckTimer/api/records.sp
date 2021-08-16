@@ -16,13 +16,16 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
 
     for (int i = 0; i <= MAX_STYLES; i++)
     {
-        RecordData record;
-        IntMapSnapshot snap = Core.Records[i].Snapshot();
-
-        for (int j = 0; j < snap.Length; j++)
+        if (Core.Records[i] != null)
         {
-            Core.Records[i].GetArray(j, record, sizeof(record));
-            delete record.Details;
+            RecordData record;
+            IntMapSnapshot snap = Core.Records[i].Snapshot();
+
+            for (int j = 0; j < snap.Length; j++)
+            {
+                Core.Records[i].GetArray(j, record, sizeof(record));
+                delete record.Details;
+            }
         }
 
         delete Core.Records[i];
@@ -194,13 +197,16 @@ public void GetPlayerRecords(HTTPResponse response, any userid, const char[] err
 
     for (int i = 0; i <= MAX_STYLES; i++)
     {
-        RecordData record;
-        IntMapSnapshot snap = Player[client].Records[i].Snapshot();
-
-        for (int j = 0; j < snap.Length; j++)
+        if (Player[client].Records[i] != null)
         {
-            Player[client].Records[i].GetArray(j, record, sizeof(record));
-            delete record.Details;
+            RecordData record;
+            IntMapSnapshot snap = Player[client].Records[i].Snapshot();
+
+            for (int j = 0; j < snap.Length; j++)
+            {
+                Player[client].Records[i].GetArray(j, record, sizeof(record));
+                delete record.Details;
+            }
         }
 
         delete Player[client].Records[i];
