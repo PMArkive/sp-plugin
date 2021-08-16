@@ -12,7 +12,7 @@ enum struct PluginData
     bool MapLoaded;
     bool StylesLoaded;
 
-    IntMap ServerRecords[MAX_STYLES + 1];
+    IntMap Records[MAX_STYLES + 1];
 
     void Reset()
     {
@@ -21,6 +21,12 @@ enum struct PluginData
     }
 }
 PluginData Core;
+
+enum struct PlayerData
+{
+    IntMap Records[MAX_STYLES + 1];
+}
+PlayerData Player[MAXPLAYERS + 1];
 
 #include "api/records.sp"
 
@@ -73,6 +79,30 @@ void CheckState()
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetServerRecords);
 }
 
+public void fuckTimer_OnPlayerLoaded(int client)
+{
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d/PlayerId/%d", fuckTimer_GetCurrentMapId(), GetSteamAccountID(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerRecords, GetClientUserId(client));
+}
+
+public void OnClientDisconnect(int client)
+{
+    for (int i = 0; i <= MAX_STYLES; i++)
+    {
+        RecordData record;
+        IntMapSnapshot snap = Player[client].Records[i].Snapshot();
+
+        for (int j = 0; j < snap.Length; j++)
+        {
+            Player[client].Records[i].GetArray(j, record, sizeof(record));
+            delete record.Details;
+        }
+
+        delete Player[client].Records[i];
+    }
+}
+
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
     StringMap smRecord = view_as<StringMap>(CloneHandle(temp));
@@ -91,10 +121,10 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
     bool bSetRecord = false;
 
-    if (Core.ServerRecords[iStyle] != null)
+    if (Core.Records[iStyle] != null)
     {
         RecordData record;
-        Core.ServerRecords[iStyle].GetArray(iLevel, record, sizeof(record));
+        Core.Records[iStyle].GetArray(iLevel, record, sizeof(record));
 
         if (fTime < record.Time)
         {
@@ -285,7 +315,7 @@ void UpdateServerRecord(StringMap smRecord)
         }
     }
 
-    Core.ServerRecords[record.Style].SetArray(record.Level, record, sizeof(record));
+    Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));
 }
 
 public any Native_GetServerRecord(Handle plugin, int numParams)
@@ -293,10 +323,10 @@ public any Native_GetServerRecord(Handle plugin, int numParams)
     Styles style = view_as<Styles>(GetNativeCell(1));
     int iLevel = GetNativeCell(2);
 
-    if (Core.ServerRecords[style] != null)
+    if (Core.Records[style] != null)
     {
         RecordData record;
-        if (Core.ServerRecords[style].GetArray(iLevel, record, sizeof(record)))
+        if (Core.Records[style].GetArray(iLevel, record, sizeof(record)))
         {
             SetNativeArray(3, record, sizeof(record));
             return true;
