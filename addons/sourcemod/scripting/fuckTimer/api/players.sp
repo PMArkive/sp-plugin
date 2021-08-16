@@ -32,6 +32,10 @@ public void GetPlayerData(HTTPResponse response, any userid, const char[] error)
 
     LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].Status);
 
+    Call_StartForward(Core.OnPlayerLoaded);
+    Call_PushCell(client);
+    Call_Finish();
+
     delete Player[client].Settings;
     Player[client].Settings = new StringMap();
     

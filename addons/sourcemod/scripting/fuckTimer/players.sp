@@ -35,6 +35,8 @@ PlayerData Player[MAXPLAYERS + 1];
 enum struct PluginData
 {
     StringMap Settings;
+
+    GlobalForward OnPlayerLoaded;
 }
 PluginData Core;
 
@@ -51,6 +53,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    Core.OnPlayerLoaded = new GlobalForward("fuckTimer_OnPlayerLoaded", ET_Ignore, Param_Cell);
+    
     CreateNative("fuckTimer_RegisterSetting", Native_RegisterSetting);
 
     CreateNative("fuckTimer_GetClientSetting", Native_GetClientSetting);

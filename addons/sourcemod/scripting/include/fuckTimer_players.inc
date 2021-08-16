@@ -15,6 +15,8 @@ enum PlayerStatus {
     psInactive = 1
 }
 
+forward void fuckTimer_OnPlayerLoaded(int client);
+
 native void fuckTimer_RegisterSetting(const char[] setting, const char[] defaultValue);
 
 native bool fuckTimer_GetClientSetting(int client, const char[] setting, char[] value);
