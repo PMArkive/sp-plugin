@@ -7,14 +7,12 @@
 #include <fuckTimer_maps>
 #include <fuckTimer_timer>
 
-IntMap g_imServerRecords[MAX_STYLES + 1] = { null, ... };
-
-#include "api/records.sp"
-
 enum struct PluginData
 {
     bool MapLoaded;
     bool StylesLoaded;
+
+    IntMap ServerRecords[MAX_STYLES + 1];
 
     void Reset()
     {
@@ -23,6 +21,8 @@ enum struct PluginData
     }
 }
 PluginData Core;
+
+#include "api/records.sp"
 
 public Plugin myinfo =
 {
@@ -91,10 +91,10 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
     bool bSetRecord = false;
 
-    if (g_imServerRecords[iStyle] != null)
+    if (Core.ServerRecords[iStyle] != null)
     {
         RecordData record;
-        g_imServerRecords[iStyle].GetArray(iLevel, record, sizeof(record));
+        Core.ServerRecords[iStyle].GetArray(iLevel, record, sizeof(record));
 
         if (fTime < record.Time)
         {
@@ -285,7 +285,7 @@ void UpdateServerRecord(StringMap smRecord)
         }
     }
 
-    g_imServerRecords[record.Style].SetArray(record.Level, record, sizeof(record));
+    Core.ServerRecords[record.Style].SetArray(record.Level, record, sizeof(record));
 }
 
 public any Native_GetServerRecord(Handle plugin, int numParams)
@@ -293,10 +293,10 @@ public any Native_GetServerRecord(Handle plugin, int numParams)
     Styles style = view_as<Styles>(GetNativeCell(1));
     int iLevel = GetNativeCell(2);
 
-    if (g_imServerRecords[style] != null)
+    if (Core.ServerRecords[style] != null)
     {
         RecordData record;
-        if (g_imServerRecords[style].GetArray(iLevel, record, sizeof(record)))
+        if (Core.ServerRecords[style].GetArray(iLevel, record, sizeof(record)))
         {
             SetNativeArray(3, record, sizeof(record));
             return true;

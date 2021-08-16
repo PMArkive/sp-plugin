@@ -16,7 +16,7 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
 
     for (int i = 0; i <= MAX_STYLES; i++)
     {
-        delete g_imServerRecords[i];
+        delete Core.ServerRecords[i];
     }
 
     int iStyles = fuckTimer_GetStyles().Size + 10; // TODO: Remove +10
@@ -29,7 +29,7 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
 
     for (int i = 1; i <= iStyles; i++)
     {
-        g_imServerRecords[i] = new IntMap();
+        Core.ServerRecords[i] = new IntMap();
     }
 
     LogMessage("[Records.GetServerRecords] We found %d records for this map", jMainrecords.Length);
@@ -85,7 +85,7 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
         record.EndVelocity[1] = jMainRecord.GetFloat("EndVelocityY");
         record.EndVelocity[2] = jMainRecord.GetFloat("EndVelocityZ");
 
-        LogMessage("Style: %d, Level: %d, Player: %s (Id: %d), Type: %s, Tickrate: %.1f, Time: %.3f, TimeInZone: %.3f, Attempts: %d, Status: %d", record.Style, record.Level, record.PlayerName, record.PlayerId, sType, record.Tickrate, record.Time, record.TimeInZone, record.Attempts, record.Status);
+        LogMessage("Style: %d, Level: %d, Player: %s (Id: %d), Type: %s, Tickrate: %.1f (%.1f), Time: %.3f, TimeInZone: %.3f, Attempts: %d, Status: %d, StartPosition: %.3f/%.3f/%.3f", record.Style, record.Level, record.PlayerName, record.PlayerId, sType, record.Tickrate, jMainRecord.GetFloat("Tickrate"), record.Time, record.TimeInZone, record.Attempts, record.Status, record.StartPosition[0], record.StartPosition[1], record.StartPosition[2]);
 
         if (record.Type == TimeCheckpoint || record.Type == TimeStage)
         {
@@ -154,7 +154,7 @@ public void GetServerRecords(HTTPResponse response, any value, const char[] erro
             delete jCSRecords;
         }
 
-        g_imServerRecords[record.Style].SetArray(record.Level, record, sizeof(record));
+        Core.ServerRecords[record.Style].SetArray(record.Level, record, sizeof(record));
 
         delete jMainRecord;
     }

@@ -635,10 +635,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
 public void Frame_DeleteStringMap(any map)
 {
-    any details;
-    view_as<StringMap>(map).GetValue("Details", details);
-    delete view_as<IntMap>(details);
-
     delete view_as<StringMap>(map);
 }
 
