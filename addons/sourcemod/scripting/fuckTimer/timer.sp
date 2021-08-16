@@ -596,7 +596,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         map.SetValue("Tickrate", GetServerTickrate());
-        map.SetValue("Duration", Player[client].Time);
+        map.SetValue("Time", Player[client].Time);
         map.SetValue("TimeInZone", Player[client].TimeInZone);
         map.SetValue("Attempts", Player[client].Attempts);
         map.SetArray("StartPosition", Player[client].StartPosition, 3);
