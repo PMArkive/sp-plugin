@@ -146,14 +146,22 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
     // Check for new player record, when server record wasn't reached
     // TODO: Add player setting to show player record message for himself, when server record was also reached
-    if (!bServerRecord && Player[client].Records[iStyle] != null)
+    if (Player[client].Records[iStyle] != null)
     {
         RecordData record;
         Player[client].Records[iStyle].GetArray(iLevel, record, sizeof(record));
 
         if (fTime < record.Time)
         {
-            PrintToChatAll("%N has beaten his record!", client, record.PlayerName);
+            if (!bServerRecord)
+            {
+                PrintToChatAll("%N has beaten his record!", client, record.PlayerName);
+            }
+            else
+            {
+                PrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
+            }
+
             bPlayerRecord = true;
         }
     }
