@@ -198,8 +198,8 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
             if (tType == TimeStage)
             {
-                PrintToConsoleAll("%s %d: TimeInZone: %.3f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.TimeInZone);
-                PrintToConsoleAll("%s %d: Attempts: %d", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Attempts);
+                PrintToConsole(client, "%s %d: TimeInZone: %.3f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.TimeInZone);
+                PrintToConsole(client, "%s %d: Attempts: %d", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Attempts);
 
                 fTimeInZone += details.TimeInZone;
                 
