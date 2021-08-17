@@ -77,14 +77,20 @@ void CheckState()
     
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetServerRecords);
+
+    DataPack pack = new DataPack();
+    pack.WriteCell(0);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, pack);
 }
 
 public void fuckTimer_OnPlayerLoaded(int client)
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d/PlayerId/%d", fuckTimer_GetCurrentMapId(), GetSteamAccountID(client));
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerRecords, GetClientUserId(client));
+
+    DataPack pack = new DataPack();
+    pack.WriteCell(GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, pack);
 }
 
 public void OnClientDisconnect(int client)
