@@ -351,28 +351,12 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0)
             iPoint = snap.GetKey(j);
             imDetails.GetArray(iPoint, details, sizeof(details));
 
-            smRecord.GetValue("Time", details.Time);
-
             if (record.Type == TimeStage)
             {
-                smRecord.GetValue("TimeInZone", details.TimeInZone);
-                smRecord.GetValue("Attempts", details.Attempts);
-
-                smRecord.GetArray("StartPosition", details.StartPosition, 3);
-                smRecord.GetArray("StartAngle", details.StartAngle, 3);
-                smRecord.GetArray("StartVelocity", details.StartVelocity, 3);
-                smRecord.GetArray("EndPosition", details.EndPosition, 3);
-                smRecord.GetArray("EndAngle", details.EndAngle, 3);
-                smRecord.GetArray("EndVelocity", details.EndVelocity, 3);
-
                 LogMessage("Stage: %d, Time: %.3f, TimeInZone: %.3f, Attempts: %d, StartPosition: %.3f/%.3f/%.3f", iPoint, details.Time, details.TimeInZone, details.Attempts, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
             }
             else
             {
-                smRecord.GetArray("Position", details.StartPosition, 3);
-                smRecord.GetArray("Angle", details.StartAngle, 3);
-                smRecord.GetArray("Velocity", details.StartVelocity, 3);
-
                 LogMessage("Checkpoint: %d, Time: %.3f, StartPosition: %.3f/%.3f/%.3f", iPoint, details.Time, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
             }
 
