@@ -119,15 +119,12 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
     Styles iStyle;
     smRecord.GetValue("StyleId", iStyle);
-    PrintToConsoleAll("Main: Style: %d", iStyle);
 
     int iLevel;
     smRecord.GetValue("Level", iLevel);
-    PrintToConsoleAll("Main: Level: %d", iLevel);
 
     float fTime;
     smRecord.GetValue("Time", fTime);
-    PrintToConsoleAll("Main: Time: %.3f", fTime);
 
     bool bServerRecord = false;
     bool bPlayerRecord = false;
@@ -176,72 +173,14 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         bPlayerRecord = true;
     }
 
-
-    int iMapId;
-    smRecord.GetValue("MapId", iMapId);
-    PrintToConsoleAll("Main: MapId: %d", iMapId);
-
-    int iPlayerId;
-    smRecord.GetValue("PlayerId", iPlayerId);
-    PrintToConsoleAll("Main: PlayerId: %d", iPlayerId);
-
-    char sPlayerName[MAX_NAME_LENGTH];
-    smRecord.GetString("PlayerName", sPlayerName, sizeof(sPlayerName));
-    PrintToConsoleAll("Main: PlayerName: %s", sPlayerName);
-
     TimeType tType;
     smRecord.GetValue("Type", tType);
 
-    char sType[12];
-    if (tType == TimeMain)
-    {
-        FormatEx(sType, sizeof(sType), "Main");
-    }
-    else if (tType == TimeCheckpoint)
-    {
-        FormatEx(sType, sizeof(sType), "Checkpoint");
-    }
-    else if (tType == TimeStage)
-    {
-        FormatEx(sType, sizeof(sType), "Stage");
-    }
-    PrintToConsoleAll("Main: Type: %d (String: %s)", tType, sType);
-
-    float fTickrate;
-    smRecord.GetValue("Tickrate", fTickrate);
-    PrintToConsoleAll("Main: Tickrate: %.2f", fTickrate);
-
     float fTimeInZone;
     smRecord.GetValue("TimeInZone", fTimeInZone);
-    PrintToConsoleAll("Main: TimeInZone: %.3f", fTimeInZone);
 
     int iAttempts;
     smRecord.GetValue("Attempts", iAttempts);
-    PrintToConsoleAll("Main: Attempts: %d", iAttempts);
-
-    float fStartPosition[3];
-    smRecord.GetArray("StartPosition", fStartPosition, 3);
-    PrintToConsoleAll("Main: StartPosition[0]: %.5f, StartPosition[1]: %.5f, StartPosition[2]: %.5f", fStartPosition[0], fStartPosition[1], fStartPosition[2]);
-
-    float fStartAngle[3];
-    smRecord.GetArray("StartAngle", fStartAngle, 3);
-    PrintToConsoleAll("Main: StartAngle[0]: %.5f, StartAngle[1]: %.5f, StartAngle[2]: %.5f", fStartAngle[0], fStartAngle[1], fStartAngle[2]);
-
-    float fStartVelocity[3];
-    smRecord.GetArray("StartVelocity", fStartVelocity, 3);
-    PrintToConsoleAll("Main: StartVelocity[0]: %.5f, StartVelocity[1]: %.5f, StartVelocity[2]: %.5f", fStartVelocity[0], fStartVelocity[1], fStartVelocity[2]);
-
-    float fEndPosition[3];
-    smRecord.GetArray("EndPosition", fEndPosition, 3);
-    PrintToConsoleAll("Main: EndPosition[0]: %.5f, EndPosition[1]: %.5f, EndPosition[2]: %.5f", fEndPosition[0], fEndPosition[1], fEndPosition[2]);
-
-    float fEndAngle[3];
-    smRecord.GetArray("EndAngle", fEndAngle, 3);
-    PrintToConsoleAll("Main: EndAngle[0]: %.5f, EndAngle[1]: %.5f, EndAngle[2]: %.5f", fEndAngle[0], fEndAngle[1], fEndAngle[2]);
-
-    float fEndVelocity[3];
-    smRecord.GetArray("EndVelocity", fEndVelocity, 3);
-    PrintToConsoleAll("Main: EndVelocity[0]: %.5f, EndVelocity[1]: %.5f, EndVelocity[2]: %.5f", fEndVelocity[0], fEndVelocity[1], fEndVelocity[2]);
 
     IntMap imDetails;
     smRecord.GetValue("Details", imDetails);
@@ -256,8 +195,6 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         {
             iPoint = snap.GetKey(i);
             imDetails.GetArray(iPoint, details, sizeof(details));
-
-            PrintToConsoleAll("%s %d: Time: %.3f, ", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Time);
 
             if (tType == TimeStage)
             {
@@ -277,13 +214,6 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
                     iAttempts--;
                 }
             }
-            
-            PrintToConsoleAll("%s %d: StartPosition[0]: %.5f, StartPosition[1]: %.5f, StartPosition[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
-            PrintToConsoleAll("%s %d: StartAngle[0]: %.5f, StartAngle[1]: %.5f, StartAngle[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.StartAngle[0], details.StartAngle[1], details.StartAngle[2]);
-            PrintToConsoleAll("%s %d: StartVelocity[0]: %.5f, StartVelocity[1]: %.5f, StartVelocity[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.StartVelocity[0], details.StartVelocity[1], details.StartVelocity[2]);
-            PrintToConsoleAll("%s %d: EndPosition[0]: %.5f, EndPosition[1]: %.5f, EndPosition[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.EndPosition[0], details.EndPosition[1], details.EndPosition[2]);
-            PrintToConsoleAll("%s %d: EndAngle[0]: %.5f, EndAngle[1]: %.5f, EndAngle[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.EndAngle[0], details.EndAngle[1], details.EndAngle[2]);
-            PrintToConsoleAll("%s %d: EndVelocity[0]: %.5f, EndVelocity[1]: %.5f, EndVelocity[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.EndVelocity[0], details.EndVelocity[1], details.EndVelocity[2]);
         }
         
         smRecord.SetValue("TimeInZone", fTimeInZone);
