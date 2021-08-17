@@ -145,7 +145,6 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     }
 
     // Check for new player record, when server record wasn't reached
-    // TODO: Add player setting to show player record message for himself, when server record was also reached
     if (Player[client].Records[iStyle] != null)
     {
         RecordData record;
@@ -173,12 +172,12 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
     if (bServerRecord)
     {
-        UpdateServerRecord(smRecord);
+        UpdateRecord(smRecord, false);
     }
 
     if (bPlayerRecord || bServerRecord)
     {
-        UpdatePlayerRecord(client, smRecord);
+        UpdateRecord(smRecord, true, client);
     }
 
     int iMapId;
@@ -283,7 +282,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     delete smRecord;
 }
 
-void UpdateServerRecord(StringMap smRecord)
+void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0)
 {
     RecordData record;
     smRecord.GetValue("PlayerId", record.PlayerId);
@@ -353,80 +352,14 @@ void UpdateServerRecord(StringMap smRecord)
         }
     }
 
-    Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));
-}
-
-void UpdatePlayerRecord(int client, StringMap smRecord)
-{
-    RecordData record;
-    smRecord.GetValue("PlayerId", record.PlayerId);
-    smRecord.GetString("PlayerName", record.PlayerName, sizeof(RecordData::PlayerName));
-    smRecord.GetValue("StyleId", record.Style);
-    smRecord.GetValue("Level", record.Level);
-    smRecord.GetValue("Type", record.Type);
-    smRecord.GetValue("Tickrate", record.Tickrate);
-    smRecord.GetValue("Time", record.Time);
-    smRecord.GetValue("TimeInZone", record.TimeInZone);
-    smRecord.GetValue("Attempts", record.Attempts);
-    smRecord.GetValue("Status", record.Status);
-    smRecord.GetArray("StartPosition", record.StartPosition, 3);
-    smRecord.GetArray("EndPosition", record.EndPosition, 3);
-    smRecord.GetArray("StartAngle", record.StartAngle, 3);
-    smRecord.GetArray("EndAngle", record.EndAngle, 3);
-    smRecord.GetArray("StartVelocity", record.StartVelocity, 3);
-    smRecord.GetArray("EndVelocity", record.EndVelocity, 3);
-
-    LogMessage("Style: %d, Level: %d, Player: %s (Id: %d), Type: %d, Tickrate: %.1f, Time: %.3f, TimeInZone: %.3f, Attempts: %d, Status: %d, StartPosition: %.3f/%.3f/%.3f", record.Style, record.Level, record.PlayerName, record.PlayerId, record.Type, record.Tickrate, record.Time, record.TimeInZone, record.Attempts, record.Status, record.StartPosition[0], record.StartPosition[1], record.StartPosition[2]);
-
-    if (record.Type == TimeCheckpoint || record.Type == TimeStage)
+    if (updatePlayer)
     {
-        if (record.Details == null)
-        {
-            record.Details = new IntMap();
-        }
-
-        IntMap imDetails;
-        smRecord.GetValue("Details", imDetails);
-
-        int iPoint;
-        IntMapSnapshot snap = imDetails.Snapshot();
-        CSDetails details;
-
-        for (int j = 0; j < snap.Length; j++)
-        {
-            iPoint = snap.GetKey(j);
-            imDetails.GetArray(iPoint, details, sizeof(details));
-
-            smRecord.GetValue("Time", details.Time);
-
-            if (record.Type == TimeStage)
-            {
-                smRecord.GetValue("TimeInZone", details.TimeInZone);
-                smRecord.GetValue("Attempts", details.Attempts);
-
-                smRecord.GetArray("StartPosition", details.StartPosition, 3);
-                smRecord.GetArray("StartAngle", details.StartAngle, 3);
-                smRecord.GetArray("StartVelocity", details.StartVelocity, 3);
-                smRecord.GetArray("EndPosition", details.EndPosition, 3);
-                smRecord.GetArray("EndAngle", details.EndAngle, 3);
-                smRecord.GetArray("EndVelocity", details.EndVelocity, 3);
-
-                LogMessage("Stage: %d, Time: %.3f, TimeInZone: %.3f, Attempts: %d, StartPosition: %.3f/%.3f/%.3f", iPoint, details.Time, details.TimeInZone, details.Attempts, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
-            }
-            else
-            {
-                smRecord.GetArray("Position", details.StartPosition, 3);
-                smRecord.GetArray("Angle", details.StartAngle, 3);
-                smRecord.GetArray("Velocity", details.StartVelocity, 3);
-
-                LogMessage("Checkpoint: %d, Time: %.3f, StartPosition: %.3f/%.3f/%.3f", iPoint, details.Time, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
-            }
-
-            record.Details.SetArray(iPoint, details, sizeof(details));
-        }
+        Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
     }
-
-    Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
+    else
+    {
+        Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));
+    }
 }
 
 public any Native_GetServerRecord(Handle plugin, int numParams)
