@@ -176,15 +176,6 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         bPlayerRecord = true;
     }
 
-    if (bServerRecord)
-    {
-        UpdateRecord(smRecord, false);
-    }
-
-    if (bPlayerRecord || bServerRecord)
-    {
-        UpdateRecord(smRecord, true, client);
-    }
 
     int iMapId;
     smRecord.GetValue("MapId", iMapId);
@@ -272,6 +263,19 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
             {
                 PrintToConsoleAll("%s %d: TimeInZone: %.3f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.TimeInZone);
                 PrintToConsoleAll("%s %d: Attempts: %d", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Attempts);
+
+                fTimeInZone += details.TimeInZone;
+                
+                // TODO: Make this more beautiful, but for testing it should be fine
+                if (iPoint == 1)
+                {
+                    iAttempts += details.Attempts;
+                }
+                else
+                {
+                    iAttempts += details.Attempts;
+                    iAttempts--;
+                }
             }
             
             PrintToConsoleAll("%s %d: StartPosition[0]: %.5f, StartPosition[1]: %.5f, StartPosition[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
@@ -281,10 +285,28 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
             PrintToConsoleAll("%s %d: EndAngle[0]: %.5f, EndAngle[1]: %.5f, EndAngle[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.EndAngle[0], details.EndAngle[1], details.EndAngle[2]);
             PrintToConsoleAll("%s %d: EndVelocity[0]: %.5f, EndVelocity[1]: %.5f, EndVelocity[2]: %.5f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.EndVelocity[0], details.EndVelocity[1], details.EndVelocity[2]);
         }
+        
+        smRecord.SetValue("TimeInZone", fTimeInZone);
+        smRecord.SetValue("Attempts", iAttempts);
 
         delete snap;
     }
 
+    PrintToConsole(client, "TimeInZone: %.3f, Attempts: %d", fTimeInZone, iAttempts);
+
+    if (bServerRecord)
+    {
+        UpdateRecord(smRecord, false);
+        return;
+    }
+
+    if (bPlayerRecord || bServerRecord)
+    {
+        UpdateRecord(smRecord, true, client);
+        return;
+    }
+
+    delete imDetails;
     delete smRecord;
 }
 
@@ -356,7 +378,11 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0)
 
             record.Details.SetArray(iPoint, details, sizeof(details));
         }
+
+        delete imDetails;
     }
+
+    delete smRecord;
 
     if (updatePlayer)
     {
