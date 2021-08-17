@@ -65,32 +65,28 @@ public any Native_NewHTTPRequest(Handle plugin, int numParams)
     }
 
     char sBuffer[128];
+    FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sKey);
+    request.SetHeader("Authorization", sBuffer);
 
-    if (StrContains(sUrl, "fucktimer.cloud", false) == -1)
+    char sMetaMod[12];
+    Core.MetaModVersion = FindConVar("metamod_version");
+    if (Core.MetaModVersion == null)
     {
-        FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sKey);
-        request.SetHeader("Authorization", sBuffer);
-
-        char sMetaMod[12];
-        Core.MetaModVersion = FindConVar("metamod_version");
-        if (Core.MetaModVersion == null)
-        {
-            SetFailState("Can not find the convar \"metamod_version\".");
-        }
-        Core.MetaModVersion.GetString(sMetaMod, sizeof(sMetaMod));
-
-        char sSourceMod[24];
-        Core.SourceModVersion = FindConVar("sourcemod_version");
-        if (Core.SourceModVersion == null)
-        {
-            SetFailState("Can not find the convar \"sourcemod_version\".");
-        }
-        Core.SourceModVersion.GetString(sSourceMod, sizeof(sSourceMod));
-
-        char sUserAgent[128];
-        FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
-        request.SetHeader("User-Agent", sUserAgent);
+        SetFailState("Can not find the convar \"metamod_version\".");
     }
+    Core.MetaModVersion.GetString(sMetaMod, sizeof(sMetaMod));
+
+    char sSourceMod[24];
+    Core.SourceModVersion = FindConVar("sourcemod_version");
+    if (Core.SourceModVersion == null)
+    {
+        SetFailState("Can not find the convar \"sourcemod_version\".");
+    }
+    Core.SourceModVersion.GetString(sSourceMod, sizeof(sSourceMod));
+
+    char sUserAgent[128];
+    FormatEx(sUserAgent, sizeof(sUserAgent), "MetaMod/%s SourceMod/%s RIPExt/FeelsBadMan fuckTimer/%s", sMetaMod, sSourceMod, FUCKTIMER_PLUGIN_VERSION);
+    request.SetHeader("User-Agent", sUserAgent);
 
     return request;
 }
