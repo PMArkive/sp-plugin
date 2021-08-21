@@ -54,7 +54,7 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         }
     }
 
-    int iStyles = fuckTimer_GetStyles().Size + 10; // TODO: Remove +10
+    int iStyles = fuckTimer_GetStyles().Size;
     LogMessage("iStyles: %d", iStyles);
 
     if (iStyles > MAX_STYLES)
