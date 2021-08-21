@@ -202,15 +202,10 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
                 PrintToConsole(client, "%s %d: Attempts: %d", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Attempts);
 
                 fTimeInZone += details.TimeInZone;
+                iAttempts += details.Attempts;
                 
-                // TODO: Make this more beautiful, but for testing it should be fine
-                if (iPoint == 1)
+                if (iPoint > 1)
                 {
-                    iAttempts += details.Attempts;
-                }
-                else
-                {
-                    iAttempts += details.Attempts;
                     iAttempts--;
                 }
             }
