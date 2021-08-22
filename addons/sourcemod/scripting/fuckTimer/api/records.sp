@@ -54,7 +54,7 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         }
     }
 
-    int iStyles = fuckTimer_GetStyles().Size;
+    int iStyles = fuckTimer_GetStyles().Size + 10;
     LogMessage("iStyles: %d", iStyles);
 
     if (iStyles > MAX_STYLES)
@@ -206,5 +206,25 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         }
 
         delete jMainRecord;
+    }
+}
+
+void PostPlayerRecord(int client, bool firstRecord, JSONObject record)
+{
+    if (client){}
+
+    if (firstRecord)
+    {
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", "post");
+        record.ToFile(sFile, 0x1F);
+        // fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(record, SendRecord, GetClientUserId(client));
+    }
+    else
+    {
+        char sFile[PLATFORM_MAX_PATH + 1];
+        BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", "put");
+        record.ToFile(sFile, 0x1F);
+        // fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(record, SendRecord, GetClientUserId(client));
     }
 }
