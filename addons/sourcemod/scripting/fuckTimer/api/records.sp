@@ -215,20 +215,36 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
 void PostPlayerRecord(int client, bool firstRecord, JSONObject record)
 {
-    if (client){}
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records");
 
     if (firstRecord)
     {
-        char sFile[PLATFORM_MAX_PATH + 1];
-        BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", "post");
-        record.ToFile(sFile, 0x1F);
-        // fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(record, SendRecord, GetClientUserId(client));
+        fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(record, SendRecord, GetClientUserId(client));
     }
     else
     {
-        char sFile[PLATFORM_MAX_PATH + 1];
-        BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", "put");
-        record.ToFile(sFile, 0x1F);
-        // fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(record, SendRecord, GetClientUserId(client));
+        fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(record, SendRecord, GetClientUserId(client));
+    }
+
+    JSONArray jArr = view_as<JSONArray>(record.Get("Details"));
+    JSONObject jObj = null;
+
+    for (int i = 0; i < jArr.Length; i++)
+    {
+        jObj = view_as<JSONObject>(jArr.Get(i));
+        delete jObj;
+    }
+
+    delete jArr;
+    delete record;
+}
+
+public void SendRecord(HTTPResponse response, any userid, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        SetFailState("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        return;
     }
 }
