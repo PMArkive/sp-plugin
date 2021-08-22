@@ -43,9 +43,7 @@ public void OnConfigsExecuted()
 
 void LoadStyles()
 {
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Style");
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetAllStyles);
+    fuckTimer_NewAPIHTTPRequest("Style").Get(GetAllStyles);
 }
 
 public void GetAllStyles(HTTPResponse response, any value, const char[] error)

@@ -57,9 +57,7 @@ void PreparePlayerPostData(int client)
     jPlayer.SetString("Name", sName);
     jPlayer.SetInt("Status", 0);
 
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Player");
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(jPlayer, PostPlayerData, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest("Player").Post(jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;
 }
 
@@ -162,9 +160,7 @@ void PreparePlayerPostSetting(int client, const char[] setting)
     Core.Settings.GetString(setting, sValue, sizeof(sValue));
     jSetting.SetString("Value", sValue);
 
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerSettings");
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(jSetting, PostPlayerSetting, GetClientUserId(client));
+    fuckTimer_NewAPIHTTPRequest("PlayerSettings").Post(jSetting, PostPlayerSetting, GetClientUserId(client));
 
     delete jSetting;
 }

@@ -75,9 +75,7 @@ void DownloadMapTiers()
         DeleteFile(sFile);
     }
     
-    char sEndpoint[128];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/maptiers.txt");
-    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
+    HTTPRequest request = fuckTimer_NewCloudHTTPRequest("zones/main/files/maptiers.txt");
     request.DownloadFile(sFile, OnMapTiersDownload);
 }
 
@@ -229,9 +227,7 @@ public void OnZoneDownload(HTTPStatus status, any pack, const char[] error)
         FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
         bool bExist = FileExists(sFile);
 
-        char sEndpoint[128];
-        FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/global_filters.cfg");
-        HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
+        HTTPRequest request = fuckTimer_NewCloudHTTPRequest("stripper/main/files/global_filters.cfg");
 
         DataPack dpPack = new DataPack();
         dpPack.WriteString(sMap);
@@ -299,9 +295,7 @@ void AddMapsToDatabase()
         iTier = 0;
     }
 
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Map");
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(jMaps, PostMaps);
+    fuckTimer_NewAPIHTTPRequest("Map").Post(jMaps, PostMaps);
 
     for (int i = 0; i < jMaps.Length; i++)
     {

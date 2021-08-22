@@ -215,16 +215,13 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
 void PostPlayerRecord(int client, bool firstRecord, JSONObject record)
 {
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Records");
-
     if (firstRecord)
     {
-        fuckTimer_NewAPIHTTPRequest(sEndpoint).Post(record, SendRecord, GetClientUserId(client));
+        fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord, GetClientUserId(client));
     }
     else
     {
-        fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(record, SendRecord, GetClientUserId(client));
+        fuckTimer_NewAPIHTTPRequest("Records").Put(record, SendRecord, GetClientUserId(client));
     }
 
     JSONArray jArr = view_as<JSONArray>(record.Get("Details"));
