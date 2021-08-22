@@ -107,6 +107,8 @@ public void OnClientDisconnect(int client)
                 Player[client].Records[i].GetArray(j, record, sizeof(record));
                 delete record.Details;
             }
+
+            delete snap;
         }
 
         delete Player[client].Records[i];
@@ -377,6 +379,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
             record.Details.SetArray(iPoint, details, sizeof(details));
         }
 
+        delete snap;
         delete imDetails;
     }
 

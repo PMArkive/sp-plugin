@@ -32,6 +32,8 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
                     Player[client].Records[i].GetArray(j, record, sizeof(record));
                     delete record.Details;
                 }
+
+                delete snap;
             }
 
             delete Player[client].Records[i];
@@ -48,6 +50,8 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
                     Core.Records[i].GetArray(j, record, sizeof(record));
                     delete record.Details;
                 }
+
+                delete snap;
             }
 
             delete Core.Records[i];
