@@ -138,7 +138,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         RecordData record;
         Core.Records[iStyle].GetArray(iLevel, record, sizeof(record));
 
-        if (fTime < record.Time)
+        if (record.Time == 0.0 || fTime < record.Time)
         {
             PrintToChatAll("%N has beaten %s's server record!", client, record.PlayerName);
             bServerRecord = true;
@@ -156,7 +156,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         RecordData record;
         Player[client].Records[iStyle].GetArray(iLevel, record, sizeof(record));
 
-        if (fTime < record.Time)
+        if (record.Time == 0.0 || fTime < record.Time)
         {
             if (!bServerRecord)
             {
