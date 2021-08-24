@@ -238,7 +238,7 @@ void PostPlayerRecord(int client, bool firstRecord, JSONObject record)
 
 public void SendRecord(HTTPResponse response, any userid, const char[] error)
 {
-    if (response.Status != HTTPStatus_OK)
+    if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_Created)
     {
         SetFailState("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;

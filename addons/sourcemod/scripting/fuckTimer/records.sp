@@ -162,17 +162,17 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
             {
                 PrintToChatAll("%N finished this map first time!", client);
                 bFirstRecord = true;
-                bPlayerRecord = true;
-                return;
-            }
-
-            if (!bServerRecord)
-            {
-                PrintToChatAll("%N has beaten his record!", client, record.PlayerName);
             }
             else
             {
-                PrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
+                if (!bServerRecord)
+                {
+                    PrintToChatAll("%N has beaten his record!", client, record.PlayerName);
+                }
+                else
+                {
+                    PrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
+                }
             }
 
             bPlayerRecord = true;
