@@ -226,13 +226,11 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     if (bServerRecord)
     {
         UpdateRecord(smRecord, false);
-        return;
     }
 
     if (bPlayerRecord || bServerRecord)
     {
         UpdateRecord(smRecord, true, client, bFirstRecord);
-        return;
     }
 
     delete imDetails;
