@@ -8,6 +8,8 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
     view_as<DataPack>(pack).Reset();
     int client = GetClientOfUserId(view_as<DataPack>(pack).ReadCell());
+    int userid = view_as<DataPack>(pack).ReadCell();
+    int client = userid != 0 ? GetClientOfUserId(userid) : 0;
     delete view_as<DataPack>(pack);
 
     JSONArray jMainrecords = view_as<JSONArray>(response.Data);
