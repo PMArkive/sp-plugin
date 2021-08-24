@@ -228,13 +228,16 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         UpdateRecord(smRecord, false);
     }
 
-    if (bPlayerRecord || bServerRecord)
+    if (bPlayerRecord)
     {
         UpdateRecord(smRecord, true, client, bFirstRecord);
     }
 
-    delete imDetails;
-    delete smRecord;
+    if (!bServerRecord && !bPlayerRecord)
+    {
+        delete imDetails;
+        delete smRecord;
+    }
 }
 
 void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool firstRecord = false)
@@ -249,7 +252,6 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     smRecord.GetValue("Time", record.Time);
     smRecord.GetValue("TimeInZone", record.TimeInZone);
     smRecord.GetValue("Attempts", record.Attempts);
-    smRecord.GetValue("Status", record.Status);
     smRecord.GetArray("StartPosition", record.StartPosition, 3);
     smRecord.GetArray("EndPosition", record.EndPosition, 3);
     smRecord.GetArray("StartAngle", record.StartAngle, 3);
@@ -304,6 +306,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     jRecord.SetFloat("EndVelocityZ", record.EndVelocity[2]);
 
     JSONArray jRecords = new JSONArray();
+    IntMap imDetails;
 
     if (record.Type == TimeCheckpoint || record.Type == TimeStage)
     {
@@ -312,7 +315,6 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
             record.Details = new IntMap();
         }
 
-        IntMap imDetails;
         smRecord.GetValue("Details", imDetails);
 
         int iPoint;
@@ -378,10 +380,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
         }
 
         delete snap;
-        delete imDetails;
     }
-
-    delete smRecord;
 
     jRecord.Set("Details", jRecords);
 
@@ -389,6 +388,9 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     {
         PostPlayerRecord(client, firstRecord, jRecord);
         Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
+
+        delete imDetails;
+        delete smRecord;
     }
     else
     {
