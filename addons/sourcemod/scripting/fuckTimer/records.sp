@@ -387,10 +387,9 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     jRecord.Set("Details", jRecords);
 
-    PostPlayerRecord(client, firstRecord, jRecord);
-
     if (updatePlayer)
     {
+        PostPlayerRecord(client, firstRecord, jRecord);
         Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
     }
     else
