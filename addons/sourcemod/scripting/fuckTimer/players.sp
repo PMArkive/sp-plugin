@@ -126,6 +126,8 @@ public void Frame_PlayerSpawn(any userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
+        SetEntProp(client, Prop_Data, "m_CollisionGroup", 2);
+
         int iZone = fuckTimer_GetStartZone(0);
 
         if (iZone > 0)
