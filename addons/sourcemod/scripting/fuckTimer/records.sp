@@ -158,6 +158,14 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
         if (record.Time == 0.0 || fTime < record.Time)
         {
+            if (record.Time == 0.0)
+            {
+                PrintToChatAll("%N finished this map first time!", client);
+                bFirstRecord = true;
+                bPlayerRecord = true;
+                return;
+            }
+
             if (!bServerRecord)
             {
                 PrintToChatAll("%N has beaten his record!", client, record.PlayerName);
@@ -169,12 +177,6 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
             bPlayerRecord = true;
         }
-    }
-    else if (Player[client].Records[iStyle] == null)
-    {
-        PrintToChatAll("%N finished this map first time!", client);
-        bPlayerRecord = true;
-        bFirstRecord = true;
     }
 
     TimeType tType;
