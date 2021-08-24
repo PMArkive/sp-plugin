@@ -13,13 +13,14 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
     JSONArray jMainrecords = view_as<JSONArray>(response.Data);
 
-    if (jMainrecords.Length < 1)
+    int iStyles = fuckTimer_GetStyles().Size;
+
+    if (iStyles > MAX_STYLES)
     {
-        LogMessage("[Records.GetRecords] We didn't found any records for this map...");
-        return;
+        iStyles = MAX_STYLES;
     }
 
-    for (int i = 0; i <= MAX_STYLES; i++)
+    for (int i = 1; i <= iStyles; i++)
     {
         if (client > 0)
         {
@@ -57,14 +58,6 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
             delete Core.Records[i];
         }
-    }
-
-    int iStyles = fuckTimer_GetStyles().Size + 10;
-    LogMessage("iStyles: %d", iStyles);
-
-    if (iStyles > MAX_STYLES)
-    {
-        iStyles = MAX_STYLES;
     }
 
     for (int i = 1; i <= iStyles; i++)
