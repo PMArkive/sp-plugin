@@ -215,6 +215,11 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
 void PostPlayerRecord(int client, bool firstRecord, JSONObject record)
 {
+    // For debugging
+    char sFile[PLATFORM_MAX_PATH + 1];
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", firstRecord ? "post" : "put");
+    record.ToFile(sFile, 0x1F);
+    
     if (firstRecord)
     {
         fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord, GetClientUserId(client));
