@@ -168,7 +168,8 @@ public void OnPluginStart()
         LoadPlayer(client);
     }
 
-    HookEvent("round_end", Event_RoundEnd);
+    HookEvent("round_poststart", Event_RoundReset);
+    HookEvent("round_end", Event_RoundReset);
     HookEvent("player_activate", Event_PlayerActivate);
 }
 
@@ -269,7 +270,7 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     delete snap;
 }
 
-public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+public Action Event_RoundReset(Event event, const char[] name, bool dontBroadcast)
 {
     fuckTimer_LoopClients(client, false, false)
     {
