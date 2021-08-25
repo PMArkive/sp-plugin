@@ -11,3 +11,4 @@ Requirements:
 
 Optional:
 - [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)
+- [Example (surf/round) settings](https://github.com/fuckTimer/sp-plugin/blob/main/cfg/fuckTimer.cfg)
