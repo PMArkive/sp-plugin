@@ -125,7 +125,8 @@ public void Frame_PlayerSpawn(any userid)
 
     if (fuckTimer_IsClientValid(client, true, false))
     {
-        SetEntProp(client, Prop_Data, "m_CollisionGroup", 2);
+        SetEntProp(client, Prop_Data, "m_CollisionGroup", 2); // No Block, 2 = COLLISION_GROUP_DEBRIS_TRIGGER
+        SetEntProp(client, Prop_Send, "m_iHideHUD", 1<<12);   // Hide Radar
 
         int iZone = fuckTimer_GetStartZone(0);
 
