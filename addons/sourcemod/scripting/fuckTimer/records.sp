@@ -276,7 +276,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     {
         FormatEx(sStype, sizeof(sStype), "Checkpoint");
     }
-    if (record.Type == TimeStage)
+    else if (record.Type == TimeStage)
     {
         FormatEx(sStype, sizeof(sStype), "Stage");
     }
