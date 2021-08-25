@@ -2,6 +2,7 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <sdkhooks>
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
@@ -82,15 +83,13 @@ public void OnPluginStart()
     HookEvent("player_activate", Event_PlayerActivate);
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
-}
 
-public void OnConfigsExecuted()
-{
     fuckTimer_LoopClients(client, false, false)
     {
-        PrintToServer("OnConfigsExecuted: %N", client);
+        SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
     }
 }
+
 public void fuckTimer_OnClientRestart(int client)
 {
     int iZone = fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client));
@@ -134,16 +133,6 @@ public void Frame_PlayerSpawn(any userid)
         {
             fuckTimer_TeleportEntityToZone(client, iZone);
         }
-    }
-}
-
-public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
-{
-    int client = GetClientOfUserId(event.GetInt("userid"));
-
-    if (fuckTimer_IsClientValid(client, false, false))
-    {
-        fuckTimer_ResetClientTimer(client);
     }
 }
 
@@ -203,6 +192,21 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     }
 
     return Plugin_Continue;
+}
+
+public Action OnTraceAttack(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
+{
+    return Plugin_Handled;
+}
+
+public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
+{
+    int client = GetClientOfUserId(event.GetInt("userid"));
+
+    if (fuckTimer_IsClientValid(client, false, false))
+    {
+        fuckTimer_ResetClientTimer(client);
+    }
 }
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
