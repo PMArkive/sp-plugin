@@ -583,17 +583,20 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         map.SetValue("Level", Player[client].Bonus);
         
-        if (iCheckpoint > 0)
+        if (Player[client].CheckpointDetails != null)
         {
             map.SetValue("Type", TimeCheckpoint);
+            map.SetValue("Details", view_as<any>(Player[client].CheckpointDetails));
         }
-        else if (iStage > 0)
+        else if (Player[client].StageDetails != null)
         {
             map.SetValue("Type", TimeStage);
+            map.SetValue("Details", view_as<any>(Player[client].StageDetails));
         }
         else
         {
             map.SetValue("Type", TimeMain);
+            map.SetValue("Details", 0);
         }
 
         map.SetValue("Tickrate", GetServerTickrate());
@@ -606,19 +609,6 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         map.SetArray("EndPosition", Player[client].EndPosition, 3);
         map.SetArray("EndAngle", Player[client].EndAngle, 3);
         map.SetArray("EndVelocity", Player[client].EndVelocity, 3);
-        
-        if (Player[client].CheckpointDetails != null)
-        {
-            map.SetValue("Details", view_as<any>(Player[client].CheckpointDetails));
-        }
-        else if (Player[client].StageDetails != null)
-        {
-            map.SetValue("Details", view_as<any>(Player[client].StageDetails));
-        }
-        else
-        {
-            map.SetValue("Details", 0);
-        }
 
         Call_StartForward(Core.OnClientTimerEnd);
         Call_PushCell(client);
