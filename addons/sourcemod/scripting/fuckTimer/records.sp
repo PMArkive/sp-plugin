@@ -77,6 +77,7 @@ void CheckState()
     
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
+    LogMessage(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteCell(0);
@@ -87,6 +88,7 @@ public void fuckTimer_OnPlayerLoaded(int client)
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d/PlayerId/%d", fuckTimer_GetCurrentMapId(), GetSteamAccountID(client));
+    LogMessage(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(client));

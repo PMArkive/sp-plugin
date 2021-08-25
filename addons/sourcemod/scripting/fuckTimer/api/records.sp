@@ -1,7 +1,8 @@
 public void GetRecords(HTTPResponse response, any pack, const char[] error)
 {
-    if (response.Status != HTTPStatus_OK)
+    if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_NotFound)
     {
+        delete view_as<DataPack>(pack);
         SetFailState("[Records.GetRecords] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
