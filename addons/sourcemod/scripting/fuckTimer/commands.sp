@@ -46,7 +46,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     Core.Plugin = myself;
     
     Core.OnClientRestart = new GlobalForward("fuckTimer_OnClientRestart", ET_Ignore, Param_Cell);
-    Core.OnClientCommand = new GlobalForward("fuckTimer_OnClientCommand", ET_Ignore, Param_Cell, Param_Cell);
+    Core.OnClientCommand = new GlobalForward("fuckTimer_OnClientCommand", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_RestartClient", Native_RestartClient);
 
