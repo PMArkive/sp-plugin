@@ -109,8 +109,6 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
 
 public void OnClientDisconnect(int client)
 {
-    PrintToServer("OnClientDisconnect: %N", client);
-
     Player[client].Reset();
 }
 
@@ -349,7 +347,6 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
     }
 
     Player[client].Settings.SetString(sSetting, sValue);
-    PrintToServer("[Players.Native_SetClientSetting] Adding setting %s with value of %s", sSetting, sValue);
     SetPlayerSetting(client, sSetting, sValue);
 }
 
@@ -360,14 +357,10 @@ public any Native_GetClientStatus(Handle plugin, int numParams)
 
 void LoadPlayer(int client)
 {
-    PrintToServer("[Players] LoadPlayer: %d", client);
-
-    if (client < 1 || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
+    if (!client || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
     {
         return;
     }
-
-    PrintToServer("[Players] LoadPlayer: %N", client);
 
     Player[client].Reset();
 
