@@ -12,8 +12,6 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
     int client = userid != 0 ? GetClientOfUserId(userid) : 0;
     delete view_as<DataPack>(pack);
 
-    JSONArray jMainrecords = view_as<JSONArray>(response.Data);
-
     int iStyles = fuckTimer_GetStyles().Size;
 
     if (iStyles > MAX_STYLES)
@@ -66,6 +64,8 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         LogMessage("[Records.GetRecords] We found %d records for this map", 0);
         return;
     }
+
+    JSONArray jMainrecords = view_as<JSONArray>(response.Data);
 
     LogMessage("[Records.GetRecords] We found %d records for this map", jMainrecords.Length);
 
