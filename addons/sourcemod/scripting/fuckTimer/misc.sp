@@ -90,13 +90,16 @@ public Action Command_Drop(int client, const char[] command, int args)
     {
         int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 
-        char sClassname[32];
-        GetEntityClassname(iWeapon, sClassname, sizeof(sClassname));
-
-        if (StrContains(sClassname, "weapon", false) != -1 || StrContains(sClassname, "item", false) != -1)
+        if (IsValidEntity(iWeapon))
         {
-            SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
-            RemoveEntity(iWeapon);
+            char sClassname[32];
+            GetEntityClassname(iWeapon, sClassname, sizeof(sClassname));
+
+            if (StrContains(sClassname, "weapon", false) != -1 || StrContains(sClassname, "item", false) != -1)
+            {
+                SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+                RemoveEntity(iWeapon);
+            }
         }
     }
 }
