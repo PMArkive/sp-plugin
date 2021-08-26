@@ -8,9 +8,12 @@ Requirements:
 - [fuckZones](https://github.com/Bara/fuckZones)
 - [Running PHP-API](https://github.com/fuckTimer/php-api)
 - [EndTouchFix](https://github.com/rumourA/End-Touch-Fix/blob/master/scripting/EndTouchFix.sp)
-- [Auto Assign Team](https://forums.alliedmods.net/showthread.php?p=2682718) Note: This spawns the player after grace time end
-  - Optional: [Team Limit Bypass](https://forums.alliedmods.net/showthread.php?p=1982360)
 
 Optional:
+- [Accelerator](https://forums.alliedmods.net/showthread.php?t=277703)
+- [RNGFix](https://forums.alliedmods.net/showthread.php?t=310825)
+- [Movement Unlocker](https://forums.alliedmods.net/showthread.php?t=255298)
 - [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)
 - [Example (surf/round) settings](https://github.com/fuckTimer/sp-plugin/blob/main/cfg/fuckTimer.cfg)
+- [Auto Assign Team](https://forums.alliedmods.net/showthread.php?p=2682718) Note: This spawns the player after grace time end
+  - Optional: [Team Limit Bypass](https://forums.alliedmods.net/showthread.php?p=1982360)
