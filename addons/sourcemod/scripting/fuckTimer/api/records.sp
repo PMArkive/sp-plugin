@@ -61,6 +61,14 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         }
     }
 
+    if (response.Status == HTTPStatus_NotFound)
+    {
+        LogMessage("[Records.GetRecords] We found %d records for this map", 0);
+        return;
+    }
+
+    LogMessage("[Records.GetRecords] We found %d records for this map", jMainrecords.Length);
+
     for (int i = 1; i <= iStyles; i++)
     {
         if (client > 0)
@@ -72,8 +80,6 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
             Core.Records[i] = new IntMap();
         }
     }
-
-    LogMessage("[Records.GetRecords] We found %d records for this map", jMainrecords.Length);
 
     JSONObject jMainRecord = null;
 
