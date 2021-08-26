@@ -2,6 +2,7 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <cstrike>
 #include <fuckTimer_stocks>
 
 enum struct PluginData
@@ -103,6 +104,18 @@ public Action Command_Say(int client, const char[] command, int argc)
     StripQuotes(sMessage);
 
     if (sMessage[0] == '!')
+    {
+        return Plugin_Stop;
+    }
+
+    return Plugin_Continue;
+}
+
+public Action CS_OnTerminateRound(float& delay, CSRoundEndReason& reason)
+{
+    int iTimeleft = GameRules_GetProp("m_iRoundTime");
+
+    if (iTimeleft > 1)
     {
         return Plugin_Stop;
     }
