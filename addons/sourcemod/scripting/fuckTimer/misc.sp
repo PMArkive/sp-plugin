@@ -36,6 +36,25 @@ public void OnPluginStart()
     AddCommandListener(Command_Say, "say_team");
 }
 
+public void OnMapStart()
+{
+    // Workaround temporarily copied from SurfTimer
+    // Maybe we find another more cleaner solution
+    CreateTimer(1.0, Timer_Enforce);
+}
+
+public Action Timer_Enforce(Handle timer)
+{
+    if (FileExists("cfg/fuckTimer.cfg"))
+    {
+        ServerCommand("exec fuckTimer.cfg");
+    }
+    else
+    {
+        SetFailState("\"cfg/fuckTimer.cfg\" not found.");
+    }
+}
+
 public void Event_RoundPostStart(Event event, const char[] name, bool dontBroadcast)
 {
     ItemCleanup();
