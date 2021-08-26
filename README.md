@@ -8,7 +8,7 @@ Requirements:
 - [fuckZones](https://github.com/Bara/fuckZones)
 - [Running PHP-API](https://github.com/fuckTimer/php-api)
 - [EndTouchFix](https://github.com/rumourA/End-Touch-Fix/blob/master/scripting/EndTouchFix.sp)
-- [Auto Assign Team](https://forums.alliedmods.net/showthread.php?p=2682718)
+- [Auto Assign Team](https://forums.alliedmods.net/showthread.php?p=2682718) Note: This spawns the player after grace time end
   - Optional: [Team Limit Bypass](https://forums.alliedmods.net/showthread.php?p=1982360)
 
 Optional:
