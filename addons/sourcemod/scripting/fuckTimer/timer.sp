@@ -32,6 +32,10 @@ enum struct PlayerData
     bool BlockTeleport;
     bool BlockStart;
 
+    // Prestrafe
+    int LastButtons;
+    bool Prestrafe;
+
     float Time;
     float TimeInZone;
 
@@ -79,6 +83,9 @@ enum struct PlayerData
         this.BlockJump = false;
         this.BlockStart = false;
 
+        this.LastButtons = 0;
+        this.Prestrafe = false;
+
         this.Time = 0.0;
 
         if (resetTimeInZone)
@@ -102,6 +109,12 @@ enum struct PlayerData
 
         delete this.CheckpointDetails;
         delete this.StageDetails;
+    }
+
+    void AllowPrestrafe(int client, bool status)
+    {
+        this.Prestrafe = status;
+        PrintToChat(client, "Set status to %d", status);
     }
 }
 
@@ -287,9 +300,24 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
+    for (int i = 0; i < 25; i++)
+    {
+        int button = (1 << i);
+
+        if ((buttons & button))
+        {
+            if (!(Player[client].LastButtons & button))
+            {
+                OnButtonPress(client, button);
+            }
+        }
+    }
+
+    Player[client].LastButtons = buttons;
+
     if (IsPlayerAlive(client))
     {
-        if (Player[client].SetSpeed)
+        if (Player[client].SetSpeed && !Player[client].Prestrafe)
         {
             int iPreSpeed = fuckTimer_GetZonePreSpeed(Player[client].Zone);
 
@@ -306,6 +334,21 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     return Plugin_Continue;
 }
 
+void OnButtonPress(int client, int button)
+{
+    if (button & IN_JUMP)
+    {
+        // Check if client is in a zone who we'll set the speed
+        if (!Player[client].SetSpeed)
+        {
+            return;
+        }
+
+        Player[client].AllowPrestrafe(client, true);
+        PrintToChatAll("Set %N prestrafe to true", client);
+    }
+}
+
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 {
     if (!IsPlayerAlive(client))
@@ -320,6 +363,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     if (fuckTimer_IsStartZone(zone, iBonus) && !fuckTimer_IsMiscZone(zone, iBonus))
     {
         SetClientStartValues(client, iBonus);
+        Player[client].AllowPrestrafe(client, false);
 
         return;
     }
@@ -420,6 +464,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Player[client].SetSpeed = true;
 
         Player[client].Stage = iStage;
+        Player[client].AllowPrestrafe(client, false);
 
         // That isn't really an workaround or dirty fix but... 
         // with this check we're able to start the stage timer
@@ -653,13 +698,11 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         return;
     }
     
-    int iBonus = 0;
-    if (fuckTimer_IsStartZone(zone, iBonus))
+    if (bStart)
     {
         SetClientStartValues(client, iBonus);
     }
 
-    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
 
     if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
@@ -716,6 +759,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
         Player[client].Reset(.resetTimeInZone = false, .resetAttempts = false);
+        Player[client].AllowPrestrafe(client, false);
 
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
@@ -767,6 +811,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         {
             Player[client].Attempts = 0;
         }
+
+        Player[client].AllowPrestrafe(client, false);
         
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
@@ -844,6 +890,15 @@ public Action OnPostThinkPost(int client)
     if (client < 1 || IsFakeClient(client) || IsClientSourceTV(client))
     {
         return Plugin_Continue;
+    }
+
+    if (Player[client].Prestrafe && Player[client].SetSpeed)
+    {
+        if (GetEntityFlags(client) & FL_ONGROUND)
+        {
+            Player[client].AllowPrestrafe(client, false);
+            PrintToChatAll("Set %N prestrafe to false", client);
+        }
     }
 
     Player[client].Origin2 = Player[client].Origin1;
