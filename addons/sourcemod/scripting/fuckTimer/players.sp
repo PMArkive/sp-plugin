@@ -20,14 +20,12 @@ enum struct PlayerData
 {
     PlayerStatus Status;
     bool InStage;
-    
     StringMap Settings;
 
     void Reset()
     {
         this.Status = psInactive;
         this.InStage = false;
-
         delete this.Settings;
     }
 }
@@ -137,7 +135,12 @@ public void Frame_PlayerSpawn(any userid)
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-    if (Player[client].Settings != null && IsPlayerAlive(client) && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
+    if (!IsPlayerAlive(client))
+    {
+        return Plugin_Continue;
+    }
+
+    if (Player[client].Settings != null && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
     {
         Styles style;
         Player[client].Settings.GetValue(SETTING_STYLE, style);
