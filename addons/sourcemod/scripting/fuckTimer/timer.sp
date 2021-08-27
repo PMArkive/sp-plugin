@@ -636,9 +636,19 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         return;
     }
 
+    int iBonus = 0;
+    bool bStart = fuckTimer_IsStartZone(zone, iBonus);
+    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
+
     if (Player[client].Time == 0.0)
     {
         Player[client].TimeInZone += GetTickInterval();
+
+        // We need to check this here, otherwise set speed can be abused
+        if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
+        {
+            Player[client].SetSpeed = true;
+        }
 
         return;
     }
