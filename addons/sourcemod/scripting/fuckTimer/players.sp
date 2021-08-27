@@ -88,6 +88,11 @@ public void OnPluginStart()
     }
 }
 
+public void OnClientPutInServer(int client)
+{
+    SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
+}
+
 public void fuckTimer_OnClientRestart(int client)
 {
     int iZone = fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client));
