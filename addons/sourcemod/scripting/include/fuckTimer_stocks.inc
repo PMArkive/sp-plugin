@@ -172,27 +172,27 @@ stock bool IsStringNumeric(const char[] str)
         }
         else if (str[x] == '.')
         {
-			dotsFound++;
+            dotsFound++;
 
-			if (dotsFound > 1)
+            if (dotsFound > 1)
             {
-				return false;
-			}
-		}
-		else
+                return false;
+            }
+        }
+        else
         {
-			return false;
-		}
+            return false;
+        }
 
-		x++;
-	}
+        x++;
+    }
 
-	if (!numbersFound)
+    if (!numbersFound)
     {
-		return false;
-	}
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 stock float GetServerTickrate()
