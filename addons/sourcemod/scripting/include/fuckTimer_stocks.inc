@@ -119,7 +119,6 @@ stock float GetClientSpeed(int client, eHUDSpeed eSpeed = HSXY)
 
 stock void SetClientSpeed(int client, int maxspeed = 0)
 {
-
     float fVelocity[3];
     GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 
@@ -131,25 +130,15 @@ stock void SetClientSpeed(int client, int maxspeed = 0)
         fMaxSpeed = maxspeed * 1.0;
     }
 
-    if (fMaxSpeed > PRESPEED_LIMIT)
-    {
-        fMaxSpeed = PRESPEED_LIMIT * 1.0;
-    }
-
-    if (fMaxSpeed > 0 && fSpeed > fMaxSpeed && GetEntityFlags(client) & FL_ONGROUND)
+    if (fMaxSpeed > 0 && fSpeed > 0.0 && fSpeed > fMaxSpeed)
     {
         // https://github.com/shavitush/bhoptimer/blob/master/addons/sourcemod/scripting/shavit-core.sp#L3426
-        /* float fScale = fMaxSpeed / fSpeed;
-
+        float fScale = fMaxSpeed / fSpeed;
         if (fScale < 1.0)
         {
             ScaleVector(fVelocity, fScale);
             TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
-        } */
-
-        NormalizeVector(fVelocity, fVelocity);
-        ScaleVector(fVelocity, fMaxSpeed);
-        TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
+        }
     }
 }
 
