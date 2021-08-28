@@ -123,8 +123,6 @@ public Action Command_Main(int client, int args)
     return Plugin_Handled;
 }
 
-
-
 public Action Command_Start(int client, int args)
 {
     if (!fuckTimer_IsClientValid(client, true, true))
@@ -134,7 +132,10 @@ public Action Command_Start(int client, int args)
 
     fuckTimer_ResetClientTimer(client);
 
-    int iZone = fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client));
+    int iBonus = fuckTimer_GetClientBonus(client);
+    int iZone = fuckTimer_GetEndZone(iBonus);
+
+    ReplyToCommand(client, "Bonus: %d", iBonus);
 
     if (iZone > 0)
     {
@@ -167,7 +168,10 @@ public Action Command_End(int client, int args)
 
     fuckTimer_ResetClientTimer(client);
 
-    int iZone = fuckTimer_GetEndZone(fuckTimer_GetClientBonus(client));
+    int iBonus = fuckTimer_GetClientBonus(client);
+    int iZone = fuckTimer_GetEndZone(iBonus);
+
+    ReplyToCommand(client, "Bonus: %d", iBonus);
 
     if (iZone > 0)
     {
