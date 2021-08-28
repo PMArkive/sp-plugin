@@ -681,6 +681,8 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         return;
     }
 
+    Player[client].Zone = zone;
+
     int iBonus = 0;
     bool bStart = fuckTimer_IsStartZone(zone, iBonus);
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
@@ -723,8 +725,6 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     {
         Player[client].BlockJump = true;
     }
-
-    Player[client].Zone = zone;
 }
 
 public void fuckTimer_OnClientCommand(int client, int level, bool start)
