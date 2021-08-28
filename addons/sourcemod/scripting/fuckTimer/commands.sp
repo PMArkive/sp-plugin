@@ -57,6 +57,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+    RegConsoleCmd("sm_main", Command_Main);
+
     RegConsoleCmd("sm_start", Command_Start);
 
     RegConsoleCmd("sm_stop", Command_Stop);
@@ -99,6 +101,29 @@ public void OnPluginStart()
     RegConsoleCmd("sm_hudtime", Command_HUDTime, "Show times in different formats");
     RegConsoleCmd("sm_hud0hours", Command_HUDShow0Hours, "Shows the leading 0(0): in time or not");
 }
+
+public Action Command_Main(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    fuckTimer_ResetClientTimer(client);
+
+    int iZone = fuckTimer_GetStartZone(0);
+
+    if (iZone > 0)
+    {
+        CallOnClientCommand(client, 0, true);
+
+        fuckTimer_TeleportEntityToZone(client, iZone);
+    }
+
+    return Plugin_Handled;
+}
+
+
 
 public Action Command_Start(int client, int args)
 {
@@ -305,7 +330,7 @@ public Action Command_Bonus(int client, int args)
             CallOnClientCommand(client, iTemp, true);
         }
         
-        if (iZone  < 1)
+        if (iZone < 1)
         {
             iZone = fuckTimer_GetStartZone(1);
 
