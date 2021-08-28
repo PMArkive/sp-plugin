@@ -154,10 +154,10 @@ stock void SetClientSpeed(int client, int maxspeed = 0)
 }
 
 stock bool IsStringNumeric(const char[] str)
-{
-	int x=0;
-	int dotsFound=0;
-	int numbersFound=0;
+    {
+    int x=0;
+    int dotsFound=0;
+    int numbersFound=0;
 
 	if (str[x] == '+' || str[x] == '-')
     {
