@@ -19,12 +19,21 @@ MapData Map;
 
 enum struct PluginData
 {
+    bool StripperGlobal;
+    bool StripperMap;
+
     char Name[64];
 
     StringMap MapTiers;
 
     GlobalForward OnZoneDownload;
     GlobalForward OnMapDataLoaded;
+
+    void ResetStripper()
+    {
+        this.StripperGlobal = false;
+        this.StripperMap = false;
+    }
 }
 PluginData Core;
 
@@ -51,6 +60,11 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     RegPluginLibrary("fuckTimer_maps");
 
     return APLRes_Success;
+}
+
+public void OnMapStart()
+{
+    Core.ResetStripper();
 }
 
 public void OnConfigsExecuted()
@@ -185,7 +199,9 @@ void DownloadZoneFile()
 
     if (FileExists(sFile))
     {
-        DeleteFile(sFile);
+        LogMessage("[fuckTimer.Downloader] %s.zon already exist.", sMap);
+        DownloadStripperGlobal(sMap);
+        return;
     }
 
     int iTier = 0;
@@ -219,22 +235,9 @@ public void OnZoneDownload(HTTPStatus status, any pack, const char[] error)
     if (status == HTTPStatus_OK)
     {
         LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
-        LogMessage("[fuckTimer.Downloader] Download global_filters.cfg...");
 
         AddMapsToDatabase();
-
-        char sFile[PLATFORM_MAX_PATH + 1];
-        FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
-        bool bExist = FileExists(sFile);
-
-        HTTPRequest request = fuckTimer_NewCloudHTTPRequest("stripper/main/files/global_filters.cfg");
-
-        DataPack dpPack = new DataPack();
-        dpPack.WriteString(sMap);
-        dpPack.WriteCell(bExist);
-        
-        request.DownloadFile(sFile, OnStripperGlobalDownload, dpPack);
-
+        DownloadStripperGlobal(sMap);
         CallZoneDownload(sMap, true);
     }
     else if (status == HTTPStatus_NotFound)
@@ -398,14 +401,35 @@ public void UpdateMap(HTTPResponse response, any value, const char[] error)
     LogMessage("[Maps.UpdateMap] Success. Status Code: %d", response.Status);
 }
 
+void DownloadStripperGlobal(const char[] map)
+{
+    LogMessage("[fuckTimer.Downloader] Download global_filters.cfg...");
+    
+    char sFile[PLATFORM_MAX_PATH + 1];
+    FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
+    Core.StripperGlobal = FileExists(sFile);
+
+    if (Core.StripperGlobal)
+    {
+        LogMessage("[fuckTimer.Downloader] global_filters.cfg already exist.");
+        DownloadStripperMap(map);
+        return;
+    }
+
+    HTTPRequest request = fuckTimer_NewCloudHTTPRequest("stripper/main/files/global_filters.cfg");
+
+    DataPack dpPack = new DataPack();
+    dpPack.WriteString(map);
+    
+    request.DownloadFile(sFile, OnStripperGlobalDownload, dpPack);
+}
+
 public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] error)
 {
     view_as<DataPack>(pack).Reset();
 
     char sMap[MAX_NAME_LENGTH];
     view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
-
-    bool bExist = view_as<DataPack>(pack).ReadCell();
 
     delete view_as<DataPack>(pack);
 
@@ -416,7 +440,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] e
     else if (status == HTTPStatus_NotFound)
     {
         char sFile[PLATFORM_MAX_PATH + 1];
-        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
+        FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
 
         if (FileExists(sFile))
         {
@@ -432,20 +456,32 @@ public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] e
         return;
     }
     
-    LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", sMap);
+    DownloadStripperMap(sMap);
+}
+
+void DownloadStripperMap(const char[] map)
+{
+    LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", map);
 
     char sFile[PLATFORM_MAX_PATH + 1];
-    FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
-    bool bMapExist = FileExists(sFile);
+    FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", map);
+    Core.StripperMap = FileExists(sFile);
+
+    if (Core.StripperMap)
+    {
+        LogMessage("[fuckTimer.Downloader] %s.cfg already exist.", map);
+
+        CheckStatus(map);
+
+        return;
+    }
 
     char sEndpoint[128];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/%s.cfg", sMap);
+    FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/%s.cfg", map);
     HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     DataPack dpPack = new DataPack();
-    dpPack.WriteString(sMap);
-    dpPack.WriteCell(bExist);
-    dpPack.WriteCell(bMapExist);
+    dpPack.WriteString(map);
     
     request.DownloadFile(sFile, OnStripperMapDownload, dpPack);
 }
@@ -457,9 +493,6 @@ public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] erro
     char sMap[MAX_NAME_LENGTH];
     view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
 
-    bool bExist = view_as<DataPack>(pack).ReadCell();
-    bool bMapExist = view_as<DataPack>(pack).ReadCell();
-
     delete view_as<DataPack>(pack);
 
     if (status == HTTPStatus_OK)
@@ -469,7 +502,7 @@ public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] erro
     else if (status == HTTPStatus_NotFound)
     {
         char sFile[PLATFORM_MAX_PATH + 1];
-        BuildPath(Path_SM, sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
+        FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", sMap);
 
         if (FileExists(sFile))
         {
@@ -480,7 +513,7 @@ public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] erro
 
         // Set bMapExist to true to probably avoid infinity map reloading, because map doesn't exist on the server + cloud
         // so bExistMap is always false and should result into infinity map reloading
-        bMapExist = true;
+        Core.StripperMap = true;
     }
     else
     {
@@ -488,10 +521,15 @@ public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] erro
         return;
     }
 
-    if (!bExist || !bMapExist)
+    CheckStatus(sMap);
+}
+
+void CheckStatus(const char[] map)
+{
+    if (!Core.StripperGlobal || !Core.StripperMap)
     {
         LogMessage("[fuckTimer.Downloader] Reloading map to activate stripper config(s)...");
-        ForceChangeLevel(sMap, "Stripper config(s) added");
+        ForceChangeLevel(map, "Stripper config(s) added");
         return;
     }
 
