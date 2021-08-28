@@ -11,9 +11,16 @@ enum struct Variables
 {
     ConVar DisableCZZones;
 
+    int MaxVelocity;
+
     GlobalForward OnEnteringZone;
     GlobalForward OnTouchZone;
     GlobalForward OnLeavingZone;
+
+    void Reset()
+    {
+        this.MaxVelocity = 0;
+    }
 }
 Variables Core;
 
@@ -55,7 +62,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetStageByIndex", Native_GetStageByIndex);
 
     CreateNative("fuckTimer_GetZonePreSpeed", Native_GetZonePreSpeed);
-    CreateNative("fuckTimer_GetZoneMaxVelocity", Native_GetZoneMaxVelocity);
+    CreateNative("fuckTimer_GetMaxVelocity", Native_GetMaxVelocity);
 
     CreateNative("fuckTimer_GetZoneMapAuthor", Native_GetZoneMapAuthor);
     CreateNative("fuckTimer_GetZoneZoneAuthor", Native_GetZoneZoneAuthor);
@@ -90,6 +97,8 @@ public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newV
 
 public void OnMapStart()
 {
+    Core.Reset();
+
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
         Zone[i].Reset();
@@ -125,6 +134,9 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     if (Zone[entity].Start)
     {
         Zone[entity].Stage = 1;
+
+        GetfuckTimerZoneValue(smEffects, "MaxVelocity", sValue, sizeof(sValue));
+        Core.MaxVelocity = StringToInt(sValue);
     }
 
     GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue));
@@ -180,9 +192,6 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     GetfuckTimerZoneValue(smEffects, "PreSpeed", sValue, sizeof(sValue));
     Zone[entity].PreSpeed = StringToInt(sValue);
-
-    GetfuckTimerZoneValue(smEffects, "MaxVelocity", sValue, sizeof(sValue));
-    Zone[entity].MaxVelocity = StringToInt(sValue);
 
     GetfuckTimerZoneValue(smEffects, "MapAuthor", Zone[entity].MapAuthor, sizeof(ZoneDetails::MapAuthor));
     GetfuckTimerZoneValue(smEffects, "ZoneAuthor", Zone[entity].ZoneAuthor, sizeof(ZoneDetails::ZoneAuthor));
@@ -459,9 +468,9 @@ public int Native_GetZonePreSpeed(Handle plugin, int numParams)
     return Zone[GetNativeCell(1)].PreSpeed;
 }
 
-public int Native_GetZoneMaxVelocity(Handle plugin, int numParams)
+public int Native_GetMaxVelocity(Handle plugin, int numParams)
 {
-    return Zone[GetNativeCell(1)].MaxVelocity;
+    return Core.MaxVelocity;
 }
 
 public int Native_GetZoneMapAuthor(Handle plugin, int numParams)

@@ -23,7 +23,6 @@ enum struct ZoneDetails
     int Stage;
 
     int PreSpeed;
-    int MaxVelocity;
 
     char MapAuthor[MAX_NAME_LENGTH];
     char ZoneAuthor[MAX_NAME_LENGTH];
@@ -48,7 +47,6 @@ enum struct ZoneDetails
         this.Stage = 0;
 
         this.PreSpeed = 0;
-        this.MaxVelocity = 0;
 
         this.MapAuthor[0] = '\0';
         this.ZoneAuthor[0] = '\0';
@@ -136,7 +134,7 @@ native int fuckTimer_GetCheckpointByIndex(int zone, int &bonus);
  */
 native int fuckTimer_GetStageByIndex(int zone, int &bonus);
 native int fuckTimer_GetZonePreSpeed(int zone);
-native int fuckTimer_GetZoneMaxVelocity(int zone);
+native int fuckTimer_GetMaxVelocity(int zone);
 native void fuckTimer_GetZoneMapAuthor(int zone, char[] author, int maxlen);
 native void fuckTimer_GetZoneZoneAuthor(int zone, char[] author, int maxlen);
 native bool fuckTimer_GetZoneTeleportCoords(int zone, float[3] origin, float[3] angles);
@@ -190,7 +188,7 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_GetStageByIndex");
 
     MarkNativeAsOptional("fuckTimer_GetZonePreSpeed");
-    MarkNativeAsOptional("fuckTimer_GetZoneMaxVelocity");
+    MarkNativeAsOptional("fuckTimer_GetMaxVelocity");
 
     MarkNativeAsOptional("fuckTimer_GetZoneMapAuthor");
     MarkNativeAsOptional("fuckTimer_GetZoneZoneAuthor");
