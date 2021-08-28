@@ -190,12 +190,12 @@ public void OnGameFrame()
         imBuffer.SetString(HKMap, sBuffer);
 
         char sSpeed[MAX_SETTING_VALUE_LENGTH];
-        fuckTimer_GetClientSetting(client, "HUDSpeed", sSpeed);
-        fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sSetting);
+        fuckTimer_GetClientSetting(iClient, "HUDSpeed", sSpeed);
+        fuckTimer_GetClientSetting(iClient, "HUDShowSpeedUnit", sSetting);
         FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", GetClientSpeed(client, view_as<eHUDSpeed>(StringToInt(sSpeed))), (view_as<bool>(StringToInt(sSetting)) ? " u/s" : ""));
         imBuffer.SetString(HKSpeed, sBuffer);
         
-        fuckTimer_GetClientSetting(client, "Style", sSetting);
+        fuckTimer_GetClientSetting(iClient, "Style", sSetting);
         Styles style = view_as<Styles>(StringToInt(sSetting));
         fuckTimer_GetStyleName(style, sBuffer, sizeof(sBuffer));
         
@@ -209,7 +209,7 @@ public void OnGameFrame()
         RecordData record;
         if (fuckTimer_GetPlayerRecord(client, style, iBonus, record))
         {
-            GetTimeBySeconds(client, record.Time, sBuffer, sizeof(sBuffer));
+            GetTimeBySeconds(iClient, record.Time, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "PR: %s", sBuffer);
         }
         else
@@ -220,7 +220,7 @@ public void OnGameFrame()
 
         if (fuckTimer_GetServerRecord(style, iBonus, record))
         {
-            GetTimeBySeconds(client, record.Time, sBuffer, sizeof(sBuffer));
+            GetTimeBySeconds(iClient, record.Time, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "SR: %s", sBuffer);
         }
         else
@@ -232,7 +232,7 @@ public void OnGameFrame()
         FormatEx(sBuffer, sizeof(sBuffer), "Rank: None");
         imBuffer.SetString(HKRank, sBuffer);
 
-        GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
+        GetTimeBySeconds(iClient, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
         imBuffer.SetString(HKTime, sBuffer);
 
@@ -267,7 +267,7 @@ public void OnGameFrame()
 
             if (strlen(Player[client].Zone) < 1)
             {
-                GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
+                GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
                 Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
                 imBuffer.SetString(HKStageTime, sBuffer);
             }
@@ -284,7 +284,7 @@ public void OnGameFrame()
         else if (imCheckpoints.GetInt(iBonus) > 0)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
-            GetTimeBySeconds(client, fCPStageTime, sBuffer, sizeof(sBuffer));
+            GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
             imBuffer.SetString(HKStageTime, sBuffer);
 
@@ -313,7 +313,7 @@ public void OnGameFrame()
         imBuffer.SetString(HKAttempts, sBuffer);
 
         fTime = fuckTimer_GetClientTimeInZone(client);
-        GetTimeBySeconds(client, fTime, sBuffer, sizeof(sBuffer));
+        GetTimeBySeconds(iClient, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "Zone Time: %s", sBuffer);
         imBuffer.SetString(HKTimeInZone, sBuffer);
 
@@ -367,14 +367,14 @@ public void OnGameFrame()
         }
 
         char sHUD[6*128+32], sHUDBuffer[128], sScale[8];
-        fuckTimer_GetClientSetting(client, "HUDScale", sScale);
+        fuckTimer_GetClientSetting(iClient, "HUDScale", sScale);
 
-        fuckTimer_GetClientSetting(client, "HUDSeparator", sSetting);
+        fuckTimer_GetClientSetting(iClient, "HUDSeparator", sSetting);
         eHUDSeparator iSeparator = view_as<eHUDSeparator>(StringToInt(sSetting));
 
         FormatEx(sHUD, sizeof(sHUD), "<pre><font class='fontSize-%s'>", sScale);
 
-        fuckTimer_GetClientSetting(client, "HUDLength", sSetting);
+        fuckTimer_GetClientSetting(iClient, "HUDLength", sSetting);
         int iLength = StringToInt(sSetting);
 
         for (int i = 0; i < MAX_HUD_LINES; i++)
