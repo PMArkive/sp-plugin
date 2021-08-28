@@ -164,13 +164,13 @@ stock bool IsStringNumeric(const char[] str)
         x++;
     }
 
-	while (str[x] != '\0') {
+    while (str[x] != '\0') {
 
-		if (IsCharNumeric(str[x]))
+        if (IsCharNumeric(str[x]))
         {
-			numbersFound++;
-		}
-		else if (str[x] == '.')
+            numbersFound++;
+        }
+        else if (str[x] == '.')
         {
 			dotsFound++;
 
