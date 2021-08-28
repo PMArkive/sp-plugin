@@ -319,9 +319,9 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
     {
         if (Player[client].SetSpeed && !Player[client].Prestrafe)
         {
-            int iPreSpeed = fuckTimer_GetZonePreSpeed(Player[client].Zone);
+            int iMaxSpeed = fuckTimer_GetZonePreSpeed(Player[client].Zone);
 
-            SetClientSpeed(client, iPreSpeed);
+            SetClientSpeed(client, iMaxSpeed);
         }
 
         if (Player[client].BlockJump && buttons & IN_JUMP)
