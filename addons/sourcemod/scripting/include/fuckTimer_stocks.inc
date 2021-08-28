@@ -159,10 +159,10 @@ stock bool IsStringNumeric(const char[] str)
     int dotsFound=0;
     int numbersFound=0;
 
-	if (str[x] == '+' || str[x] == '-')
+    if (str[x] == '+' || str[x] == '-')
     {
-		x++;
-	}
+        x++;
+    }
 
 	while (str[x] != '\0') {
 
