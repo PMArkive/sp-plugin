@@ -298,23 +298,22 @@ public Action Command_Bonus(int client, int args)
 
     if (args == 0)
     {
-        if (iBonus < 2)
-        {
-            iZone = fuckTimer_GetStartZone(1);
-
-            CallOnClientCommand(client, 1, true);
-        }
-        else
+        if (iBonus > 0)
         {
             iZone = fuckTimer_GetStartZone(iBonus);
 
             CallOnClientCommand(client, iBonus, true);
         }
+        else
+        {
+            ReplyToCommand(client, "(1) No bonus found.");
+            return Plugin_Handled;
+        }
     }
     else
     {
         char sBuffer[12];
-        GetCmdArgString(sBuffer, sizeof(sBuffer));
+        GetCmdArg(1, sBuffer, sizeof(sBuffer));
 
         int iTemp = 0;
         
@@ -322,16 +321,27 @@ public Action Command_Bonus(int client, int args)
         {
             iTemp = StringToInt(sBuffer);
         }
+        else
+        {
+            ReplyToCommand(client, "String (%s) is not numeric.", sBuffer);
+        }
 
-        if (iTemp)
+        if (iTemp > 0)
         {
             iZone = fuckTimer_GetStartZone(iTemp);
 
             CallOnClientCommand(client, iTemp, true);
         }
+        else
+        {
+            ReplyToCommand(client, "(2) No bonus found for %d.", iTemp);
+            return Plugin_Handled;
+        }
         
         if (iZone < 1)
         {
+            ReplyToCommand(client, "No bonus found try to get bonus 1 zone");
+
             iZone = fuckTimer_GetStartZone(1);
 
             CallOnClientCommand(client, 1, true);
