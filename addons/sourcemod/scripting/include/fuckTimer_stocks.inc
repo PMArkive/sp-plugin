@@ -123,15 +123,14 @@ stock void SetClientSpeed(int client, int maxspeed = 0)
     GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 
     float fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
-
     float fMaxSpeed = PRESPEED_LIMIT * 1.0;
 
-    if (maxspeed > PRESPEED_LIMIT)
+    if (maxspeed != -1)
     {
         fMaxSpeed = maxspeed * 1.0;
     }
 
-    if (fSpeed > fMaxSpeed)
+    if (fMaxSpeed > 0 && fSpeed > fMaxSpeed)
     {
         // https://github.com/shavitush/bhoptimer/blob/master/addons/sourcemod/scripting/shavit-core.sp#L3426
         float fScale = fMaxSpeed / fSpeed;
