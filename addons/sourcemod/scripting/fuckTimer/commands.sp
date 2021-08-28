@@ -98,6 +98,7 @@ public void OnPluginStart()
     RegConsoleCmd("sm_hudspeed", Command_HUDSpeed, "Change the hud speed calculation based of different axis");
     RegConsoleCmd("sm_hudtime", Command_HUDTime, "Show times in different formats");
     RegConsoleCmd("sm_hud0hours", Command_HUDShow0Hours, "Shows the leading 0(0): in time or not");
+    RegConsoleCmd("sm_huddeadhud", Command_HUDDeadHud, "Shows as spectator the players hud in 1st- and 3rd person");
 }
 
 public Action Command_Main(int client, int args)
@@ -1257,6 +1258,27 @@ public Action Command_HUDShow0Hours(int client, int args)
     fuckTimer_SetClientSetting(client, "HUDShowTime0Hours", sSetting);
 
     ReplyToCommand(client, "0 Hours %s", format ? "enabled" : "disabled");
+
+    return Plugin_Handled;
+}
+
+public Action Command_HUDDeadHud(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDDeadHud", sSetting);
+
+    bool format = view_as<bool>(StringToInt(sSetting));
+    format = !format;
+
+    IntToString(view_as<int>(format), sSetting, sizeof(sSetting));
+    fuckTimer_SetClientSetting(client, "HUDDeadHud", sSetting);
+
+    ReplyToCommand(client, "Dead HUD %s", format ? "enabled" : "disabled");
 
     return Plugin_Handled;
 }

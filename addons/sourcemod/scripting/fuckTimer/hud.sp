@@ -102,6 +102,9 @@ public void OnMapStart()
 
     IntToString(view_as<int>(false), sBuffer, sizeof(sBuffer));
     fuckTimer_RegisterSetting("HUDShowTime0Hours", sBuffer);
+
+    IntToString(view_as<int>(false), sBuffer, sizeof(sBuffer));
+    fuckTimer_RegisterSetting("HUDDeadHUD", sBuffer);
 }
 
 public void OnCvarChange(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -132,17 +135,50 @@ public void OnGameFrame()
 
     for (int i = 0; i <= iMaxBonus; i++)
     {
-        imStages.SetValue(i, fuckTimer_GetAmountOfStages(i));
         imCheckpoints.SetValue(i, fuckTimer_GetAmountOfCheckpoints(i));
+        imStages.SetValue(i, fuckTimer_GetAmountOfStages(i));
     }
 
     fuckTimer_LoopClients(client, false, false)
     {
+        int target = -1;
+
         bool success = fuckTimer_GetClientSetting(client, "HUD", sSetting);
 
-        if (!success || !IsPlayerAlive(client) || !view_as<bool>(StringToInt(sSetting)))
+        if (!success || !view_as<bool>(StringToInt(sSetting)))
         {
             continue;
+        }
+
+        if (!IsPlayerAlive(client))
+        {
+            success = fuckTimer_GetClientSetting(client, "HUDDeadHUD", sSetting);
+
+            if (!success || !view_as<bool>(StringToInt(sSetting)))
+            {
+                continue;
+            }
+            
+            int iMode = GetEntProp(client, Prop_Send, "m_iObserverMode");
+
+            // 4 - 1st Person, 5 - 3rd Person
+            if (iMode == 4 || iMode == 5)
+            {
+                target = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
+
+                if (target < 1 || !IsPlayerAlive(target) || IsFakeClient(target))
+                {
+                    target = -1;
+                }
+
+            }
+        }
+
+        int iClient = client;
+        
+        if (target > 0)
+        {
+            client = target;
         }
 
         imBuffer = new IntMap();
@@ -382,7 +418,7 @@ public void OnGameFrame()
         delete imBuffer;
 
         Format(sHUD, sizeof(sHUD), "%s%s</font></pre>", sHUD, sHUDBuffer);
-        PrintCSGOHUDText(client, sHUD);
+        PrintCSGOHUDText(iClient, sHUD);
     }
 
     delete imCheckpoints;
