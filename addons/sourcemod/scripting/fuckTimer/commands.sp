@@ -57,38 +57,36 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-    RegConsoleCmd("sm_main", Command_Main);
+    // sm_settings
 
-    RegConsoleCmd("sm_start", Command_Start);
-
-    RegConsoleCmd("sm_stop", Command_Stop);
-
-    RegConsoleCmd("sm_end", Command_End);
-
-    RegConsoleCmd("sm_r", Command_Restart);
-    RegConsoleCmd("sm_restart", Command_Restart);
-
-    RegConsoleCmd("sm_goback", Command_GoBack);
-
-    RegConsoleCmd("sm_rs", Command_RestartStage);
-    RegConsoleCmd("sm_back", Command_RestartStage);
-    RegConsoleCmd("sm_restartstage", Command_RestartStage);
-
-    RegConsoleCmd("sm_teleport", Command_RestartStage); // Checkpoints?
-
-    RegConsoleCmd("sm_b", Command_Bonus);
-    RegConsoleCmd("sm_bonus", Command_Bonus);
-
-    RegConsoleCmd("sm_s", Command_Stage);
-    RegConsoleCmd("sm_stage", Command_Stage);
-
-    RegConsoleCmd("sm_style", Command_Styles);
-    RegConsoleCmd("sm_styles", Command_Styles);
-
+    // Player commands
     RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref);
 
-    RegConsoleCmd("sm_tier", Command_Tier);
+    // Timer Commands
+    RegConsoleCmd("sm_main", Command_Main, "Teleports you to the main path");
+    RegConsoleCmd("sm_start", Command_Start, "Teleports you to the start zone of the current path");
+    RegConsoleCmd("sm_stop", Command_Stop, "Stops the timer");
+    RegConsoleCmd("sm_end", Command_End, "Teleports you to the end zone of the current path, timer will be stopped(!)");
+    RegConsoleCmd("sm_r", Command_Restart, "Same as sm_start, teleports you back to the start zone");
+    RegConsoleCmd("sm_restart", Command_Restart, "Same as sm_start, teleports you back to the start zone");
+    RegConsoleCmd("sm_goback", Command_GoBack, "Teleports you back to the previous stage/bonus or to the start zone");
+    RegConsoleCmd("sm_rs", Command_RestartStage, "Teleports you back to the stage (start) zone");
+    RegConsoleCmd("sm_back", Command_RestartStage, "Teleports you back to the stage (start) zone");
+    RegConsoleCmd("sm_restartstage", Command_RestartStage, "Teleports you back to the stage (start) zone");
+    RegConsoleCmd("sm_teleport", Command_RestartStage, "Teleports you back to the stage (start) zone"); // Checkpoints?
+    RegConsoleCmd("sm_b", Command_Bonus, "Teleports you to the bonus start zone.");
+    RegConsoleCmd("sm_bonus", Command_Bonus, "Teleports you to the bonus start zone.");
+    RegConsoleCmd("sm_s", Command_Stage, "Teleports you to the stage zone.");
+    RegConsoleCmd("sm_stage", Command_Stage, "Teleports you to the stage zone.");
 
+    // Style(s) commands
+    RegConsoleCmd("sm_style", Command_Styles, "Lists you all available styles, which you can switch to.");
+    RegConsoleCmd("sm_styles", Command_Styles, "Lists you all available styles, which you can switch to.");
+
+    // Map commands
+    RegConsoleCmd("sm_tier", Command_Tier, "Prints list of all maps into your chat with tier.");
+
+    // HUD commands
     RegConsoleCmd("sm_hud", Command_HUD, "List all HUD related commands as menu");
     RegConsoleCmd("sm_hudmove", Command_HUDMove, "Move/Swap keys to another positions");
     RegConsoleCmd("sm_hudenable", Command_HUDEnable, "Enable/Disable the HUD entirely");
@@ -133,7 +131,7 @@ public Action Command_Start(int client, int args)
     fuckTimer_ResetClientTimer(client);
 
     int iBonus = fuckTimer_GetClientBonus(client);
-    int iZone = fuckTimer_GetEndZone(iBonus);
+    int iZone = fuckTimer_GetStartZone(iBonus);
 
     ReplyToCommand(client, "Bonus: %d", iBonus);
 
@@ -527,6 +525,11 @@ public Action Command_Tier(int client, int args)
 {
     char sBuffer[MAX_NAME_LENGTH];
     GetCmdArgString(sBuffer, sizeof(sBuffer));
+
+    if (strlen(sBuffer) < 3)
+    {
+        fuckTimer_GetCurrentWorkshopMap(sBuffer, sizeof(sBuffer));
+    }
 
     fuckTimer_GetMapTiers(client, sBuffer, OnMapTiers);
 }
