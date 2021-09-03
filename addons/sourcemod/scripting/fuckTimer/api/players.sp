@@ -195,6 +195,8 @@ public void PostPlayerSetting(HTTPResponse response, any userid, const char[] er
 
 void SetPlayerSetting(int client, const char[] setting, const char[] value)
 {
+    Player[client].Settings.SetString(setting, value);
+
     JSONObject jSetting = new JSONObject();
     jSetting.SetString("Value", value);
 
