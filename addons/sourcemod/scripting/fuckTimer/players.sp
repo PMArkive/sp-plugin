@@ -147,8 +147,9 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 
     if (Player[client].Settings != null && fuckTimer_IsClientTimeRunning(client) && !Player[client].InStage)
     {
-        Styles style;
-        Player[client].Settings.GetValue(SETTING_STYLE, style);
+        char sBuffer[12];
+        Player[client].Settings.GetString(SETTING_STYLE, sBuffer, sizeof(sBuffer));
+        Styles style = view_as<Styles>(StringToInt(sBuffer));
 
         if (style == StyleSideways && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
         {
@@ -240,11 +241,13 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
 Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
 {
-    eInvalidKeyPref preference;
-    Player[client].Settings.GetValue(SETTING_INVALIDKEYPREF, preference);
+    char sBuffer[MAX_SETTING_VALUE_LENGTH];
+    Player[client].Settings.GetString(SETTING_INVALIDKEYPREF, sBuffer, sizeof(sBuffer));
+    eInvalidKeyPref preference = view_as<eInvalidKeyPref>(StringToInt(sBuffer));
 
-    Styles style;
-    Player[client].Settings.GetValue(SETTING_STYLE, style);
+    
+    Player[client].Settings.GetString(SETTING_STYLE, sBuffer, sizeof(sBuffer));
+    Styles style = view_as<Styles>(StringToInt(sBuffer));
 
     if (preference == IKStop)
     {
@@ -258,7 +261,6 @@ Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
     }
     else if (preference == IKNormal)
     {
-        char sBuffer[MAX_SETTING_VALUE_LENGTH];
         IntToString(view_as<int>(StyleNormal), sBuffer, sizeof(sBuffer));
         SetPlayerSetting(client, SETTING_STYLE, sBuffer);
 
