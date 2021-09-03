@@ -165,10 +165,10 @@ public Action Command_End(int client, int args)
         return Plugin_Handled;
     }
 
-    fuckTimer_ResetClientTimer(client);
-
     int iBonus = fuckTimer_GetClientBonus(client);
     int iZone = fuckTimer_GetEndZone(iBonus);
+
+    fuckTimer_ResetClientTimer(client);
 
     ReplyToCommand(client, "Bonus: %d", iBonus);
 
@@ -375,12 +375,13 @@ public Action Command_Stage(int client, int args)
     {
         int iZone = 0;
 
+        int iBonus = fuckTimer_GetClientBonus(client);
+
         fuckTimer_ResetClientTimer(client);
 
         char sStage[12];
         GetCmdArg(1, sStage, sizeof(sStage));
 
-        int iBonus = fuckTimer_GetClientBonus(client);
         int iStage = 0;
 
         if (IsStringNumeric(sStage))
