@@ -697,17 +697,18 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     }
 
     Player[client].Zone = zone;
+    Player[client].Bonus = fuckTimer_GetZoneBonus(Player[client].Zone);
 
     int iBonus = 0;
-    bool bStart = fuckTimer_IsStartZone(zone, iBonus);
-    int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
+    bool bStart = fuckTimer_IsStartZone(Player[client].Zone, iBonus);
+    int iStage = fuckTimer_GetStageByIndex(Player[client].Zone, iBonus);
 
     if (Player[client].Time == 0.0)
     {
         Player[client].TimeInZone += GetTickInterval();
 
         // We need to check this here, otherwise set speed can be abused
-        if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
+        if (!fuckTimer_IsMiscZone(Player[client].Zone, iBonus) && iStage > 0)
         {
             Player[client].SetSpeed = true;
         }
@@ -722,7 +723,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 
     int iCheckpoint = fuckTimer_GetCheckpointByIndex(zone, iBonus);
 
-    if (!fuckTimer_IsMiscZone(zone, iBonus) && iStage > 0)
+    if (!fuckTimer_IsMiscZone(Player[client].Zone, iBonus) && iStage > 0)
     {
         Player[client].SetSpeed = true;
         Player[client].StageRunning = false;
@@ -730,13 +731,13 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         Player[client].TimeInZone += GetTickInterval();
     }
 
-    if (!fuckTimer_IsMiscZone(zone, iBonus) && iCheckpoint > 0)
+    if (!fuckTimer_IsMiscZone(Player[client].Zone, iBonus) && iCheckpoint > 0)
     {
         Player[client].CheckpointRunning = false;
         SetIntMapTime(Player[client].CheckpointDetails, iCheckpoint, 0.0);
     }
 
-    if (fuckTimer_IsAntiJumpZone(zone, iBonus))
+    if (fuckTimer_IsAntiJumpZone(Player[client].Zone, iBonus))
     {
         Player[client].BlockJump = true;
     }

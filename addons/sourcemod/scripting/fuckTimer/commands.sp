@@ -309,8 +309,15 @@ public Action Command_Bonus(int client, int args)
         }
         else
         {
-            ReplyToCommand(client, "(1) No bonus found.");
-            return Plugin_Handled;
+            iZone = fuckTimer_GetStartZone(1);
+
+            if (iZone < 1)
+            {
+                ReplyToCommand(client, "(1) No bonus found.");
+                return Plugin_Handled;
+            }
+
+            CallOnClientCommand(client, iBonus, true);
         }
     }
     else
