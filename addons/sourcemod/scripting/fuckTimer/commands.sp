@@ -514,7 +514,7 @@ public int Menu_InvalidKeyPref(Menu menu, MenuAction action, int client, int par
         char sParam[12];
         if (menu.GetItem(param, sParam, sizeof(sParam)))
         {
-            fuckTimer_GetClientSetting(client, "InvalidKeyPref", sParam);
+            fuckTimer_SetClientSetting(client, "InvalidKeyPref", sParam);
             
             if (fuckTimer_IsClientTimeRunning(client))
             {
