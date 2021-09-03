@@ -176,6 +176,12 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+    if (GetExtensionFileStatus("accelerator.ext") != 1)
+    {
+        SetFailState("Extension \"Accelerator\" not found!");
+        return;
+    }
+
     fuckTimer_LoopClients(client, false, false)
     {
         LoadPlayer(client);
@@ -184,6 +190,15 @@ public void OnPluginStart()
     HookEvent("round_poststart", Event_RoundReset);
     HookEvent("round_end", Event_RoundReset);
     HookEvent("player_activate", Event_PlayerActivate);
+}
+
+public void OnAllPluginsLoaded()
+{
+    if (!LibraryExists("endtouchfix"))
+    {
+        SetFailState("Plugin \"End Touch Fix\" not found!");
+        return;
+    }
 }
 
 public void OnMapStart()
