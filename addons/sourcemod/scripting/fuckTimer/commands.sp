@@ -115,7 +115,6 @@ public Action Command_Main(int client, int args)
     if (iZone > 0)
     {
         CallOnClientCommand(client, 0, true);
-
         fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
@@ -139,7 +138,6 @@ public Action Command_Start(int client, int args)
     if (iZone > 0)
     {
         CallOnClientCommand(client, 0, true);
-
         fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
@@ -175,7 +173,6 @@ public Action Command_End(int client, int args)
     if (iZone > 0)
     {
         CallOnClientCommand(client, 0, false);
-
         fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
@@ -189,9 +186,8 @@ public Action Command_Restart(int client, int args)
         return Plugin_Handled;
     }
 
-    ClientRestart(client);
-
     CallOnClientCommand(client, 0, true);
+    ClientRestart(client);
 
     return Plugin_Handled;
 }
@@ -223,24 +219,24 @@ public Action Command_GoBack(int client, int args)
     }
 
     PrintToChat(client, "After - Stage: %d, Bonus: %d", iStage, iBonus);
+    int iLevel = -1;
 
     if (iStage > 1)
     {
         iStage--;
 
         iZone = fuckTimer_GetStageZone(iBonus, iStage);
-
-        CallOnClientCommand(client, iStage, false);
+        iLevel = iStage;
     }
     else
     {
         iZone = fuckTimer_GetStartZone(iBonus);
-
-        CallOnClientCommand(client, 0, true);
+        iLevel = 0;
     }
 
     if (iZone > 0)
     {
+        CallOnClientCommand(client, iLevel, true);
         fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
@@ -258,24 +254,24 @@ public Action Command_RestartStage(int client, int args)
 
     int iStage = fuckTimer_GetClientStage(client);
     int iBonus = fuckTimer_GetClientBonus(client);
+    int iLevel = 0;
 
     fuckTimer_ResetClientTimer(client);
 
     if (iStage > 1)
     {
         iZone = fuckTimer_GetStageZone(iBonus, iStage);
-
-        CallOnClientCommand(client, iStage, false);
+        iLevel = iStage;
     }
     else if (iBonus > 0)
     {
         iZone = fuckTimer_GetStartZone(iBonus);
-
-        CallOnClientCommand(client, 0, true);
+        iLevel = 0;
     }
 
     if (iZone > 0)
     {
+        CallOnClientCommand(client, iLevel, true);
         fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
@@ -296,6 +292,7 @@ public Action Command_Bonus(int client, int args)
 
     int iZone = 0;
     int iBonus = fuckTimer_GetClientBonus(client);
+    int iLevel = 0;
 
     fuckTimer_ResetClientTimer(client);
 
@@ -304,8 +301,7 @@ public Action Command_Bonus(int client, int args)
         if (iBonus > 0)
         {
             iZone = fuckTimer_GetStartZone(iBonus);
-
-            CallOnClientCommand(client, iBonus, true);
+            iLevel = iBonus;
         }
         else
         {
@@ -317,7 +313,7 @@ public Action Command_Bonus(int client, int args)
                 return Plugin_Handled;
             }
 
-            CallOnClientCommand(client, iBonus, true);
+            iLevel = iBonus;
         }
     }
     else
@@ -339,8 +335,7 @@ public Action Command_Bonus(int client, int args)
         if (iTemp > 0)
         {
             iZone = fuckTimer_GetStartZone(iTemp);
-
-            CallOnClientCommand(client, iTemp, true);
+            iLevel = iTemp;
         }
         else
         {
@@ -351,15 +346,12 @@ public Action Command_Bonus(int client, int args)
         if (iZone < 1)
         {
             ReplyToCommand(client, "No bonus found try to get bonus 1 zone");
-
-            iZone = fuckTimer_GetStartZone(1);
-
-            CallOnClientCommand(client, 1, true);
         }
     }
 
     if (iZone > 0)
     {
+        CallOnClientCommand(client, iLevel, true);
         fuckTimer_TeleportEntityToZone(client, iZone);
     }
 
@@ -397,17 +389,15 @@ public Action Command_Stage(int client, int args)
         }
 
         iZone = fuckTimer_GetStageZone(iBonus, iStage);
-        
-        if (iZone == -1)
-        {
-            iZone = fuckTimer_GetStageZone(0, 1);
-
-            CallOnClientCommand(client, 1, iStage == 1 ? true : false);
-        }
 
         if (iZone > 0)
         {
+            CallOnClientCommand(client, iStage, true);
             fuckTimer_TeleportEntityToZone(client, iZone);
+        }
+        else
+        {
+            ReplyToCommand(client, "Stage %d not exist.", iStage);
         }
     }
 
