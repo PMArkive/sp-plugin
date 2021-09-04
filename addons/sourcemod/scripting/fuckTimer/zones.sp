@@ -193,6 +193,11 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     GetfuckTimerZoneValue(smEffects, "PreSpeed", sValue, sizeof(sValue));
     Zone[entity].PreSpeed = StringToInt(sValue);
 
+    if (Zone[entity].PreSpeed == -1)
+    {
+        Zone[entity].PreSpeed = PRESPEED_LIMIT;
+    }
+
     GetfuckTimerZoneValue(smEffects, "MapAuthor", Zone[entity].MapAuthor, sizeof(ZoneDetails::MapAuthor));
     GetfuckTimerZoneValue(smEffects, "ZoneAuthor", Zone[entity].ZoneAuthor, sizeof(ZoneDetails::ZoneAuthor));
 
