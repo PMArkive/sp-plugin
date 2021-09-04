@@ -199,9 +199,18 @@ void DownloadZoneFile()
 
     if (FileExists(sFile))
     {
-        LogMessage("[fuckTimer.Downloader] %s.zon already exist.", sMap);
-        DownloadStripperGlobal(sMap);
-        return;
+        LogMessage("[fuckTimer.Downloader] %s.zon already exist. (Size: %d bytes)", sMap, FileSize(sFile));
+
+        if (FileSize(sFile) > 16)
+        {
+            DownloadStripperGlobal(sMap);
+            return;
+        }
+        else
+        {
+            LogMessage("[fuckTimer.Downloader] %s.zon file is too small. Download %s.zon again...", sMap, sMap);
+            DeleteFile(sFile);
+        }
     }
 
     int iTier = 0;
