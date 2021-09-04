@@ -75,7 +75,7 @@ public void OnPluginStart()
     IntToString(view_as<int>(StyleNormal), sValue, sizeof(sValue));
     Core.Settings.SetString(SETTING_STYLE, sValue);
     
-    IntToString(view_as<int>(IKStop), sValue, sizeof(sValue));
+    IntToString(view_as<int>(IKBlock), sValue, sizeof(sValue));
     Core.Settings.SetString(SETTING_INVALIDKEYPREF, sValue);
 
     HookEvent("player_activate", Event_PlayerActivate);
@@ -241,6 +241,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
 Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
 {
+    // TODO: Add message for sm_invalidkey command
     char sBuffer[MAX_SETTING_VALUE_LENGTH];
     Player[client].Settings.GetString(SETTING_INVALIDKEYPREF, sBuffer, sizeof(sBuffer));
     eInvalidKeyPref preference = view_as<eInvalidKeyPref>(StringToInt(sBuffer));
