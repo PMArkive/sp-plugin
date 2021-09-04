@@ -26,6 +26,7 @@
 #define MIN_API_KEY_LENGTH 12
 
 #define PRESPEED_LIMIT 250
+#define MAXVELOCITY_LIMIT 3500
 #define MAX_ENTITIES 2048
 
 #define fuckTimer_LoopClients(%1,%2,%3) for(int %1 = 1; %1 <= MaxClients; %1++) if(fuckTimer_IsClientValid(%1, %2, %3))

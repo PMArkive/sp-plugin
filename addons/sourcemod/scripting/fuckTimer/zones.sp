@@ -137,6 +137,11 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
         GetfuckTimerZoneValue(smEffects, "MaxVelocity", sValue, sizeof(sValue));
         Core.MaxVelocity = StringToInt(sValue);
+
+        if (Core.MaxVelocity == -1)
+        {
+            Core.MaxVelocity = MAXVELOCITY_LIMIT;
+        }
     }
 
     GetfuckTimerZoneValue(smEffects, "Checkpoint", sValue, sizeof(sValue));
