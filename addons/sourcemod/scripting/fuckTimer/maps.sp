@@ -202,6 +202,12 @@ void DownloadZoneFile()
         if (FileSize(sFile) > 16)
         {
             LogMessage("[fuckTimer.Downloader] %s.zon already exist.", sMap);
+            CallZoneDownload(sMap, true);
+
+            char sEndpoint[MAX_URL_LENGTH];
+            FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", sMap);
+            fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetMap);
+
             DownloadStripperGlobal(sMap);
             return;
         }
