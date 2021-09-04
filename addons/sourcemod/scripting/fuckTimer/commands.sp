@@ -619,6 +619,7 @@ public int Menu_ListHUDCommands(Menu menu, MenuAction action, int client, int pa
             if (!TranslationPhraseExists(sPhrase))
             {
                 PrintToChat(client, "For this command it doesn't exist any usage informations.");
+                return;
             }
 
             PrintToChat(client, "%T", sPhrase, client);
