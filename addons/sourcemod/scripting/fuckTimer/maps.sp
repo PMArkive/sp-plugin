@@ -659,7 +659,7 @@ public any Native_GetMapTiers(Handle plugin, int numParams)
     Call_StartFunction(plugin, fCallback);
     if (client > 0 && IsClientInGame(client))
     {
-        Call_PushCell(GetClientUserId(client));
+        Call_PushCell(client);
     }
     else
     {
