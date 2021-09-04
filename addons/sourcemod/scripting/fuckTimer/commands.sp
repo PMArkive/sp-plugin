@@ -60,7 +60,7 @@ public void OnPluginStart()
     // sm_settings
 
     // Player commands
-    RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref);
+    RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref, "Choose your prefered option on invalid key input");
 
     // Timer Commands
     RegConsoleCmd("sm_main", Command_Main, "Teleports you to the main path");
