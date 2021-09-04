@@ -132,8 +132,6 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         record.EndVelocity[1] = jMainRecord.GetFloat("EndVelocityY");
         record.EndVelocity[2] = jMainRecord.GetFloat("EndVelocityZ");
 
-        LogMessage("Style: %d, Level: %d, Player: %s (Id: %d), Type: %s, Tickrate: %.1f (%.1f), Time: %.3f, TimeInZone: %.3f, Attempts: %d, Status: %d, StartPosition: %.3f/%.3f/%.3f", record.Style, record.Level, record.PlayerName, record.PlayerId, sType, record.Tickrate, jMainRecord.GetFloat("Tickrate"), record.Time, record.TimeInZone, record.Attempts, record.Status, record.StartPosition[0], record.StartPosition[1], record.StartPosition[2]);
-
         if (record.Type == TimeCheckpoint || record.Type == TimeStage)
         {
             if (record.Details == null)
@@ -175,8 +173,6 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
                     details.EndVelocity[0] = jCSRecord.GetFloat("EndVelocityX");
                     details.EndVelocity[1] = jCSRecord.GetFloat("EndVelocityY");
                     details.EndVelocity[2] = jCSRecord.GetFloat("EndVelocityZ");
-
-                    LogMessage("Stage: %d, Time: %.3f, TimeInZone: %.3f, Attempts: %d", iCSLevel, details.Time, details.TimeInZone, details.Attempts);
                 }
                 else
                 {
@@ -189,8 +185,6 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
                     details.StartVelocity[0] = jCSRecord.GetFloat("VelocityX");
                     details.StartVelocity[1] = jCSRecord.GetFloat("VelocityY");
                     details.StartVelocity[2] = jCSRecord.GetFloat("VelocityZ");
-
-                    LogMessage("Checkpoint: %d, Time: %.3f", iCSLevel, details.Time);
                 }
 
                 record.Details.SetArray(iCSLevel, details, sizeof(details));

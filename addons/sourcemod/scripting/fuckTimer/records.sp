@@ -206,9 +206,6 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
             if (tType == TimeStage)
             {
-                PrintToConsole(client, "%s %d: TimeInZone: %.3f", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.TimeInZone);
-                PrintToConsole(client, "%s %d: Attempts: %d", tType == TimeCheckpoint ? "Checkpoint" : "Stage", iPoint, details.Attempts);
-
                 fTimeInZone += details.TimeInZone;
                 iAttempts += details.Attempts;
                 
@@ -224,8 +221,6 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
         delete snap;
     }
-
-    PrintToConsole(client, "TimeInZone: %.3f, Attempts: %d", fTimeInZone, iAttempts);
 
     if (bServerRecord)
     {
@@ -262,8 +257,6 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     smRecord.GetArray("EndAngle", record.EndAngle, 3);
     smRecord.GetArray("StartVelocity", record.StartVelocity, 3);
     smRecord.GetArray("EndVelocity", record.EndVelocity, 3);
-
-    LogMessage("Style: %d, Level: %d, Player: %s (Id: %d), Type: %d, Tickrate: %.1f, Time: %.3f, TimeInZone: %.3f, Attempts: %d, Status: %d, StartPosition: %.3f/%.3f/%.3f", record.Style, record.Level, record.PlayerName, record.PlayerId, record.Type, record.Tickrate, record.Time, record.TimeInZone, record.Attempts, record.Status, record.StartPosition[0], record.StartPosition[1], record.StartPosition[2]);
 
     JSONObject jRecord = new JSONObject();
     jRecord.SetInt("MapId", fuckTimer_GetCurrentMapId());
@@ -358,8 +351,6 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetFloat("EndVelocityY", details.EndVelocity[1]);
                 jDetails.SetFloat("EndVelocityZ", details.EndVelocity[2]);
                 jRecords.Push(jDetails);
-
-                LogMessage("Stage: %d, Time: %.3f, TimeInZone: %.3f, Attempts: %d, StartPosition: %.3f/%.3f/%.3f", iPoint, details.Time, details.TimeInZone, details.Attempts, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
             }
             else
             {
@@ -376,8 +367,6 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetFloat("VelocityY", details.StartVelocity[1]);
                 jDetails.SetFloat("VelocityZ", details.StartVelocity[2]);
                 jRecords.Push(jDetails);
-
-                LogMessage("Checkpoint: %d, Time: %.3f, StartPosition: %.3f/%.3f/%.3f", iPoint, details.Time, details.StartPosition[0], details.StartPosition[1], details.StartPosition[2]);
             }
 
             record.Details.SetArray(iPoint, details, sizeof(details));

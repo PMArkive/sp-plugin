@@ -205,8 +205,6 @@ public Action Command_GoBack(int client, int args)
 
     fuckTimer_ResetClientTimer(client);
 
-    PrintToChat(client, "Before - Stage: %d, Bonus: %d", iStage, iBonus);
-
     if (iBonus > 0)
     {
         iBonus--;
@@ -217,7 +215,6 @@ public Action Command_GoBack(int client, int args)
         }
     }
 
-    PrintToChat(client, "After - Stage: %d, Bonus: %d", iStage, iBonus);
     int iLevel = -1;
 
     if (iStage > 1)
@@ -449,7 +446,6 @@ public int Menu_Styles(Menu menu, MenuAction action, int client, int param)
 
             char sStyle[MAX_STYLE_NAME_LENGTH];
             fuckTimer_GetStyleName(style, sStyle, sizeof(sStyle));
-            PrintToChat(client, "Set style to %s (Id: %d)", sStyle, style);
 
             fuckTimer_SetClientSetting(client, "Style", sParam);
             ClientRestart(client);
