@@ -538,7 +538,7 @@ public void OnMapTiers(int client, StringMap tiers)
     }
     else
     {
-        PrintToChat(client, "Found %d Maps", snap.Length);
+        PrintToConsole(client, "Found %d Maps", snap.Length);
     }
 
     char sName[MAX_NAME_LENGTH];
@@ -555,7 +555,7 @@ public void OnMapTiers(int client, StringMap tiers)
         }
         else
         {
-            PrintToChat(client, "Map: %s, Tier: %d", sName, iTier);
+            PrintToConsole(client, "Map: %s, Tier: %d", sName, iTier);
         }
 
         sName[0] = '\0';
