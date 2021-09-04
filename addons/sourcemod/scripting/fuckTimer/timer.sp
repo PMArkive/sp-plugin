@@ -30,7 +30,7 @@ enum struct PlayerData
     bool SetSpeed;
     bool BlockJump;
     bool BlockTeleport;
-    bool BlockStart;
+    bool BlockLeaveZone;
 
     // Prestrafe
     int LastButtons;
@@ -81,7 +81,7 @@ enum struct PlayerData
 
         this.SetSpeed = false;
         this.BlockJump = false;
-        this.BlockStart = false;
+        this.BlockLeaveZone = false;
 
         this.LastButtons = 0;
         this.Prestrafe = false;
@@ -111,10 +111,9 @@ enum struct PlayerData
         delete this.StageDetails;
     }
 
-    void AllowPrestrafe(int client, bool status)
+    void AllowPrestrafe(bool status)
     {
         this.Prestrafe = status;
-        PrintToChat(client, "Set status to %d", status);
     }
 }
 
@@ -359,8 +358,7 @@ void OnButtonPress(int client, int button)
             return;
         }
 
-        Player[client].AllowPrestrafe(client, true);
-        PrintToChatAll("Set %N prestrafe to true", client);
+        Player[client].AllowPrestrafe(true);
     }
 }
 
@@ -378,7 +376,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     if (fuckTimer_IsStartZone(zone, iBonus) && !fuckTimer_IsMiscZone(zone, iBonus))
     {
         SetClientStartValues(client, iBonus);
-        Player[client].AllowPrestrafe(client, false);
+        Player[client].AllowPrestrafe(false);
 
         return;
     }
@@ -479,7 +477,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         Player[client].SetSpeed = true;
 
         Player[client].Stage = iStage;
-        Player[client].AllowPrestrafe(client, false);
+        Player[client].AllowPrestrafe(false);
 
         // That isn't really an workaround or dirty fix but... 
         // with this check we're able to start the stage timer
@@ -701,11 +699,17 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 
     int iBonus = 0;
     bool bStart = fuckTimer_IsStartZone(Player[client].Zone, iBonus);
+    bool bEnd = fuckTimer_IsEndZone(Player[client].Zone, iBonus);
     int iStage = fuckTimer_GetStageByIndex(Player[client].Zone, iBonus);
 
     if (iStage > 0)
     {
         Player[client].Stage = iStage;
+    }
+
+    if (bEnd)
+    {
+        Player[client].Stage = Core.Stages.GetInt(iBonus);
     }
 
     if (Player[client].Time == 0.0)
@@ -751,11 +755,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 public void fuckTimer_OnClientCommand(int client, int level, bool start)
 {
     Player[client].Reset();
-
-    if (!start)
-    {
-        Player[client].BlockStart = true;
-    }
+    Player[client].BlockLeaveZone = true;
 }
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
@@ -765,22 +765,22 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         return;
     }
     
-    if (Player[client].BlockStart)
+    int bonus = fuckTimer_GetZoneBonus(zone);
+    if (Player[client].BlockLeaveZone)
     {
-        Player[client].BlockStart = false;
+        Player[client].BlockLeaveZone = false;
         return;
     }
     
     Player[client].SetSpeed = false;
     Player[client].BlockJump = false;
 
-    int bonus = fuckTimer_GetZoneBonus(zone);
     bool bSkipAttempts = false;
 
     if (fuckTimer_IsStartZone(zone, bonus) && !fuckTimer_IsMiscZone(zone, bonus))
     {
         Player[client].Reset(.resetTimeInZone = false, .resetAttempts = false);
-        Player[client].AllowPrestrafe(client, false);
+        Player[client].AllowPrestrafe(false);
 
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
@@ -833,7 +833,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Player[client].Attempts = 0;
         }
 
-        Player[client].AllowPrestrafe(client, false);
+        Player[client].AllowPrestrafe(false);
         
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
@@ -917,8 +917,7 @@ public Action OnPostThinkPost(int client)
     {
         if (GetEntityFlags(client) & FL_ONGROUND)
         {
-            Player[client].AllowPrestrafe(client, false);
-            PrintToChatAll("Set %N prestrafe to false", client);
+            Player[client].AllowPrestrafe(false);
         }
     }
 
