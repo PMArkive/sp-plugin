@@ -703,6 +703,11 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     bool bStart = fuckTimer_IsStartZone(Player[client].Zone, iBonus);
     int iStage = fuckTimer_GetStageByIndex(Player[client].Zone, iBonus);
 
+    if (iStage > 0)
+    {
+        Player[client].Stage = iStage;
+    }
+
     if (Player[client].Time == 0.0)
     {
         Player[client].TimeInZone += GetTickInterval();
