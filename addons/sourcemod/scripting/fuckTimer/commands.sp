@@ -73,7 +73,6 @@ public void OnPluginStart()
     RegConsoleCmd("sm_rs", Command_RestartStage, "Teleports you back to the stage (start) zone");
     RegConsoleCmd("sm_back", Command_RestartStage, "Teleports you back to the stage (start) zone");
     RegConsoleCmd("sm_restartstage", Command_RestartStage, "Teleports you back to the stage (start) zone");
-    RegConsoleCmd("sm_teleport", Command_RestartStage, "Teleports you back to the stage (start) zone"); // Checkpoints?
     RegConsoleCmd("sm_b", Command_Bonus, "Teleports you to the bonus start zone.");
     RegConsoleCmd("sm_bonus", Command_Bonus, "Teleports you to the bonus start zone.");
     RegConsoleCmd("sm_s", Command_Stage, "Teleports you to the stage zone.");
@@ -525,7 +524,7 @@ public Action Command_Tier(int client, int args)
     char sBuffer[MAX_NAME_LENGTH];
     GetCmdArgString(sBuffer, sizeof(sBuffer));
 
-    if (strlen(sBuffer) < 3)
+    if (strlen(sBuffer) < 2)
     {
         fuckTimer_GetCurrentWorkshopMap(sBuffer, sizeof(sBuffer));
     }
