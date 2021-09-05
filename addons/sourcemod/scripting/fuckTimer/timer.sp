@@ -766,7 +766,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     }
     
     int bonus = fuckTimer_GetZoneBonus(zone);
-    if (Player[client].BlockLeaveZone)
+    if (Player[client].BlockLeaveZone || Player[client].Zone != zone)
     {
         Player[client].BlockLeaveZone = false;
         return;
