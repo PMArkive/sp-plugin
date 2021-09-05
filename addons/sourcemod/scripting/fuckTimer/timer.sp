@@ -30,7 +30,6 @@ enum struct PlayerData
     bool SetSpeed;
     bool BlockJump;
     bool BlockTeleport;
-    bool BlockLeaveZone;
 
     // Prestrafe
     int LastButtons;
@@ -81,7 +80,6 @@ enum struct PlayerData
 
         this.SetSpeed = false;
         this.BlockJump = false;
-        this.BlockLeaveZone = false;
 
         this.LastButtons = 0;
         this.Prestrafe = false;
@@ -755,7 +753,6 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
 public void fuckTimer_OnClientCommand(int client, int level, bool start)
 {
     Player[client].Reset();
-    Player[client].BlockLeaveZone = true;
 }
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
@@ -766,9 +763,8 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     }
     
     int bonus = fuckTimer_GetZoneBonus(zone);
-    if (Player[client].BlockLeaveZone || Player[client].Zone != zone)
+    if (Player[client].Zone != zone)
     {
-        Player[client].BlockLeaveZone = false;
         return;
     }
     
