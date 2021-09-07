@@ -326,6 +326,7 @@ public Action Command_Bonus(int client, int args)
         else
         {
             ReplyToCommand(client, "String (%s) is not numeric.", sBuffer);
+            return Plugin_Handled;
         }
 
         if (iTemp > 0)
