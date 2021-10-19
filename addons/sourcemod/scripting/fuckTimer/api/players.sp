@@ -37,6 +37,8 @@ public void GetPlayerData(HTTPResponse response, any userid, const char[] error)
     Player[client].Settings = new StringMap();
     
     LoadPlayerSetting(client);
+
+    UpdatePlayer(client);
 }
 
 void PreparePlayerPostData(int client)
@@ -46,6 +48,11 @@ void PreparePlayerPostData(int client)
 
     JSONObject jPlayer = new JSONObject();
     jPlayer.SetInt("Id", GetSteamAccountID(client));
+
+    char sIP[18];
+    GetClientIP(client, sIP, sizeof(sIP));
+    jPlayer.SetString("FirstIP", sIP);
+    jPlayer.SetString("LastIP", sIP);
 
     char sCommunityId[32];
     GetClientAuthId(client, AuthId_SteamID64, sCommunityId, sizeof(sCommunityId));
@@ -226,6 +233,15 @@ public void PatchPlayerSetting(HTTPResponse response, any pack, const char[] err
     if (response.Status != HTTPStatus_NoContent)
     {
         LogError("[Players.PatchPlayerSetting] Something went wrong (Setting: %s). Status Code: %d, Error: %s", sSetting, response.Status, error);
+        return;
+    }
+}
+
+public void UpdatePlayerData(HTTPResponse response, any userid, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        SetFailState("[Players.UpdatePlayerData] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 }

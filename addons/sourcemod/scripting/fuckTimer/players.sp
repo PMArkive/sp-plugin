@@ -112,7 +112,7 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
 
 public void OnClientDisconnect(int client)
 {
-    Player[client].Reset();
+    UpdatePlayer(client, true);
 }
 
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
@@ -387,4 +387,28 @@ void LoadPlayer(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Player/Id/%d", GetSteamAccountID(client));
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerData, GetClientUserId(client));
+}
+
+void UpdatePlayer(int client, bool reset = false)
+{
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Player/Id/%d", GetSteamAccountID(client));
+
+    JSONObject jPlayer = new JSONObject();
+    
+    char sBuffer[MAX_NAME_LENGTH];
+    GetClientName(client, sBuffer, sizeof(sBuffer));
+    jPlayer.SetString("Name", sBuffer);
+
+    GetClientIP(client, sBuffer, sizeof(sBuffer));
+    jPlayer.SetString("LastIP", sBuffer);
+
+    jPlayer.SetInt("Status", view_as<int>(Player[client].Status));
+
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(jPlayer, UpdatePlayerData);
+
+    if (reset)
+    {
+        Player[client].Reset();
+    }
 }
