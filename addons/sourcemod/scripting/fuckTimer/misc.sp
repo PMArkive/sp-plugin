@@ -7,6 +7,7 @@
 
 enum struct PluginData
 {
+    ConVar ChatPrefix;
     ConVar ItemCleanup;
     ConVar HideCommands;
 }
@@ -24,6 +25,7 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
     fuckTimer_StartConfig("misc");
+    Core.ChatPrefix = AutoExecConfig_CreateConVar("misc_chat_prefix", "{orange}fuckTimer {lightblue}>", "Specify the chat prefix for each message in chat and console (Default: \"{orange}fuckTimer {lightblue}>\").");
     Core.ItemCleanup = AutoExecConfig_CreateConVar("misc_item_cleanup", "1", "Enable (1) or Disable (1) cleaning up of items and weapons?", _, true, 0.0, true, 1.0);
     Core.HideCommands = AutoExecConfig_CreateConVar("misc_hide_commands", "1", "Hide \"PublicChatTrigger\" (defined in \"configs/core.cfg\") commands?", _, true, 0.0, true, 1.0);
     fuckTimer_EndConfig();

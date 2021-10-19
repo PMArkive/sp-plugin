@@ -79,7 +79,14 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
     JSONArray jMainrecords = view_as<JSONArray>(response.Data);
 
-    LogMessage("[Records.GetRecords] We found %d records for this map", jMainrecords.Length);
+    if (client > 0 && fuckTimer_IsClientValid(client, true, true))
+    {
+        LogMessage("[Records.GetRecords] We found %d player records for \"%N\" for this map", jMainrecords.Length, client);
+    }
+    else
+    {
+        LogMessage("[Records.GetRecords] We found %d records for this map", jMainrecords.Length);
+    }
 
     JSONObject jMainRecord = null;
 
@@ -95,11 +102,11 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
         char sType[12];
         jMainRecord.GetString("Type", sType, sizeof(sType));
-        if (StrEqual(sType, "Checkpoint", false))
+        if (sType[0] == 'C')
         {
             record.Type = TimeCheckpoint;
         }
-        else if (StrEqual(sType, "Stage", false))
+        else if (sType[0] == 'S')
         {
             record.Type = TimeStage;
         }

@@ -3,6 +3,8 @@
 #endif
 #define _fuckTimer_hud_included
 
+#include <fuckTimer_players>
+
 #define MAX_HUD_LINES 6
 #define HUD_SIDE_LEFT 0
 #define HUD_SIDE_RIGHT 1
@@ -31,7 +33,7 @@ enum eHUDKeys
     HKNone = 0,
     HKSpeed,
     HKTime = 10,
-    HKStageTime,
+    HKCSTime,
     HKTimeInZone,
     HKPersonalRecord = 20,
     HKServerRecord,
@@ -46,11 +48,42 @@ enum eHUDKeys
     HKValidator
 }
 
+enum eCompareLocation
+{
+    CLOff = 0,
+    CLHUD,
+    CLChat,
+    CLBoth
+}
+
+enum eCompareAgainst
+{
+    CANONE = -1,
+    CAPR = 0,
+    CASR,
+    CABoth
+}
+
+enum eCompareMode
+{
+    CMFull = 0,
+    CMDifference
+}
+
 enum struct HUDEntry
 {
     int Side;
     int Line;
     int Key;
+}
+
+enum eHUDStyle
+{
+    HUD_Default = 0,
+    HUD_KSF,
+    HUD_SH,
+    HUD_HORIZON,
+    HUD_GOFREE
 }
 
 #define HUD_DEFAULT_SEPARATOR HSTabs
@@ -83,9 +116,37 @@ enum struct HUDEntry
 #define HUD_GOFREE_LEFT_SIDE { 10, 20, 33, 0, 0, 0 }
 #define HUD_GOFREE_RIGHT_SIDE  { 21, 22, 1, 0, 0, 0 }
 
-native void fuckTimer_SetClientHUDLayout(int client, char[] layout = "default");
+native void fuckTimer_SetClientHUDLayout(int client, eHUDStyle style = HUD_Default);
 
 native bool fuckTimer_MoveClientHUDKey(int client, eHUDKeys key = HKNone, bool side, int line, bool swapPositions = false);
+
+stock eCompareLocation fuckTimer_GetClientCompareLocation(int client)
+{
+    char sValue[4];
+    fuckTimer_GetClientSetting(client, "HUDCompareLocation", sValue);
+    return view_as<eCompareLocation>(StringToInt(sValue));
+}
+
+stock eCompareAgainst fuckTimer_GetClientCompareAgainst(int client)
+{
+    char sValue[4];
+    fuckTimer_GetClientSetting(client, "HUDCompareAgainst", sValue);
+    return view_as<eCompareAgainst>(StringToInt(sValue));
+}
+
+stock eCompareMode fuckTimer_GetClientCompareMode(int client)
+{
+    char sValue[4];
+    fuckTimer_GetClientSetting(client, "HUDCompareMode", sValue);
+    return view_as<eCompareMode>(StringToInt(sValue));
+}
+
+stock int fuckTimer_GetClientCompareTime(int client)
+{
+    char sValue[4];
+    fuckTimer_GetClientSetting(client, "HUDCompareTime", sValue);
+    return StringToInt(sValue);
+}
  
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_hud_SetNTVOptional()

@@ -151,50 +151,59 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
         Player[client].Settings.GetString(SETTING_STYLE, sBuffer, sizeof(sBuffer));
         Styles style = view_as<Styles>(StringToInt(sBuffer));
 
-        if (style == StyleSideways && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
+        switch (style)
         {
-            return OnInvalidKeyPressure(client, vel, buttons);
-        }
-        else if (style == StyleHSW && (!(buttons & IN_FORWARD) && !(buttons & IN_BACK) && (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)))
-        {
-            return OnInvalidKeyPressure(client, vel, buttons);
-        }
-        else if (style == StyleBackwards)
-        {
-            // https://github.com/InfluxTimer/sm-timer/blob/28247c1d374402d529987f01281e5cb21849c495/addons/sourcemod/scripting/influx_style_backwards.sp#L69
-            float fEyeAngle[3];
-            GetClientEyeAngles(client, fEyeAngle);
-            fEyeAngle[0] = Cosine(DegToRad(fEyeAngle[1]));
-            fEyeAngle[1] = Sine(DegToRad(fEyeAngle[1]));
-            fEyeAngle[2] = 0.0;
-
-            float fVelocity[3];
-            GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-            fVelocity[2] = 0.0;
-
-            float fLen = SquareRoot(fVelocity[0] * fVelocity[0] + fVelocity[1] * fVelocity[1]);
-            fVelocity[0] /= fLen;
-            fVelocity[1] /= fLen;
-
-            float fValue = GetVectorDotProduct(fEyeAngle, fVelocity);
-
-            if (fValue > MAX_DOT)
+            case StyleSideways:
             {
-                return OnInvalidKeyPressure(client, vel, buttons);
+                if (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT)
+                {
+                    return OnInvalidKeyPressure(client, vel, buttons);
+                }
             }
-        }
-        else if (style == StyleLowGravity)
-        {
-            if (GetEntityGravity(client) != LOW_GRAV)
+            case StyleHSW:
             {
-                SetEntityGravity(client, LOW_GRAV);
+                if (!(buttons & IN_FORWARD) | !(buttons & IN_BACK) | (buttons & IN_MOVERIGHT || buttons & IN_MOVELEFT))
+                {
+                    return OnInvalidKeyPressure(client, vel, buttons);
+                }
             }
-        }
-        else if (style == StyleSlowMotion)
-        {
-            if (GetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue") != SLOW_MOTION)
+            case StyleBackwards:
             {
-                SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", SLOW_MOTION);
+                // https://github.com/InfluxTimer/sm-timer/blob/28247c1d374402d529987f01281e5cb21849c495/addons/sourcemod/scripting/influx_style_backwards.sp#L69
+                float fEyeAngle[3];
+                GetClientEyeAngles(client, fEyeAngle);
+                fEyeAngle[0] = Cosine(DegToRad(fEyeAngle[1]));
+                fEyeAngle[1] = Sine(DegToRad(fEyeAngle[1]));
+                fEyeAngle[2] = 0.0;
+
+                float fVelocity[3];
+                GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
+                fVelocity[2] = 0.0;
+
+                float fLen = SquareRoot(fVelocity[0] * fVelocity[0] + fVelocity[1] * fVelocity[1]);
+                fVelocity[0] /= fLen;
+                fVelocity[1] /= fLen;
+
+                float fValue = GetVectorDotProduct(fEyeAngle, fVelocity);
+
+                if (fValue > MAX_DOT)
+                {
+                    return OnInvalidKeyPressure(client, vel, buttons);
+                }
+            }
+            case StyleLowGravity:
+            {
+                if (GetEntityGravity(client) != LOW_GRAV)
+                {
+                    SetEntityGravity(client, LOW_GRAV);
+                }
+            }
+            case StyleSlowMotion:
+            {
+                if (GetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue") != SLOW_MOTION)
+                {
+                    SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", SLOW_MOTION);
+                }
             }
         }
     }
@@ -241,7 +250,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
 Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
 {
-    // TODO: Add message for sm_invalidkey command
+    // TODO: Add message for sm_invalidkey command, with spam protecion
     char sBuffer[MAX_SETTING_VALUE_LENGTH];
     Player[client].Settings.GetString(SETTING_INVALIDKEYPREF, sBuffer, sizeof(sBuffer));
     eInvalidKeyPref preference = view_as<eInvalidKeyPref>(StringToInt(sBuffer));
@@ -342,7 +351,7 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
     char sValue[MAX_SETTING_VALUE_LENGTH];
     GetNativeString(3, sValue, sizeof(sValue));
 
-    if (StrEqual(sSetting, "Style"))
+    if (sSetting[0] == 'S' && sSetting[2] == 'y')
     {
         Styles style = view_as<Styles>(StringToInt(sValue));
 

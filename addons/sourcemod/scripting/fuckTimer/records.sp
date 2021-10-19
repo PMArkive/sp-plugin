@@ -14,6 +14,8 @@ enum struct PluginData
 
     IntMap Records[MAX_STYLES + 1];
 
+    GlobalForward OnNewRecord;
+
     void Reset()
     {
         this.MapLoaded = false;
@@ -41,6 +43,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    Core.OnNewRecord = new GlobalForward("fuckTimer_OnNewRecord", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float);
+
     CreateNative("fuckTimer_GetServerRecord", Native_GetServerRecord);
     CreateNative("fuckTimer_GetPlayerRecord", Native_GetPlayerRecord);
 
@@ -49,9 +53,25 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-public void OnPluginStart()
+public void OnMapStart()
 {
     Core.Reset();
+}
+
+public void OnConfigsExecuted()
+{
+    ConVar cChatMessage = FindConVar("misc_chat_prefix");
+
+    char sPrefix[48];
+    cChatMessage.GetString(sPrefix, sizeof(sPrefix));
+    CSetPrefix(sPrefix);
+
+    cChatMessage.AddChangeHook(OnCVarChange);
+}
+
+public void OnCVarChange(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    CSetPrefix(newValue);
 }
 
 public void fuckTimer_OnMapDataLoaded()
@@ -74,24 +94,22 @@ void CheckState()
     {
         return;
     }
-    
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
-    LogMessage(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteCell(0);
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, pack);
 }
 
 public void fuckTimer_OnPlayerLoaded(int client)
 {
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d/PlayerId/%d", fuckTimer_GetCurrentMapId(), GetSteamAccountID(client));
-    LogMessage(sEndpoint);
-
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(client));
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d/PlayerId/%d", fuckTimer_GetCurrentMapId(), GetSteamAccountID(client));
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, pack);
 }
 
@@ -134,6 +152,8 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     bool bPlayerRecord = false;
     bool bFirstRecord = false;
 
+    float fOldTime = 0.0;
+
     // Check for new server record
     if (Core.Records[iStyle] != null)
     {
@@ -142,13 +162,15 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
         if (record.Time == 0.0 || fTime < record.Time)
         {
-            PrintToChatAll("%N has beaten %s's server record!", client, record.PlayerName);
+            CPrintToChatAll("%N has beaten %s's server record!", client, record.PlayerName);
+
+            fOldTime = record.Time;
             bServerRecord = true;
         }
     }
     else
     {
-        PrintToChatAll("%N has set the server record!", client);
+        CPrintToChatAll("%N has set the server record!", client);
         bServerRecord = true;
     }
 
@@ -162,65 +184,39 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         {
             if (record.Time == 0.0)
             {
-                PrintToChatAll("%N finished this map first time!", client);
+                CPrintToChatAll("%N finished this map first time!", client);
                 bFirstRecord = true;
             }
             else
             {
                 if (!bServerRecord)
                 {
-                    PrintToChatAll("%N has beaten his record!", client, record.PlayerName);
+                    CPrintToChatAll("%N has beaten his record!", client, record.PlayerName);
                 }
                 else
                 {
-                    PrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
+                    CPrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
                 }
+
+                fOldTime = record.Time;
             }
 
             bPlayerRecord = true;
         }
     }
 
-    TimeType tType;
-    smRecord.GetValue("Type", tType);
-
-    float fTimeInZone;
-    smRecord.GetValue("TimeInZone", fTimeInZone);
-
-    int iAttempts;
-    smRecord.GetValue("Attempts", iAttempts);
+    if (bServerRecord || bPlayerRecord)
+    {
+        Call_StartForward(Core.OnNewRecord);
+        Call_PushCell(client);
+        Call_PushCell(view_as<int>(bServerRecord));
+        Call_PushCell(view_as<int>(temp));
+        Call_PushFloat(fOldTime);
+        Call_Finish();
+    }
 
     IntMap imDetails;
     smRecord.GetValue("Details", imDetails);
-
-    if (imDetails != null)
-    {
-        int iPoint;
-        IntMapSnapshot snap = imDetails.Snapshot();
-
-        CSDetails details;
-        for (int i = 0; i < snap.Length; i++)
-        {
-            iPoint = snap.GetKey(i);
-            imDetails.GetArray(iPoint, details, sizeof(details));
-
-            if (tType == TimeStage)
-            {
-                fTimeInZone += details.TimeInZone;
-                iAttempts += details.Attempts;
-                
-                if (iPoint > 1)
-                {
-                    iAttempts--;
-                }
-            }
-        }
-        
-        smRecord.SetValue("TimeInZone", fTimeInZone);
-        smRecord.SetValue("Attempts", iAttempts);
-
-        delete snap;
-    }
 
     if (bServerRecord)
     {

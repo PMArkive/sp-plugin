@@ -43,7 +43,7 @@ forward void fuckTimer_OnClientTimerStart(int client, int bonus, TimeType type, 
 /**
  * This will not called when you enter/leave the start/end zone. Level means the old level with the specific time.
  */
-forward void fuckTimer_OnClientZoneTouchStart(int client, bool stop, int bonus, TimeType type, int level, float time);
+forward void fuckTimer_OnClientZoneTouchStart(int client, bool stop, int bonus, TimeType type, int level, float time, float timeInZone, int attempts);
 
 /**
  * This will not called when you enter/leave the start/end zone.

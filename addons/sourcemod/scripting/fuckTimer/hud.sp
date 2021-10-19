@@ -18,10 +18,30 @@ enum struct PlayerData
     int LeftSide[MAX_HUD_LINES];
     int RightSide[MAX_HUD_LINES];
 
-    void Reset(bool resetHud)
+    int Speed;
+
+    int CompareSpeed;
+    float CompareSpeedValue;
+    int CompareTime;
+    float CompareTimeValue;
+    int CompareCSTime;
+    float CompareCSTimeValue;
+
+    void Reset(bool resetHud, bool resetCompare)
     {
         this.LastZone = -1;
         this.Zone[0] = '\0';
+        this.Speed = 0;
+
+        if (resetCompare)
+        {
+            this.CompareSpeed = 0;
+            this.CompareSpeedValue = 0.0;
+            this.CompareTime = 0;
+            this.CompareTimeValue = 0.0;
+            this.CompareCSTime = 0;
+            this.CompareCSTimeValue = 0.0;
+        }
 
         if (!resetHud)
         {
@@ -40,12 +60,14 @@ PlayerData Player[MAXPLAYERS + 1];
 enum struct PluginData
 {
     ConVar cvTitle;
+    ConVar Factor;
 
     char Title[32];
 }
 PluginData Core;
 
 #include "api/hud.sp"
+#include "natives/hud.sp"
 
 public Plugin myinfo =
 {
@@ -70,6 +92,7 @@ public void OnPluginStart()
 {
     fuckTimer_StartConfig("hud");
     Core.cvTitle = AutoExecConfig_CreateConVar("hud_title", "fuckTimer.com", "Choose your hud title, this can't changed by players.");
+    Core.Factor = AutoExecConfig_CreateConVar("hud_factor", "6", "Factor to increase/decrease amount of OnGameFrame calls. Reduce will results into better Performance");
     Core.cvTitle.AddChangeHook(OnCvarChange);
     fuckTimer_EndConfig();
 
@@ -105,6 +128,25 @@ public void OnMapStart()
 
     IntToString(view_as<int>(false), sBuffer, sizeof(sBuffer));
     fuckTimer_RegisterSetting("HUDDeadHUD", sBuffer);
+
+    IntToString(view_as<int>(CLBoth), sBuffer, sizeof(sBuffer)); // 0 - Off, 1 - HUD, 2 - Chat, 3 - HUD & Chat
+    fuckTimer_RegisterSetting("HUDCompareLocation", sBuffer);
+
+    IntToString(view_as<int>(CASR), sBuffer, sizeof(sBuffer)); // 0 - PR (or SR if PR not exist), 1 - SR (if exist), 2 - Both (works only with HUDCompareLocation 1)
+    fuckTimer_RegisterSetting("HUDCompareAgainst", sBuffer);
+
+    IntToString(view_as<int>(CMFull), sBuffer, sizeof(sBuffer)); // 0 - Time/Speed, 1 - Difference
+    fuckTimer_RegisterSetting("HUDCompareMode", sBuffer);
+
+    IntToString(3, sBuffer, sizeof(sBuffer)); // Time in seconds how long the comparison should be shown (HUDCompareMode must be 1)
+    fuckTimer_RegisterSetting("HUDCompareTime", sBuffer);
+
+    IntToString(1, sBuffer, sizeof(sBuffer)); // 0 - Disable Center HUD Speed, 1 - Enable Center HUD Speed
+    fuckTimer_RegisterSetting("HUDCenterSpeed", sBuffer);
+
+    fuckTimer_RegisterSetting("HUDCenterSpeedPosition", "-1.0;0.6"); // From 0 to 1, or -1 for axis centering. Example/Default: -1.0;0.6
+    fuckTimer_RegisterSetting("HUDCenterSpeedSpeedColor", "0;255;0"); // TODO. Example/Default: 0;255;0
+    fuckTimer_RegisterSetting("HUDCenterSpeedNegativeSpeedColor", "255;0;0"); // TODO. Example/Default: 255;0;0
 }
 
 public void OnCvarChange(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -124,6 +166,11 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
 
 public void OnGameFrame()
 {
+    if (GetGameTickCount() % Core.Factor.IntValue != 0)
+    {
+        return;
+    }
+
     IntMap imBuffer;
     char sBuffer[MAX_HUD_KEY_LENGTH], sRightBuffer[MAX_HUD_KEY_LENGTH], sSetting[MAX_SETTING_VALUE_LENGTH];
 
@@ -192,11 +239,62 @@ public void OnGameFrame()
         char sSpeed[MAX_SETTING_VALUE_LENGTH];
         fuckTimer_GetClientSetting(iClient, "HUDSpeed", sSpeed);
         fuckTimer_GetClientSetting(iClient, "HUDShowSpeedUnit", sSetting);
-        FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", GetClientSpeed(client, view_as<eHUDSpeed>(StringToInt(sSpeed))), (view_as<bool>(StringToInt(sSetting)) ? " u/s" : ""));
+        fuckTimer_GetClientSetting(iClient, "HUDCenterSpeed", sBuffer);
+        bool bCenterSpeed = view_as<bool>(StringToInt(sBuffer));
+
+        float fSpeed = 0.0;
+
+        if (Player[client].CompareSpeed == 0 || Player[client].CompareSpeed <= GetTime())
+        {
+            fSpeed = GetClientSpeed(client, view_as<eHUDSpeed>(StringToInt(sSpeed)));
+        }
+        else
+        {
+            fSpeed = Player[client].CompareSpeedValue;
+        }
+
+        if (bCenterSpeed)
+        {
+            int iSpeed = RoundToNearest(GetClientSpeed(client, view_as<eHUDSpeed>(StringToInt(sSpeed))));
+            
+            fuckTimer_GetClientSetting(iClient, "HUDCenterSpeedPosition", sBuffer);
+
+            char sAxis[2][12];
+            ExplodeString(sBuffer, ";", sAxis, sizeof(sAxis), sizeof(sAxis[]));
+
+            float fAxisX = StringToFloat(sAxis[0]);
+            float fAxisY = StringToFloat(sAxis[1]);
+
+            int iRed, iGreen, iBlue;
+            char sColors[3][4];
+
+            if (iSpeed >= Player[client].Speed)
+            {
+                fuckTimer_GetClientSetting(iClient, "HUDCenterSpeedSpeedColor", sBuffer);
+                ExplodeString(sBuffer, ";", sColors, sizeof(sColors), sizeof(sColors[]));
+            }
+            else if (iSpeed < Player[client].Speed)
+            {
+                fuckTimer_GetClientSetting(iClient, "HUDCenterSpeedNegativeSpeedColor", sBuffer);
+                ExplodeString(sBuffer, ";", sColors, sizeof(sColors), sizeof(sColors[]));
+            }
+
+            iRed = StringToInt(sColors[0]);
+            iGreen = StringToInt(sColors[1]);
+            iBlue = StringToInt(sColors[2]);
+
+            SetHudTextParams(fAxisX, fAxisY, 1.0, iRed, iGreen, iBlue, 255, 0, 0.25, 0.0, 0.0);
+
+            IntToString(iSpeed, sBuffer, sizeof(sBuffer));
+            ShowHudText(client, 2, sBuffer);
+
+            Player[client].Speed = iSpeed;
+        }
+
+        FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", fSpeed, (view_as<bool>(StringToInt(sSetting)) ? " u/s" : ""));
         imBuffer.SetString(HKSpeed, sBuffer);
         
-        fuckTimer_GetClientSetting(iClient, "Style", sSetting);
-        Styles style = view_as<Styles>(StringToInt(sSetting));
+        Styles style = fuckTimer_GetClientStyle(iClient);
         fuckTimer_GetStyleName(style, sBuffer, sizeof(sBuffer));
         
         Format(sBuffer, sizeof(sBuffer), "Style: %s", sBuffer);
@@ -232,9 +330,18 @@ public void OnGameFrame()
         FormatEx(sBuffer, sizeof(sBuffer), "Rank: None");
         imBuffer.SetString(HKRank, sBuffer);
 
-        GetTimeBySeconds(iClient, fTime, sBuffer, sizeof(sBuffer));
-        Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-        imBuffer.SetString(HKTime, sBuffer);
+        if (Player[client].CompareTime == 0 || Player[client].CompareTime <= GetTime())
+        {
+            GetTimeBySeconds(iClient, fTime, sBuffer, sizeof(sBuffer));
+            Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+            imBuffer.SetString(HKTime, sBuffer);
+        }
+        else
+        {
+            GetTimeBySeconds(iClient, Player[client].CompareTimeValue, sBuffer, sizeof(sBuffer));
+            Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+            imBuffer.SetString(HKTime, sBuffer);
+        }
 
         if (strlen(Player[client].Zone) > 1)
         {
@@ -265,17 +372,27 @@ public void OnGameFrame()
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
 
-            if (strlen(Player[client].Zone) < 1)
+            if (Player[client].CompareCSTime == 0 || Player[client].CompareCSTime <= GetTime())
             {
-                GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
-                Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-                imBuffer.SetString(HKStageTime, sBuffer);
+                if (strlen(Player[client].Zone) < 1)
+                {
+                    GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
+                    Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+                    imBuffer.SetString(HKCSTime, sBuffer);
+                }
+                else
+                {
+                    FormatEx(sBuffer, sizeof(sBuffer), "0.000");
+                    imBuffer.SetString(HKCSTime, sBuffer);
+                }
             }
             else
             {
-                FormatEx(sBuffer, sizeof(sBuffer), "0.000");
-                imBuffer.SetString(HKStageTime, sBuffer);
+                GetTimeBySeconds(iClient, Player[client].CompareCSTimeValue, sBuffer, sizeof(sBuffer));
+                Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+                imBuffer.SetString(HKCSTime, sBuffer);
             }
+            
 
             FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 0 ? "B-" : "", iStage, imStages.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
@@ -284,9 +401,19 @@ public void OnGameFrame()
         else if (imCheckpoints.GetInt(iBonus) > 0)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
-            GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
-            Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-            imBuffer.SetString(HKStageTime, sBuffer);
+
+            if (Player[client].CompareCSTime == 0 || Player[client].CompareCSTime <= GetTime())
+            {
+                GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
+                Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+                imBuffer.SetString(HKCSTime, sBuffer);
+            }
+            else
+            {
+                GetTimeBySeconds(iClient, Player[client].CompareCSTimeValue, sBuffer, sizeof(sBuffer));
+                Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
+                imBuffer.SetString(HKCSTime, sBuffer);
+            } 
 
             FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 0 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
@@ -301,7 +428,7 @@ public void OnGameFrame()
             imBuffer.SetString(HKCurrentStage, sBuffer);
 
             FormatEx(sBuffer, sizeof(sBuffer), "0.000");
-            imBuffer.SetString(HKStageTime, sBuffer);
+            imBuffer.SetString(HKCSTime, sBuffer);
 
             if (iBonus > 0)
             {
@@ -427,7 +554,7 @@ public void OnGameFrame()
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 {
-    Player[client].Reset(false);
+    Player[client].Reset(false, true);
     Player[client].LastZone = zone;
 
     int iBonus;
@@ -466,73 +593,198 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 {
-    Player[client].Reset(false);
+    Player[client].Reset(false, false);
     Player[client].LastZone = zone;
-}
 
-public any Native_SetClientHUDLayout(Handle plugin, int numParams)
-{
-    char sLayout[24];
-    GetNativeString(2, sLayout, sizeof(sLayout));
-
-    PreparePlayerPostHudSettings(GetNativeCell(1), sLayout);
-}
-
-public any Native_MoveClientHUDKey(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-    eHUDKeys iKey = view_as<eHUDKeys>(GetNativeCell(2));
-    int iSide = view_as<bool>(GetNativeCell(3));
-    int iLine = GetNativeCell(4);
-
-    HUDEntry hEntry[2];
-    hEntry[0].Side = iSide;
-    hEntry[0].Line = iLine;
-    hEntry[0].Key = iKey;
-
-    bool swapPositions = view_as<bool>(GetNativeCell(5));
-
-    bool success = GetOldPosition(client, iKey, hEntry);
-
-    if (success)
+    int iBonus;
+    bool bStart = fuckTimer_IsStartZone(zone, iBonus);
+    int level = fuckTimer_GetZoneStage(zone, iBonus);
+    
+    bool bCheckpoint = false;
+    if (level == 0)
     {
-        if (iSide == HUD_SIDE_LEFT)
+        level = fuckTimer_GetZoneCheckpoint(zone, iBonus);
+
+        if (level > 0)
         {
-            hEntry[1].Key = Player[client].LeftSide[iLine];
+            bCheckpoint = true;
+        }
+    }
+
+    if (!bStart && level < 0)
+    {
+        return;
+    }
+
+    eCompareLocation eLocation = fuckTimer_GetClientCompareLocation(client);
+    eCompareMode eMode = fuckTimer_GetClientCompareMode(client);
+    eCompareAgainst eAgainst = fuckTimer_GetClientCompareAgainst(client);
+
+    Styles sStyle = fuckTimer_GetClientStyle(client);
+
+    char sSpeed[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDSpeed", sSpeed);
+    eHUDSpeed eSpeed = view_as<eHUDSpeed>(StringToInt(sSpeed));
+
+    RecordData recordPR;
+    RecordData recordSR;
+    eCompareAgainst eReturn = GetRecord(client, sStyle, iBonus, eAgainst, recordPR, recordSR);
+
+    float fVelocity[3];
+    GetClientVelocity(client, fVelocity);
+
+    if (eLocation == CLChat || eLocation == CLBoth)
+    {
+        CompareChat_LeaveZone(client, bStart, level, eReturn, recordPR, recordSR, bCheckpoint, fVelocity, eAgainst, eMode, eSpeed);
+    }
+
+    if (eLocation == CLHUD || eLocation == CLBoth)
+    {
+        RecordData record;
+        if (eReturn != CANONE)
+        {
+            if (eAgainst == CAPR)
+            {
+                record = recordPR;
+            }
+            else if (eAgainst == CASR)
+            {
+                record = recordSR;
+            }
         }
         else
         {
-            hEntry[1].Key = Player[client].RightSide[iLine];
-        }
-    }
-    else
-    {
-        hEntry[1].Line = -1;
-    }
-
-    if (!swapPositions)
-    {
-        hEntry[1].Key = 0;
-    }
-
-    for (int i = 0; i <= 1; i++)
-    {
-        if (hEntry[i].Line == -1)
-        {
-            continue;
+            return;
         }
         
-        if (hEntry[i].Side == HUD_SIDE_LEFT)
+        CompareHUD_LeaveZone(client, level, bStart, fVelocity, record, eReturn, eMode, eSpeed);
+    }
+}
+
+public void fuckTimer_OnClientZoneTouchStart(int client, bool stop, int bonus, TimeType type, int level, float time, float timeInZone, int attempts)
+{
+    if (type == TimeMain)
+    {
+        return;
+    }
+
+    eCompareMode eMode = fuckTimer_GetClientCompareMode(client);
+    eCompareAgainst eAgainst = fuckTimer_GetClientCompareAgainst(client);
+    Styles sStyle = fuckTimer_GetClientStyle(client);
+
+    RecordData recordPR;
+    RecordData recordSR;
+    eCompareAgainst eReturn = GetRecord(client, sStyle, bonus, eAgainst, recordPR, recordSR);
+
+    CSDetails detailsPR;
+    if (recordPR.Details != null)
+    {
+        recordPR.Details.GetArray(level, detailsPR, sizeof(detailsPR));
+    }
+
+    CSDetails detailsSR;
+    if (recordSR.Details != null)
+    {
+        recordSR.Details.GetArray(level, detailsSR, sizeof(detailsSR));
+    }
+
+    eCompareLocation eLocation = fuckTimer_GetClientCompareLocation(client);
+
+    char sSpeed[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDSpeed", sSpeed);
+    eHUDSpeed eSpeed = view_as<eHUDSpeed>(StringToInt(sSpeed));
+    float fClientSpeed = GetClientSpeed(client, eSpeed);
+
+    if (eLocation == CLChat || eLocation == CLBoth)
+    {
+        CompareChat_EnterZone(client, recordPR, recordSR, eReturn, eAgainst, eMode, bonus, level, type, eSpeed, time, timeInZone, attempts, fClientSpeed);
+    }
+
+    if (eLocation == CLHUD || eLocation == CLBoth)
+    {
+        CSDetails details;
+        if (eReturn != CANONE)
         {
-            Player[client].LeftSide[hEntry[i].Line] = hEntry[i].Key;
+            if (eAgainst == CAPR)
+            {
+                if (recordPR.Details == null)
+                {
+                    return;
+                }
+                
+                details = detailsPR;
+            }
+            else if (eAgainst == CASR)
+            {
+                if (recordSR.Details == null)
+                {
+                    return;
+                }
+                
+                details = detailsSR;
+            }
+        }
+
+        float fRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? details.StartVelocity : details.EndVelocity, eSpeed);
+
+        CompareHUD_EnterZone(client, details, eMode, type, time, fClientSpeed, fRecordSpeed);
+    }
+}
+
+public void fuckTimer_OnClientTimerEnd(int client, StringMap timemap)
+{
+    eCompareAgainst eAgainst = fuckTimer_GetClientCompareAgainst(client);
+
+    int iBonus;
+    timemap.GetValue("Level", iBonus);
+
+    Styles sStyle;
+    timemap.GetValue("StyleId", view_as<int>(sStyle));
+
+    float fTime;
+    timemap.GetValue("Time", fTime);
+
+    RecordData recordPR;
+    RecordData recordSR;
+    eCompareAgainst eReturn = GetRecord(client, sStyle, iBonus, eAgainst, recordPR, recordSR);
+
+    char sSpeed[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDSpeed", sSpeed);
+    eHUDSpeed eSpeed = view_as<eHUDSpeed>(StringToInt(sSpeed));
+
+    float fClientSpeed = GetClientSpeed(client, eSpeed);
+
+    eCompareLocation eLocation = fuckTimer_GetClientCompareLocation(client);
+    eCompareMode eMode = fuckTimer_GetClientCompareMode(client);
+
+    if (eLocation == CLChat || eLocation == CLBoth)
+    {
+        CompareChat_TimerEnd(client, timemap, eMode, eAgainst, iBonus, fTime, recordPR, recordSR, eReturn, eSpeed, fClientSpeed);
+    }
+
+    if (eLocation == CLHUD || eLocation == CLBoth)
+    {
+        RecordData record;
+        if (eReturn != CANONE)
+        {
+            if (eAgainst == CAPR)
+            {
+                record = recordPR;
+            }
+            else if (eAgainst == CASR)
+            {
+                record = recordSR;
+            }
         }
         else
         {
-            Player[client].RightSide[hEntry[i].Line] = hEntry[i].Key;
+            return;
         }
-    }
 
-    PatchPlayerHUDKeys(client, hEntry);
+        float fRecordSpeed = GetVelocitySpeed(record.EndVelocity, eSpeed);
+
+        CompareHUD_TimerEnd(client, fTime, eMode, record, eReturn, fRecordSpeed, fClientSpeed);
+    }
 }
 
 bool GetOldPosition(int client, int key, HUDEntry hEntry[2])
@@ -641,18 +893,484 @@ void GetTimeBySeconds(int client = 0, float seconds, char[] time, int length, eH
 
 void LoadPlayer(int client)
 {
-    PrintToServer("[HUD] LoadPlayer1: %d", client);
-
-    Player[client].Reset(true);
+    Player[client].Reset(true, true);
 
     if (!IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client))
     {
         return;
     }
 
-    PrintToServer("[HUD] LoadPlayer2: %N", client);
-
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "PlayerHud/PlayerId/%d", GetSteamAccountID(client));
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerHudSettings, GetClientUserId(client));
+}
+
+void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgainst eReturn, RecordData recordPR, RecordData recordSR, bool isCheckpoint, float[3] velocity, eCompareAgainst against, eCompareMode mode, eHUDSpeed speed)
+{
+    char sUnit[4];
+    fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sUnit);
+
+    float fClientSpeed = GetVelocitySpeed(velocity, speed);
+
+    char sType[12];
+    if (startZone)
+    {
+        FormatEx(sType, sizeof(sType), "Start");
+    }
+    else if (level > 1)
+    {
+        FormatEx(sType, sizeof(sType), "%s %d", isCheckpoint ? "Checkpoint" : "Stage", level);
+    }
+
+    char sSpeed[128];
+    if (eReturn != CANONE)
+    {
+        char sRecordType[4];
+        if (eReturn == CAPR && against == CAPR)
+        {
+            FormatEx(sRecordType, sizeof(sRecordType), "PR");
+        }
+        else if (eReturn == CASR)
+        {
+            FormatEx(sRecordType, sizeof(sRecordType), "SR");
+        }
+
+        if (against == CAPR || against == CASR)
+        {
+            RecordData record;
+            CSDetails recordDetails;
+
+            if (against == CAPR)
+            {
+                recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+                record = recordPR;
+            }
+            else if (against == CASR)
+            {
+                recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+                record = recordSR;
+            }
+
+            float fRecordSpeed = GetVelocitySpeed(startZone ? record.StartVelocity : recordDetails.EndVelocity, speed);
+
+            if (mode == CMFull)
+            {
+                FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            }
+            else
+            {
+                FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            }
+        }
+        else if (against == CABoth)
+        {
+            float fRecordSpeed = 0.0;
+            float fServerRecordSpeed = 0.0;
+            
+            CSDetails recordDetailsPR;
+            if (recordPR.Details != null)
+            {
+                recordPR.Details.GetArray(level, recordDetailsPR, sizeof(recordDetailsPR));
+                fRecordSpeed = GetVelocitySpeed(startZone ? recordPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
+            }
+
+            CSDetails recordDetailsSR;
+            if (recordSR.Details != null)
+            {
+                recordSR.Details.GetArray(level, recordDetailsSR, sizeof(recordDetailsSR));
+                fServerRecordSpeed = GetVelocitySpeed(startZone ? recordSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
+            }
+
+
+            if (mode == CMFull)
+            {
+                FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", fClientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            }
+            else
+            {
+                FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", fClientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            }
+        }
+    }
+
+    CPrintToChat(client, "%s: %.0f%s%s", sType, fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), sSpeed);
+}
+
+void CompareHUD_LeaveZone(int client, int level, bool start, float[3] velocity, RecordData record, eCompareAgainst eReturn, eCompareMode mode, eHUDSpeed speed)
+{
+    if (eReturn == CANONE || record.Time <= 0.0)
+    {
+        return;
+    }
+
+    int iTime = fuckTimer_GetClientCompareTime(client);
+
+    if (iTime <= 0)
+    {
+        return;
+    }
+
+    float fRecordSpeed;
+
+    if (start)
+    {
+        fRecordSpeed = GetVelocitySpeed(record.StartVelocity, speed);
+    }
+    else
+    {
+        CSDetails details;
+        
+        if (record.Details == null)
+        {
+            return;
+        }
+
+        record.Details.GetArray(level, details, sizeof(details));
+        fRecordSpeed = GetVelocitySpeed(details.StartVelocity, speed);
+    }
+
+    if (fRecordSpeed <= 0.0)
+    {
+        return;
+    }
+
+    if (mode == CMFull)
+    {
+        Player[client].CompareSpeedValue = fRecordSpeed;
+    }
+    else
+    {
+        float fClientSpeed = GetVelocitySpeed(velocity, speed);
+        Player[client].CompareSpeedValue = fRecordSpeed - fClientSpeed;
+    }
+
+    Player[client].CompareSpeed = GetTime() + iTime;
+}
+
+void CompareHUD_EnterZone(int client, CSDetails details, eCompareMode mode, TimeType type, float time, float clientSpeed, float recordSpeed)
+{
+    if (mode == CMFull)
+    {
+        Player[client].CompareCSTimeValue = details.Time;
+    }
+    else if (mode == CMDifference)
+    {
+        Player[client].CompareCSTimeValue = time - details.Time;
+    }
+
+    int iTime = fuckTimer_GetClientCompareTime(client);
+
+    if (iTime <= 0)
+    {
+        return;
+    }
+
+    Player[client].CompareCSTime = GetTime() + iTime;
+
+    Player[client].CompareSpeed = GetTime() + iTime;
+
+    if (type == TimeStage)
+    {
+        return;
+    }
+
+    char sSpeed[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "HUDSpeed", sSpeed);
+
+    if (mode == CMFull)
+    {
+        Player[client].CompareSpeedValue = recordSpeed;
+    }
+    else
+    {
+        Player[client].CompareSpeedValue = recordSpeed - clientSpeed;
+    }
+}
+
+void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR, eCompareAgainst eReturn, eCompareAgainst against, eCompareMode mode, int bonus, int level, TimeType type, eHUDSpeed speed, float time, float timeInZone, int attempts, float clientSpeed)
+{
+    char sUnit[4];
+    fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sUnit);
+
+    char sTime[128];
+    char sSpeed[128];
+    char sAttempts[128];
+    char sTimeInZone[128];
+
+    if (eReturn != CANONE)
+    {
+        char sRecordType[4];
+        if (eReturn == CAPR)
+        {
+            FormatEx(sRecordType, sizeof(sRecordType), "PR");
+        }
+        else if (eReturn == CASR)
+        {
+            FormatEx(sRecordType, sizeof(sRecordType), "SR");
+        }
+
+        if ((against == CAPR && recordPR.Details != null) || (against == CASR && recordSR.Details != null))
+        {
+            CSDetails recordDetails;
+
+            if (against == CAPR)
+            {
+                recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+            }
+            else if (against == CASR)
+            {
+                recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+            }
+
+            float fRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordDetails.StartVelocity : recordDetails.EndVelocity, speed);
+
+            if (mode == CMFull)
+            {
+                FormatEx(sTime, sizeof(sTime), " (%s: %s%.3f{default})", sRecordType, time < recordDetails.Time ? "{green}" : "{darkred}", recordDetails.Time);
+
+                if (type == TimeCheckpoint)
+                {
+                    FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                }
+                else
+                {
+                    FormatEx(sAttempts, sizeof(sAttempts), " (%s: %s%d{default})", sRecordType, attempts <= recordDetails.Attempts ? "{green}" : "{darkred}", recordDetails.Attempts);
+                    FormatEx(sTimeInZone, sizeof(sTimeInZone), " (%s: %s%.3f{default})", sRecordType, timeInZone < recordDetails.TimeInZone ? "{green}" : "{darkred}", recordDetails.TimeInZone);
+                }
+            }
+            else
+            {
+                FormatEx(sTime, sizeof(sTime), " (%s: %s%.3f{default})", sRecordType, time < recordDetails.Time ? "{green}" : "{darkred}", time - recordDetails.Time);
+
+                if (type == TimeCheckpoint)
+                {
+                    FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                }
+                else
+                {
+                    FormatEx(sAttempts, sizeof(sAttempts), " (%s: %s%d{default})", sRecordType, attempts <= recordDetails.Attempts ? "{green}" : "{darkred}", attempts - recordDetails.Attempts);
+                    FormatEx(sTimeInZone, sizeof(sTimeInZone), " (%s: %s%.3f{default})", sRecordType, timeInZone < recordDetails.TimeInZone ? "{green}" : "{darkred}", timeInZone - recordDetails.TimeInZone);
+                }
+            }
+        }
+        else if (against == CABoth)
+        {
+            float fRecordSpeed = 0.0;
+            float fServerRecordSpeed = 0.0;
+
+            CSDetails recordDetailsPR;
+            if (recordPR.Details != null)
+            {
+                recordPR.Details.GetArray(level, recordDetailsPR, sizeof(recordDetailsPR));
+                fRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordDetailsPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
+            }
+
+            CSDetails recordDetailsSR;
+            if (recordSR.Details != null)
+            {
+                recordSR.Details.GetArray(level, recordDetailsSR, sizeof(recordDetailsSR));
+                fServerRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordDetailsSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
+            }
+
+            if (mode == CMFull)
+            {
+                FormatEx(sTime, sizeof(sTime), " (SR: %s%.3f{default}, PR: %s%.3f{default})", time < recordDetailsSR.Time ? "{green}" : "{darkred}", recordDetailsSR.Time, time < recordDetailsPR.Time ? "{green}" : "{darkred}", recordDetailsPR.Time);
+
+                if (type == TimeCheckpoint)
+                {
+                    FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                }
+                else
+                {
+                    FormatEx(sAttempts, sizeof(sAttempts), " (SR: %s%d{default}), (PR: %s%d{default})", attempts <= recordDetailsSR.Attempts ? "{green}" : "{darkred}", recordDetailsSR.Attempts, attempts <= recordDetailsPR.Attempts ? "{green}" : "{darkred}", recordDetailsPR.Attempts);
+                    FormatEx(sTimeInZone, sizeof(sTimeInZone), " (SR: %s%.3f{default}, PR: %s%.3f{default})", timeInZone < recordDetailsSR.TimeInZone ? "{green}" : "{darkred}", recordDetailsSR.TimeInZone, timeInZone < recordDetailsPR.TimeInZone ? "{green}" : "{darkred}", recordDetailsPR.TimeInZone);
+                }
+            }
+            else
+            {
+                FormatEx(sTime, sizeof(sTime), " (SR: %s%.3f{default}, PR: %s%.3f{default})", time < recordDetailsSR.Time ? "{green}" : "{darkred}", time - recordDetailsSR.Time, time < recordDetailsPR.Time ? "{green}" : "{darkred}", time - recordDetailsPR.Time);
+
+                if (type == TimeCheckpoint)
+                {
+                    FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                }
+                else
+                {
+                    FormatEx(sAttempts, sizeof(sAttempts), " (SR: %s%d{default}), (PR: %s%d{default})", attempts <= recordDetailsSR.Attempts ? "{green}" : "{darkred}", attempts - recordDetailsSR.Attempts, attempts <= recordDetailsPR.Attempts ? "{green}" : "{darkred}", attempts - recordDetailsPR.Attempts);
+                    FormatEx(sTimeInZone, sizeof(sTimeInZone), " (SR: %s%.3f{default}, PR: %s%.3f{default})", timeInZone < recordDetailsSR.TimeInZone ? "{green}" : "{darkred}", timeInZone - recordDetailsSR.TimeInZone, timeInZone < recordDetailsPR.TimeInZone ? "{green}" : "{darkred}", timeInZone - recordDetailsPR.TimeInZone);
+                }
+            }
+        }
+    }
+
+    CPrintToChat(client, "%s %s %d: %.3f%s", bonus ? " Bonus" : "", type == TimeCheckpoint ? "Checkpoint" : "Stage", level, time, sTime);
+    
+    if (type == TimeCheckpoint)
+    {
+        CPrintToChat(client, "Speed: %.0f%s%s", clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), sSpeed);
+    }
+    else
+    {
+        CPrintToChat(client, "Attempts: %d%s", attempts, sAttempts);
+        CPrintToChat(client, "Time in Zone: %.3f%s", timeInZone, sTimeInZone);
+    }
+}
+
+void CompareHUD_TimerEnd(int client, float time, eCompareMode mode, RecordData record, eCompareAgainst eReturn, float recordSpeed, float clientSpeed)
+{
+    if (eReturn == CANONE || record.Time <= 0.0)
+    {
+        return;
+    }
+
+    if (mode == CMFull)
+    {
+        Player[client].CompareTimeValue = record.Time;
+    }
+    else if (mode == CMDifference)
+    {
+        Player[client].CompareTimeValue = time - record.Time;
+    }
+
+    int iTime = fuckTimer_GetClientCompareTime(client);
+
+    if (iTime <= 0)
+    {
+        return;
+    }
+
+    Player[client].CompareTime = GetTime() + iTime;
+
+    Player[client].CompareSpeed = GetTime() + iTime;
+
+    if (mode == CMFull)
+    {
+        Player[client].CompareSpeedValue = recordSpeed;
+    }
+    else
+    {
+        
+        Player[client].CompareSpeedValue = recordSpeed - clientSpeed;
+    }
+}
+
+void CompareChat_TimerEnd(int client, StringMap timemap, eCompareMode mode, eCompareAgainst against, int level, float time, RecordData recordPR, RecordData recordSR, eCompareAgainst eReturn, eHUDSpeed eSpeed, float clientSpeed)
+{
+    char sUnit[4];
+    fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sUnit);
+
+    int iAttempts;
+    timemap.GetValue("Attempts", iAttempts);
+
+    float fTimeInZone;
+    timemap.GetValue("TimeInZone", fTimeInZone);
+
+    char sTime[128];
+    char sSpeed[128];
+    char sAttempts[128];
+    char sTimeInZone[128];
+
+    char sRecordType[4];
+    if (eReturn == CAPR)
+    {
+        FormatEx(sRecordType, sizeof(sRecordType), "PR");
+    }
+    else if (eReturn == CASR)
+    {
+        FormatEx(sRecordType, sizeof(sRecordType), "SR");
+    }
+
+    if ((against == CAPR && recordPR.Time > 0.0) || (against == CASR && recordSR.Time > 0.0))
+    {
+        RecordData record;
+        if (against == CAPR)
+        {
+            record = recordPR;
+        }
+        else if (against == CASR)
+        {
+            record = recordSR;
+        }
+
+        float fRecordSpeed = GetVelocitySpeed(record.EndVelocity, eSpeed);
+        
+        if (mode == CMFull)
+        {
+            FormatEx(sTime, sizeof(sTime), " (%s: %s%.3f{default})", sRecordType, time < record.Time ? "{green}" : "{darkred}", record.Time);
+            FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sAttempts, sizeof(sAttempts), " (%s: %s%d{default})", sRecordType, iAttempts <= record.Attempts ? "{green}" : "{darkred}", record.Attempts);
+            FormatEx(sTimeInZone, sizeof(sTimeInZone), " (%s: %s%.3f{default})", sRecordType, fTimeInZone < record.TimeInZone ? "{green}" : "{darkred}", record.TimeInZone);
+        }
+        else
+        {
+            FormatEx(sTime, sizeof(sTime), " (%s: %s%.3f{default})", sRecordType, time < record.Time ? "{green}" : "{darkred}", time - record.Time);
+            FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sAttempts, sizeof(sAttempts), " (%s: %s%d{default})", sRecordType, iAttempts <= record.Attempts ? "{green}" : "{darkred}", iAttempts - record.Attempts);
+            FormatEx(sTimeInZone, sizeof(sTimeInZone), " (%s: %s%.3f{default})", sRecordType, fTimeInZone < record.TimeInZone ? "{green}" : "{darkred}", fTimeInZone - record.TimeInZone);
+        }
+    }
+    else if (against == CABoth)
+    {
+        float fRecordSpeed = GetVelocitySpeed(recordPR.EndVelocity, eSpeed);
+        float fServerRecordSpeed = GetVelocitySpeed(recordSR.EndVelocity, eSpeed);
+
+        if (mode == CMFull)
+        {
+            FormatEx(sTime, sizeof(sTime), " (SR: %s%.3f{default}, PR: %s%.3f{default})", time < recordSR.Time ? "{green}" : "{darkred}", recordSR.Time, time < recordPR.Time ? "{green}" : "{darkred}", recordPR.Time);
+            FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sAttempts, sizeof(sAttempts), " (SR: %s%d{default}), (PR: %s%d{default})", iAttempts <= recordSR.Attempts ? "{green}" : "{darkred}", recordSR.Attempts, iAttempts <= recordPR.Attempts ? "{green}" : "{darkred}", recordPR.Attempts);
+            FormatEx(sTimeInZone, sizeof(sTimeInZone), " (SR: %s%.3f{default}, PR: %s%.3f{default})", fTimeInZone < recordSR.TimeInZone ? "{green}" : "{darkred}", recordSR.TimeInZone, fTimeInZone < recordPR.TimeInZone ? "{green}" : "{darkred}", recordPR.TimeInZone);
+        }
+        else
+        {
+            FormatEx(sTime, sizeof(sTime), " (SR: %s%.3f{default}, PR: %s%.3f{default})", time < recordSR.Time ? "{green}" : "{darkred}", time - recordSR.Time, time < recordPR.Time ? "{green}" : "{darkred}", time - recordPR.Time);
+            FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sAttempts, sizeof(sAttempts), " (SR: %s%d{default}), (PR: %s%d{default})", iAttempts <= recordSR.Attempts ? "{green}" : "{darkred}", iAttempts - recordSR.Attempts, iAttempts <= recordPR.Attempts ? "{green}" : "{darkred}", iAttempts - recordPR.Attempts);
+            FormatEx(sTimeInZone, sizeof(sTimeInZone), " (SR: %s%.3f{default}, PR: %s%.3f{default})", fTimeInZone < recordSR.TimeInZone ? "{green}" : "{darkred}", fTimeInZone - recordSR.TimeInZone, fTimeInZone < recordPR.TimeInZone ? "{green}" : "{darkred}", fTimeInZone - recordPR.TimeInZone);
+        }
+    }
+
+    char sBonus[24];
+
+    if (level > 0)
+    {
+        FormatEx(sBonus, sizeof(sBonus), " for Bonus %d", level);
+    }
+
+    CPrintToChat(client, "Time%s: %.3f%s", sBonus, time, sTime);
+    CPrintToChat(client, "Speed: %.0f%s%s", clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), sSpeed);
+    CPrintToChat(client, "Attempts: %d%s", iAttempts, sAttempts);
+    CPrintToChat(client, "Time in Zone: %.3f%s", fTimeInZone, sTimeInZone);
+}
+
+eCompareAgainst GetRecord(int client, Styles style, int bonus, eCompareAgainst against, RecordData recordPR, RecordData recordSR)
+{
+    bool bSuccessPR = false;
+    if (against == CAPR || against == CABoth)
+    {
+        bSuccessPR = fuckTimer_GetPlayerRecord(client, style, bonus, recordPR);
+    }
+
+    bool bSuccessSR = false;
+    if (against == CASR || against == CABoth)
+    {
+        bSuccessSR = fuckTimer_GetServerRecord(style, bonus, recordSR);
+    }
+
+    if (bSuccessPR && bSuccessSR)
+    {
+        return CABoth;
+    }
+    else if (bSuccessPR)
+    {
+        return CAPR;
+    }
+    else if (bSuccessSR)
+    {
+        return CASR;
+    }
+    else
+    {
+        return CANONE;
+    }
 }

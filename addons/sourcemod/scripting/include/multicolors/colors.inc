@@ -12,7 +12,7 @@
 #endif
 #define _colors_included
  
-#define MAX_MESSAGE_LENGTH 250
+#define MAX_MESSAGE_LENGTH 512
 #define MAX_COLORS 18
 
 #define SERVER_INDEX 0

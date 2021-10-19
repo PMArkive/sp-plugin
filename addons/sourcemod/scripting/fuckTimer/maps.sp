@@ -74,6 +74,22 @@ public void OnConfigsExecuted()
 
 void DownloadMapTiers()
 {
+    char sURL[MAX_URL_LENGTH];
+    FormatEx(sURL, sizeof(sURL), "%s/zones/main/files/maptiers.json", FUCKTIMER_BASE_CLOUD_URL);
+    HTTPRequest request = new HTTPRequest(sURL);
+    request.Get(GetMapTiers);
+}
+
+public void GetMapTiers(HTTPResponse response, any value, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        LogError("[Maps.GetMapTiers] Can't get maptiers.json. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    LogMessage("[Maps.GetMapTiers] Success. Status Code: %d", response.Status);
+
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer");
 
@@ -82,77 +98,33 @@ void DownloadMapTiers()
         CreateDirectory(sFile, FPERM_U_READ|FPERM_U_WRITE|FPERM_U_EXEC|FPERM_G_READ|FPERM_G_EXEC|FPERM_O_READ|FPERM_O_EXEC);
     }
 
-    Format(sFile, sizeof(sFile), "%s/maptiers.txt", sFile);
+    Format(sFile, sizeof(sFile), "%s/maptiers.json", sFile);
 
     if (FileExists(sFile))
     {
         DeleteFile(sFile);
     }
-    
-    HTTPRequest request = fuckTimer_NewCloudHTTPRequest("zones/main/files/maptiers.txt");
-    request.DownloadFile(sFile, OnMapTiersDownload);
-}
 
-public void OnMapTiersDownload(HTTPStatus status, any value, const char[] error)
-{
-    if (status == HTTPStatus_OK)
-    {
-        LogMessage("maptiers.txt downloaded. Let's parse the file...");
-        ParseMapTiersFile();
+    response.Data.ToFile(sFile, JSON_COMPACT);
 
-    }
-    else if (status == HTTPStatus_NotFound)
-    {
-        SetFailState("Download failed! 404 - maptiers.txt not found. Status Code: %d, Error: %s", status, error);
-    }
-    else
-    {
-        SetFailState("Something went wrong while downloading maptiers.txt.  Status Code: %d, Error: %s", status, error);
-    }
-}
-
-void ParseMapTiersFile()
-{
     delete Core.MapTiers;
     Core.MapTiers = new StringMap();
 
-    char sFile[PLATFORM_MAX_PATH + 1];
-    BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/maptiers.txt");
+    JSONObject jTiers = view_as<JSONObject>(response.Data);
+    JSONObjectKeys jMaps = jTiers.Keys();
+    int iTier = 0;
 
-    File fFile = OpenFile(sFile, "r");
-
-    if (fFile != null)
+    char sMap[PLATFORM_MAX_PATH + 1];
+    while (jMaps.ReadKey(sMap, sizeof(sMap)))
     {
-        char sLine[MAX_NAME_LENGTH];
-        int iTier = 0;
-
-        while (!fFile.EndOfFile() && fFile.ReadLine(sLine, sizeof(sLine)))
-        {
-            if (sLine[0] == '#')
-            {
-                iTier = StringToInt(sLine[7]);
-
-                if (iTier == 0)
-                {
-                    SetFailState("Can not read map tier correctly.");
-                    return;
-                }
-            }
-            else if (strlen(sLine) > 1)
-            {
-                TrimString(sLine);
-                StripQuotes(sLine);
-
-                Core.MapTiers.SetValue(sLine, iTier);
-            }
-        }
-
-        delete fFile;
-
-        LogMessage("maptiers.txt parsed and informations was saved.");
-
-        UnloadFuckZones();
+        iTier = jTiers.GetInt(sMap);
+        Core.MapTiers.SetValue(sMap, iTier);
     }
+
+    delete jMaps;
+
+    LogMessage("maptiers.json parsed and informations was saved.");
+    UnloadFuckZones();
 }
 
 UnloadFuckZones()
@@ -650,8 +622,6 @@ public any Native_GetMapTiers(Handle plugin, int numParams)
         {
             Core.MapTiers.GetValue(sMap, iTier);
             smList.SetValue(sMap, iTier);
-
-            LogMessage("[Maps.Native_GetMapTiers] Name: %s, Tier: %d", sMap, iTier);
         }
 
         sMap[0] = '\0';
@@ -659,8 +629,6 @@ public any Native_GetMapTiers(Handle plugin, int numParams)
     }
 
     delete snap;
-
-    LogMessage("[Maps.Native_GetMapTiers] Found %d Maps", smList.Size);
 
     Call_StartFunction(plugin, fCallback);
     if (client > 0 && IsClientInGame(client))

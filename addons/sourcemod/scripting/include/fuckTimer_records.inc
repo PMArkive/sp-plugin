@@ -3,6 +3,15 @@
 #endif
 #define _fuckTimer_records_included
 
+#include <fuckTimer_styles>
+
+/**
+ * If serverRecord is false, then it's a player record
+ * oldTime is 0.0, when no record exist before.
+ * Note: Get Bonus from recordDetails and use this as index for oldRecord IntMap to get the correct record as RecordDetails enum struct
+*/
+forward void fuckTimer_OnNewRecord(int client, bool serverRecord, StringMap recordDetails, float oldTime);
+
 /**
  * IMPORTANT: Don't delete the Details IntMap! 
  *

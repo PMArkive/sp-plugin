@@ -15,7 +15,6 @@ public void GetPlayerHudSettings(HTTPResponse response, any userid, const char[]
     {
         if (response.Status == HTTPStatus_NotFound || iLength < 1)
         {
-            LogMessage("[HUD.GetPlayerHudSettings] 404 Player HUD Settings not found, we'll add this player.");
             PreparePlayerPostHudSettings(client);
             return;
         }
@@ -37,9 +36,7 @@ public void GetPlayerHudSettings(HTTPResponse response, any userid, const char[]
         iKey = jObj.GetInt("Key");
         jObj.GetString("Side", sSide, sizeof(sSide));
 
-        LogMessage("[HUD.GetPlayerHudSettings] (Status Code: %d) Player: %N, Side: %s, Line: %d, Key: %d", response.Status, client, sSide, iLine, iKey);
-
-        if (StrEqual(sSide, "Left", false))
+        if (sSide[0] == 'L')
         {
             Player[client].LeftSide[iLine] = iKey;
         }
@@ -52,29 +49,29 @@ public void GetPlayerHudSettings(HTTPResponse response, any userid, const char[]
     }
 }
 
-void PreparePlayerPostHudSettings(int client, char[] layout = "default")
+void PreparePlayerPostHudSettings(int client, eHUDStyle style = HUD_Default)
 {
-    if (StrEqual(layout, "default", false))
+    if (style == HUD_Default)
     {
         Player[client].LeftSide = HUD_DEFAULT_LEFT_SIDE;
         Player[client].RightSide = HUD_DEFAULT_RIGHT_SIDE;
     }
-    else if (StrEqual(layout, "ksf", false))
+    else if (style == HUD_KSF)
     {
         Player[client].LeftSide = HUD_KSF_LEFT_SIDE;
         Player[client].RightSide = HUD_KSF_RIGHT_SIDE;
     }
-    else if (StrEqual(layout, "sh", false))
+    else if (style == HUD_SH)
     {
         Player[client].LeftSide = HUD_SH_LEFT_SIDE;
         Player[client].RightSide = HUD_SH_RIGHT_SIDE;
     }
-    else if (StrEqual(layout, "horizon", false))
+    else if (style == HUD_HORIZON)
     {
         Player[client].LeftSide = HUD_HORIZON_LEFT_SIDE;
         Player[client].RightSide = HUD_HORIZON_RIGHT_SIDE;
     }
-    else if (StrEqual(layout, "gofree", false))
+    else if (style == HUD_GOFREE)
     {
         Player[client].LeftSide = HUD_GOFREE_LEFT_SIDE;
         Player[client].RightSide = HUD_GOFREE_RIGHT_SIDE;
@@ -137,8 +134,6 @@ public void PostPlayerHudSettings(HTTPResponse response, any userid, const char[
         return;
     }
 
-    LogMessage("[HUD.PostPlayerHudSettings] Success. Status Code: %d", response.Status);
-
     LoadPlayer(client);
 }
 
@@ -153,8 +148,6 @@ void PatchPlayerHUDKeys(int client, HUDEntry entry[2])
         {
             continue;
         }
-
-        PrintToChat(client, "%d - Side: %d, Line: %d, Key: %d", i, entry[i].Side, entry[i].Line, entry[i].Key);
 
         jObj = new JSONObject();
         jObj.SetString("Side", entry[i].Side == HUD_SIDE_LEFT ? "Left" : "Right");
@@ -171,7 +164,6 @@ void PatchPlayerHUDKeys(int client, HUDEntry entry[2])
     for (int i = 0; i < jArray.Length; i++)
     {
         jObj = view_as<JSONObject>(jArray.Get(i));
-        PrintToChat(client, "Delete jObj%d", i);
         delete jObj;
     }
     
@@ -195,6 +187,4 @@ public void PatchPlayerHUDKey(HTTPResponse response, any userid, const char[] er
     }
 
     ClientCommand(client, "sm_hudmove");
-
-    LogMessage("[Players.PatchPlayerHUDKey] Success. Status Code: %d", response.Status);
 }

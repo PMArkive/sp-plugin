@@ -122,7 +122,9 @@ native bool fuckTimer_IsCheckerZone(int zone, int &bonus, int &validators);
 native int fuckTimer_GetZoneBonus(int zone);
 
 native int fuckTimer_GetCheckpointZone(int bonus, int checkpoint);
+native int fuckTimer_GetZoneCheckpoint(int entity, int bonus);
 native int fuckTimer_GetStageZone(int bonus, int stage);
+native int fuckTimer_GetZoneStage(int entity, int bonus);
 
 /**
  * Paramter bonus will be set.
@@ -182,7 +184,9 @@ public void __pl_fuckTimer_zones_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_GetZoneBonus");
 
     MarkNativeAsOptional("fuckTimer_GetCheckpointZone");
+    MarkNativeAsOptional("fuckTimer_GetZoneCheckpoint");
     MarkNativeAsOptional("fuckTimer_GetStageZone");
+    MarkNativeAsOptional("fuckTimer_GetZoneStage");
 
     MarkNativeAsOptional("fuckTimer_GetCheckpointByIndex");
     MarkNativeAsOptional("fuckTimer_GetStageByIndex");

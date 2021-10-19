@@ -14,7 +14,7 @@
 #define FUCKTIMER_PLUGIN_NAME "fuckTimer - "
 #define FUCKTIMER_PLUGIN_AUTHOR "fuckTimer Contributors"
 #define FUCKTIMER_PLUGIN_DESCRIPTION ""
-#define FUCKTIMER_PLUGIN_VERSION "1.0.0-devvvvvvvvvvvvvvvv"
+#define FUCKTIMER_PLUGIN_VERSION "<VERSION>"
 #define FUCKTIMER_PLUGIN_URL "github.com/fuckTimer"
 #define FUCKTIMER_EFFECT_NAME "fuckTimer"
 
@@ -113,6 +113,26 @@ stock float GetClientSpeed(int client, eHUDSpeed eSpeed = HSXY)
     else
     {
         fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
+    }
+
+    return fSpeed;
+}
+
+stock float GetVelocitySpeed(float[3] velocity, eHUDSpeed eSpeed = HSXY)
+{
+    float fSpeed = 0.0;
+
+    if (eSpeed == HSXYZ)
+    {
+        fSpeed = SquareRoot(Pow(velocity[0], 2.0) + Pow(velocity[1], 2.0) + Pow(velocity[2], 2.0));
+    }
+    else if (eSpeed == HSZ)
+    {
+        fSpeed = velocity[2];
+    }
+    else
+    {
+        fSpeed = SquareRoot(Pow(velocity[0], 2.0) + Pow(velocity[1], 2.0));
     }
 
     return fSpeed;

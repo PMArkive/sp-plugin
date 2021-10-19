@@ -56,7 +56,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetZoneBonus", Native_GetZoneBonus);
 
     CreateNative("fuckTimer_GetCheckpointZone", Native_GetCheckpointZone);
+    CreateNative("fuckTimer_GetZoneCheckpoint", Native_GetZoneCheckpoint);
     CreateNative("fuckTimer_GetStageZone", Native_GetStageZone);
+    CreateNative("fuckTimer_GetZoneStage", Native_GetZoneStage);
 
     CreateNative("fuckTimer_GetCheckpointByIndex", Native_GetCheckpointByIndex);
     CreateNative("fuckTimer_GetStageByIndex", Native_GetStageByIndex);
@@ -107,10 +109,15 @@ public void OnMapStart()
 
 public void OnEntityDestroyed(int entity)
 {
+    if (entity < 1)
+    {
+        return;
+    }
+
     char sClass[32];
     GetEntityClassname(entity, sClass, sizeof(sClass));
 
-    if (StrEqual(sClass, "trigger_multiple", false))
+    if (sClass[0] == 't' && sClass[8] == 'm')
     {
         Zone[entity].Reset();
     }
@@ -436,6 +443,22 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
     return -1;
 }
 
+public int Native_GetZoneCheckpoint(Handle plugin, int numParams)
+{
+    int zone = GetNativeCell(1);
+    int bonus = GetNativeCell(2);
+
+    for (int i = MaxClients; i < MAX_ENTITIES; i++)
+    {
+        if (Zone[zone].Bonus == bonus && Zone[zone].Checkpoint > 0)
+        {
+            return Zone[zone].Checkpoint;
+        }
+    }
+
+    return -1;
+}
+
 public int Native_GetStageZone(Handle plugin, int numParams)
 {
     int bonus = GetNativeCell(1);
@@ -446,6 +469,22 @@ public int Native_GetStageZone(Handle plugin, int numParams)
         if (Zone[i].Bonus == bonus && Zone[i].Stage == stage)
         {
             return i;
+        }
+    }
+
+    return -1;
+}
+
+public int Native_GetZoneStage(Handle plugin, int numParams)
+{
+    int zone = GetNativeCell(1);
+    int bonus = GetNativeCell(2);
+
+    for (int i = MaxClients; i < MAX_ENTITIES; i++)
+    {
+        if (Zone[zone].Bonus == bonus && Zone[zone].Stage > 0)
+        {
+            return Zone[zone].Stage;
         }
     }
 

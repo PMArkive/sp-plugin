@@ -12,7 +12,6 @@ public void GetPlayerData(HTTPResponse response, any userid, const char[] error)
     {
         if (response.Status == HTTPStatus_NotFound)
         {
-            LogMessage("[Players.GetPlayerData] 404 Player Not Found, we'll add this player.");
             PreparePlayerPostData(client);
             return;
         }
@@ -29,8 +28,6 @@ public void GetPlayerData(HTTPResponse response, any userid, const char[] error)
     Player[client].Status = view_as<PlayerStatus>(jPlayer.GetInt("Status"));
 
     delete jPlayer;
-
-    LogMessage("[Players.GetPlayerData] Player Found. Name: %s, Active: %d", sName, Player[client].Status);
 
     Call_StartForward(Core.OnPlayerLoaded);
     Call_PushCell(client);
@@ -77,8 +74,6 @@ public void PostPlayerData(HTTPResponse response, any userid, const char[] error
         return;
     }
 
-    LogMessage("[Players.PostPlayerData] Success. Status Code: %d", response.Status);
-
     LoadPlayer(client);
 }
 
@@ -86,7 +81,6 @@ void LoadPlayerSetting(int client)
 {
     char sEndpoint[MAX_URL_LENGTH];
     Format(sEndpoint, sizeof(sEndpoint), "PlayerSettings/PlayerId/%d", GetSteamAccountID(client));
-    LogMessage(sEndpoint);
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerSetting, GetClientUserId(client));
 }
 
@@ -119,12 +113,10 @@ public void GetPlayerSetting(HTTPResponse response, any userid, const char[] err
     for (int i = 0; i < jArray.Length; i++)
     {
         jSetting = view_as<JSONObject>(jArray.Get(i));
-
         jSetting.GetString("Setting", sSetting, sizeof(sSetting));
         jSetting.GetString("Value", sValue, sizeof(sValue));
 
         Player[client].Settings.SetString(sSetting, sValue);
-        LogMessage("[Players.GetPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
 
         int iIndex = alSettings.FindString(sSetting);
 
@@ -143,7 +135,6 @@ public void GetPlayerSetting(HTTPResponse response, any userid, const char[] err
         {
             alSettings.GetString(i, sSetting, sizeof(sSetting));
             PreparePlayerPostSetting(client, sSetting);
-            LogMessage("[Players.GetPlayerSetting] 404 - Setting \"%s\" Not Found, we'll add it.", sSetting);
         }
     }
 
@@ -190,7 +181,6 @@ public void PostPlayerSetting(HTTPResponse response, any userid, const char[] er
     delete jSetting;
 
     Player[client].Settings.SetString(sSetting, sValue);
-    LogMessage("[Players.PostPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
 }
 
 void SetPlayerSetting(int client, const char[] setting, const char[] value)
@@ -238,6 +228,4 @@ public void PatchPlayerSetting(HTTPResponse response, any pack, const char[] err
         LogError("[Players.PatchPlayerSetting] Something went wrong (Setting: %s). Status Code: %d, Error: %s", sSetting, response.Status, error);
         return;
     }
-
-    LogMessage("[Players.PatchPlayerSetting] Success for setting \"%s\". Status Code: %d", sSetting, response.Status);
 }

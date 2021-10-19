@@ -76,8 +76,6 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
         jsonObject.GetString("Name", style.Name, sizeof(Style::Name));
         style.Status = view_as<StyleStatus>(jsonObject.GetBool("Status"));
 
-        LogMessage("[Styles.GetAllStyles] Style: %s (Id: %d, Status: %d)", style.Name, style.Id, style.Status);
-
         Core.Styles.SetArray(style.Id, style, sizeof(style));
 
         delete jsonObject;
