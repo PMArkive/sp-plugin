@@ -43,6 +43,8 @@ enum eHUDKeys
     HKMap,
     HKMapType,
     HKAttempts,
+    HKAVGSpeed,
+    HKJumps,
     HKStyle = 40,
     HKCurrentStage = 50,
     HKValidator

@@ -90,6 +90,54 @@ public int Native_GetClientAttempts(Handle plugin, int numParams)
     return 0;
 }
 
+public any Native_GetClientAVGSpeed(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    int level = GetNativeCell(2);
+
+    if (level == 0)
+    {
+        return Player[client].Speed;
+    }
+    else if (level > 0)
+    {
+        if (Player[client].CheckpointRunning)
+        {
+            return GetIntMapSpeed(Player[client].CheckpointDetails, level);
+        }
+        else if (Player[client].StageRunning)
+        {
+            return GetIntMapSpeed(Player[client].StageDetails, level);
+        }
+    }
+
+    return 0.0;
+}
+
+public int Native_GetClientJumps(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    int level = GetNativeCell(2);
+
+    if (level == 0)
+    {
+        return Player[client].Jumps;
+    }
+    else if (level > 0)
+    {
+        if (Player[client].CheckpointRunning)
+        {
+            return GetIntMapJumps(Player[client].CheckpointDetails, level);
+        }
+        else if (Player[client].StageRunning)
+        {
+            return GetIntMapJumps(Player[client].StageDetails, level);
+        }
+    }
+
+    return 0;
+}
+
 public int Native_GetClientCheckpoint(Handle plugin, int numParams)
 {
     return Player[GetNativeCell(1)].Checkpoint;

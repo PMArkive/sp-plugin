@@ -439,6 +439,12 @@ public void OnGameFrame()
         FormatEx(sBuffer, sizeof(sBuffer), "Attempts: %d", fuckTimer_GetClientAttempts(client));
         imBuffer.SetString(HKAttempts, sBuffer);
 
+        FormatEx(sBuffer, sizeof(sBuffer), "AVG-Speed: %.2f", fuckTimer_GetClientAVGSpeed(client));
+        imBuffer.SetString(HKAVGSpeed, sBuffer);
+
+        FormatEx(sBuffer, sizeof(sBuffer), "Jumps: %d", fuckTimer_GetClientJumps(client));
+        imBuffer.SetString(HKJumps, sBuffer);
+
         fTime = fuckTimer_GetClientTimeInZone(client);
         GetTimeBySeconds(iClient, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "Zone Time: %s", sBuffer);

@@ -247,6 +247,8 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     smRecord.GetValue("Time", record.Time);
     smRecord.GetValue("TimeInZone", record.TimeInZone);
     smRecord.GetValue("Attempts", record.Attempts);
+    smRecord.GetValue("Speed", record.Speed);
+    smRecord.GetValue("Jumps", record.Jumps);
     smRecord.GetArray("StartPosition", record.StartPosition, 3);
     smRecord.GetArray("EndPosition", record.EndPosition, 3);
     smRecord.GetArray("StartAngle", record.StartAngle, 3);
@@ -279,6 +281,8 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     jRecord.SetFloat("Time", record.Time);
     jRecord.SetFloat("TimeInZone", record.TimeInZone);
     jRecord.SetInt("Attempts", record.Attempts);
+    jRecord.SetFloat("Speed", record.Speed);
+    jRecord.SetInt("Jumps", record.Jumps);
     jRecord.SetFloat("StartPositionX", record.StartPosition[0]);
     jRecord.SetFloat("StartPositionY", record.StartPosition[1]);
     jRecord.SetFloat("StartPositionZ", record.StartPosition[2]);
@@ -328,6 +332,8 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetFloat("Time", details.Time);
                 jDetails.SetFloat("TimeInZone", details.TimeInZone);
                 jDetails.SetInt("Attempts", details.Attempts);
+                jDetails.SetFloat("Speed", details.Speed);
+                jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("StartPositionX", details.StartPosition[0]);
                 jDetails.SetFloat("StartPositionY", details.StartPosition[1]);
                 jDetails.SetFloat("StartPositionZ", details.StartPosition[2]);
@@ -353,6 +359,8 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails = new JSONObject();
                 jDetails.SetInt("Checkpoint", iPoint);
                 jDetails.SetFloat("Time", details.Time);
+                jDetails.SetFloat("Speed", details.Speed);
+                jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("PositionX", details.StartPosition[0]);
                 jDetails.SetFloat("PositionY", details.StartPosition[1]);
                 jDetails.SetFloat("PositionZ", details.StartPosition[2]);

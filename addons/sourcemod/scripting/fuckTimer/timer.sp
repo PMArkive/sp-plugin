@@ -21,6 +21,9 @@ enum struct PlayerData
     int Stage;
     int Bonus;
     int Attempts;
+    int Jumps;
+    float Speed;
+    int SpeedCount;
     int Validator;
     int Zone;
 
@@ -70,6 +73,7 @@ enum struct PlayerData
         if (resetAttempts)
         {
             this.Attempts = 0;
+            this.Jumps = 0;
         }
 
         this.Validator = 0;
@@ -86,6 +90,8 @@ enum struct PlayerData
         this.Prestrafe = false;
 
         this.Time = 0.0;
+        this.Speed = 0.0;
+        this.SpeedCount = 0;
 
         if (resetTimeInZone)
         {
@@ -155,6 +161,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_GetClientTimeInZone", Native_GetClientTimeInZone);
     CreateNative("fuckTimer_GetClientAttempts", Native_GetClientAttempts);
+    CreateNative("fuckTimer_GetClientAVGSpeed", Native_GetClientAVGSpeed);
+    CreateNative("fuckTimer_GetClientJumps", Native_GetClientJumps);
 
     CreateNative("fuckTimer_GetClientCheckpoint", Native_GetClientCheckpoint);
     CreateNative("fuckTimer_GetClientStage", Native_GetClientStage);
@@ -188,6 +196,7 @@ public void OnPluginStart()
     HookEvent("round_poststart", Event_RoundReset);
     HookEvent("round_end", Event_RoundReset);
     HookEvent("player_activate", Event_PlayerActivate);
+    HookEvent("player_jump", Event_PlayerJump);
 }
 
 public void OnAllPluginsLoaded()
@@ -325,6 +334,28 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
     int client = GetClientOfUserId(event.GetInt("userid"));
 
     LoadPlayer(client);
+}
+
+public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcast)
+{
+    int client = GetClientOfUserId(event.GetInt("userid"));
+
+    if (fuckTimer_IsClientValid(client))
+    {
+        if (Player[client].MainRunning)
+        {
+            Player[client].Jumps++;
+        }
+
+        if (Player[client].CheckpointRunning)
+        {
+            SetIntMapJumps(Player[client].CheckpointDetails, Player[client].Checkpoint, 1);
+        }
+        else if (Player[client].StageRunning)
+        {
+            SetIntMapJumps(Player[client].StageDetails, Player[client].Stage, 1);
+        }
+    }
 }
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
@@ -693,6 +724,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         map.SetValue("Time", Player[client].Time);
         map.SetValue("TimeInZone", Player[client].TimeInZone);
         map.SetValue("Attempts", Player[client].Attempts);
+        map.SetValue("Speed", Player[client].Speed);
+        map.SetValue("Jumps", Player[client].Jumps);
         map.SetArray("StartPosition", Player[client].StartPosition, 3);
         map.SetArray("StartAngle", Player[client].StartAngle, 3);
         map.SetArray("StartVelocity", Player[client].StartVelocity, 3);
@@ -967,6 +1000,8 @@ public Action OnPostThinkPost(int client)
         }
 
         Player[client].Time += GetTickInterval();
+        Player[client].Speed += GetClientSpeed(client);
+        Player[client].SpeedCount += 1;
     }
 
     if (Player[client].CheckpointRunning)
@@ -978,6 +1013,7 @@ public Action OnPostThinkPost(int client)
         }
 
         SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, GetTickInterval());
+        SetIntMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, GetClientSpeed(client));
     }
 
     if (Player[client].StageRunning)
@@ -989,6 +1025,7 @@ public Action OnPostThinkPost(int client)
         }
 
         SetIntMapTime(Player[client].StageDetails, Player[client].Stage, GetTickInterval());
+        SetIntMapSpeed(Player[client].StageDetails, Player[client].Stage, GetClientSpeed(client));
     }
     
     return Plugin_Continue;
@@ -1053,6 +1090,81 @@ void SetIntMapTime(IntMap map, int key, float value, bool add = true)
     }
 
     map.SetArray(key, details, sizeof(details));
+}
+
+void SetIntMapSpeed(IntMap map, int key, float value, bool add = true)
+{
+    if (map == null)
+    {
+        return;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    if (value == 0.0 || !add)
+    {
+        details.Speed = value;
+    }
+    else
+    {
+        details.Speed += value;
+    }
+
+    if (add)
+    {
+        details.SpeedCount += 1;
+    }
+
+    map.SetArray(key, details, sizeof(details));
+}
+
+float GetIntMapSpeed(IntMap map, int key)
+{
+    if (map == null)
+    {
+        return 0.0;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    return details.Speed / details.SpeedCount;
+}
+
+void SetIntMapJumps(IntMap map, int key, int value, bool add = true)
+{
+    if (map == null)
+    {
+        return;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    if (value == 0.0 || !add)
+    {
+        details.Jumps = value;
+    }
+    else
+    {
+        details.Jumps += value;
+    }
+
+    map.SetArray(key, details, sizeof(details));
+}
+
+int GetIntMapJumps(IntMap map, int key)
+{
+    if (map == null)
+    {
+        return 0;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    return details.Jumps;
 }
 
 void SetIntMapTimeInZone(IntMap map, int key, float value)
