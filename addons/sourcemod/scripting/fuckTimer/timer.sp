@@ -22,7 +22,6 @@ enum struct PlayerData
     int Bonus;
     int Attempts;
     int Jumps;
-    float Speed;
     int SpeedCount;
     int Validator;
     int Zone;
@@ -35,12 +34,18 @@ enum struct PlayerData
     bool BlockJump;
     bool BlockTeleport;
 
+    // Sync
+    int SyncCount;
+    int GoodGains;
+    float LastAngle;
+
     // Prestrafe
     int LastButtons;
     bool Prestrafe;
 
     float Time;
     float TimeInZone;
+    float Speed;
 
     // Variables for Offset calculation
     float Fraction;
@@ -73,11 +78,16 @@ enum struct PlayerData
         if (resetAttempts)
         {
             this.Attempts = 0;
-            this.Jumps = 0;
         }
 
         this.Validator = 0;
         this.Zone = 0;
+        this.Jumps = 0;
+
+        // Sync
+        this.SyncCount = 0;
+        this.GoodGains = 0;
+        this.LastAngle = 0.0;
 
         this.MainRunning = false;
         this.CheckpointRunning = false;
@@ -161,6 +171,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
     CreateNative("fuckTimer_GetClientTimeInZone", Native_GetClientTimeInZone);
     CreateNative("fuckTimer_GetClientAttempts", Native_GetClientAttempts);
+    CreateNative("fuckTimer_GetClientSync", Native_GetClientSync);
     CreateNative("fuckTimer_GetClientAVGSpeed", Native_GetClientAVGSpeed);
     CreateNative("fuckTimer_GetClientJumps", Native_GetClientJumps);
 
@@ -389,6 +400,32 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
             buttons &= ~IN_JUMP;
             return Plugin_Changed;
         }
+
+        // Thanks to bhoptimer for this code.
+        // Source:  https://github.com/shavitush/bhoptimer/blob/d86ac3f434b532f850a059dde3a62399860172dc/addons/sourcemod/scripting/shavit-core.sp#L4045-L4066
+        float fAngle = GetAngleDiff(angles[1], Player[client].LastAngle);
+        if (GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") == -1 && (GetEntityFlags(client) & FL_INWATER) == 0 && fAngle != 0.0)
+        {
+            float fAbsVelocity[3];
+            GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", fAbsVelocity);
+
+            if(GetClientSpeed(client) > 0.0)
+            {
+                float fTempAngle = angles[1];
+
+                float fAngles[3];
+                GetVectorAngles(fAbsVelocity, fAngles);
+
+                if(fTempAngle < 0.0)
+                {
+                    fTempAngle += 360.0;
+                }
+
+                TestAngles(client, (fTempAngle - fAngles[1]), fAngle, vel);
+            }
+        }
+
+        Player[client].LastAngle = angles[1];
     }
 
     return Plugin_Continue;
@@ -724,6 +761,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         map.SetValue("Time", Player[client].Time);
         map.SetValue("TimeInZone", Player[client].TimeInZone);
         map.SetValue("Attempts", Player[client].Attempts);
+        map.SetValue("Sync", fuckTimer_GetClientSync(client, Player[client].Bonus));
         map.SetValue("Speed", Player[client].Speed);
         map.SetValue("Jumps", Player[client].Jumps);
         map.SetArray("StartPosition", Player[client].StartPosition, 3);
@@ -1092,6 +1130,41 @@ void SetIntMapTime(IntMap map, int key, float value, bool add = true)
     map.SetArray(key, details, sizeof(details));
 }
 
+void SetIntMapSync(IntMap map, int key, bool goodGains)
+{
+    if (map == null)
+    {
+        return;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    if (goodGains)
+    {
+        details.GoodGains++;
+    }
+    else
+    {
+        details.SyncCount++;
+    }
+
+    map.SetArray(key, details, sizeof(details));
+}
+
+float GetIntMapSync(IntMap map, int key)
+{
+    if (map == null)
+    {
+        return 0.0;
+    }
+
+    CSDetails details;
+    map.GetArray(key, details, sizeof(details));
+
+    return details.GoodGains / float(details.SyncCount) * 100.0;
+}
+
 void SetIntMapSpeed(IntMap map, int key, float value, bool add = true)
 {
     if (map == null)
@@ -1380,4 +1453,77 @@ bool TREnumTriggerCS(int entity, any fraction) {
         return false;
     }
     return true;
+}
+
+float GetAngleDiff(float current, float previous)
+{
+    float diff = current - previous;
+    return diff - 360.0 * RoundToFloor((diff + 180.0) / 360.0);
+}
+
+void TestAngles(int client, float dirangle, float yawdelta, float vel[3])
+{
+    if(dirangle < 0.0)
+    {
+        dirangle = -dirangle;
+    }
+
+    bool bCount = false;
+    bool bGain = false;
+
+    if(dirangle < 22.5 || dirangle > 337.5)
+    {
+        bCount = true;
+
+        if((yawdelta > 0.0 && vel[1] <= -100.0) || (yawdelta < 0.0 && vel[1] >= 100.0))
+        {
+            bGain = true;
+        }
+    }
+    else if((dirangle > 22.5 && dirangle < 67.5)) // HSW
+    {
+        bCount = true;
+
+        if((yawdelta != 0.0) && (vel[0] >= 100.0 || vel[1] >= 100.0) && (vel[0] >= -100.0 || vel[1] >= -100.0))
+        {
+            bGain = true;
+        }
+    }
+    else if((dirangle > 67.5 && dirangle < 112.5) || (dirangle > 247.5 && dirangle < 292.5)) // SW
+    {
+        bCount = true;
+
+        if(vel[0] <= -100.0 || vel[0] >= 100.0)
+        {
+            bGain = true;
+        }
+    }
+
+    if (bCount)
+    {
+        Player[client].SyncCount++;
+
+        if (Player[client].CheckpointRunning)
+        {
+            SetIntMapSync(Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+        }
+        else if (Player[client].StageRunning)
+        {
+            SetIntMapSync(Player[client].StageDetails, Player[client].Stage, false);
+        }
+    }
+
+    if (bGain)
+    {
+        Player[client].GoodGains++;
+
+        if (Player[client].CheckpointRunning)
+        {
+            SetIntMapSync(Player[client].CheckpointDetails, Player[client].Checkpoint, true);
+        }
+        else if (Player[client].StageRunning)
+        {
+            SetIntMapSync(Player[client].StageDetails, Player[client].Stage, true);
+        }
+    }
 }

@@ -17,6 +17,8 @@ enum TimeType
 enum struct CSDetails
 {
     float Time;
+    int GoodGains;
+    int SyncCount;
     float Speed;
     int SpeedCount;
     int Jumps;
@@ -70,6 +72,7 @@ native bool fuckTimer_IsClientTimeRunning(int client);
  */
 native float fuckTimer_GetClientTimeInZone(int client, int level = 0);
 native int fuckTimer_GetClientAttempts(int client, int level = 0);
+native float fuckTimer_GetClientSync(int client, int level = 0);
 native int fuckTimer_GetClientAVGSpeed(int client, int level = 0);
 native int fuckTimer_GetClientJumps(int client, int level = 0);
 
@@ -99,6 +102,7 @@ public void __pl_fuckTimer_timer_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_IsClientTimeRunning");
     MarkNativeAsOptional("fuckTimer_GetClientTimeInZone");
     MarkNativeAsOptional("fuckTimer_GetClientAttempts");
+    MarkNativeAsOptional("fuckTimer_GetClientSync");
     MarkNativeAsOptional("fuckTimer_GetClientAVGSpeed");
     MarkNativeAsOptional("fuckTimer_GetClientJumps");
 

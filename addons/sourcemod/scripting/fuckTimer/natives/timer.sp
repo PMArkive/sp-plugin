@@ -90,6 +90,35 @@ public int Native_GetClientAttempts(Handle plugin, int numParams)
     return 0;
 }
 
+public any Native_GetClientSync(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    int level = GetNativeCell(2);
+
+    if (Player[client].GoodGains == 0)
+    {
+        return 0.0;
+    }
+
+    if (level == 0)
+    {
+        return Player[client].GoodGains / float(Player[client].SyncCount) * 100.0;
+    }
+    else if (level > 0)
+    {
+        if (Player[client].CheckpointRunning)
+        {
+            return GetIntMapSync(Player[client].CheckpointDetails, level);
+        }
+        else if (Player[client].StageRunning)
+        {
+            return GetIntMapSync(Player[client].StageDetails, level);
+        }
+    }
+
+    return 0.0;
+}
+
 public any Native_GetClientAVGSpeed(Handle plugin, int numParams)
 {
     int client = GetNativeCell(1);

@@ -439,6 +439,9 @@ public void OnGameFrame()
         FormatEx(sBuffer, sizeof(sBuffer), "Attempts: %d", fuckTimer_GetClientAttempts(client));
         imBuffer.SetString(HKAttempts, sBuffer);
 
+        FormatEx(sBuffer, sizeof(sBuffer), "Sync: %.2f", fuckTimer_GetClientSync(client, iBonus));
+        imBuffer.SetString(HKSync, sBuffer);
+
         FormatEx(sBuffer, sizeof(sBuffer), "AVG-Speed: %.2f", fuckTimer_GetClientAVGSpeed(client));
         imBuffer.SetString(HKAVGSpeed, sBuffer);
 

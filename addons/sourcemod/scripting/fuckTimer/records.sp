@@ -247,6 +247,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     smRecord.GetValue("Time", record.Time);
     smRecord.GetValue("TimeInZone", record.TimeInZone);
     smRecord.GetValue("Attempts", record.Attempts);
+    smRecord.GetValue("Sync", record.Sync);
     smRecord.GetValue("Speed", record.Speed);
     smRecord.GetValue("Jumps", record.Jumps);
     smRecord.GetArray("StartPosition", record.StartPosition, 3);
@@ -281,6 +282,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     jRecord.SetFloat("Time", record.Time);
     jRecord.SetFloat("TimeInZone", record.TimeInZone);
     jRecord.SetInt("Attempts", record.Attempts);
+    jRecord.SetFloat("Sync", record.Sync);
     jRecord.SetFloat("Speed", record.Speed);
     jRecord.SetInt("Jumps", record.Jumps);
     jRecord.SetFloat("StartPositionX", record.StartPosition[0]);
@@ -332,6 +334,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetFloat("Time", details.Time);
                 jDetails.SetFloat("TimeInZone", details.TimeInZone);
                 jDetails.SetInt("Attempts", details.Attempts);
+                jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
                 jDetails.SetFloat("Speed", details.Speed);
                 jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("StartPositionX", details.StartPosition[0]);
@@ -359,6 +362,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails = new JSONObject();
                 jDetails.SetInt("Checkpoint", iPoint);
                 jDetails.SetFloat("Time", details.Time);
+                jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
                 jDetails.SetFloat("Speed", details.Speed);
                 jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("PositionX", details.StartPosition[0]);

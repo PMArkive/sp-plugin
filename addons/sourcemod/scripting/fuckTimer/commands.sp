@@ -689,6 +689,10 @@ public Action Command_HUDMove(int client, int args)
     FormatEx(sDisplay, sizeof(sDisplay), "Attempts");
     menu.AddItem(sNumber, sDisplay);
 
+    IntToString(HKSync, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "Sync");
+    menu.AddItem(sNumber, sDisplay);
+
     IntToString(HKAVGSpeed, sNumber, sizeof(sNumber));
     FormatEx(sDisplay, sizeof(sDisplay), "AVG-Speed");
     menu.AddItem(sNumber, sDisplay);
