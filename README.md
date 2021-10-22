@@ -1,5 +1,13 @@
 # sp-plugin
 
+Installation:
+- Add all required extensions and plugins
+- Get latest artifact from [here](https://github.com/fuckTimer/sp-plugin/actions)
+- Upload all directories from the package folder
+- Add `exec fuckTimer` to your server config, or use your own (surf) settings
+- Set your API url and key in `cfg/fuckTimer/api.cfg`
+- Optional: Edit/Adjust the other fuckTimer config values
+
 Requirements:
 - [MetaMod 1.11 (or higher)](https://www.sourcemm.net/downloads.php?branch=stable)
 - [SourceMod 1.11 (or higher)](http://www.sourcemod.net/downloads.php?branch=dev)
@@ -20,4 +28,4 @@ Optional:
 - [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)
 - [Example (surf/round) settings](https://github.com/fuckTimer/sp-plugin/blob/main/cfg/fuckTimer.cfg)
 - [Auto Assign Team](https://forums.alliedmods.net/showthread.php?p=2682718) Note: This spawns the player after grace time end
-  - Optional: [Team Limit Bypass](https://forums.alliedmods.net/showthread.php?p=1982360)
+- [Team Limit Bypass](https://forums.alliedmods.net/showthread.php?p=1982360)
