@@ -18,12 +18,14 @@
 
 enum struct PlayerData
 {
+    int LastMessage;
     PlayerStatus Status;
     bool InStage;
     StringMap Settings;
 
     void Reset()
     {
+        this.LastMessage = -1;
         this.Status = psInactive;
         this.InStage = false;
         delete this.Settings;
@@ -34,7 +36,7 @@ PlayerData Player[MAXPLAYERS + 1];
 enum struct PluginData
 {
     StringMap Settings;
-
+    ConVar MessageInterval;
     GlobalForward OnPlayerLoaded;
 }
 PluginData Core;
@@ -68,6 +70,10 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+    fuckTimer_StartConfig("players");
+    Core.MessageInterval = AutoExecConfig_CreateConVar("players_messge_interval", "3", "Send invalid key pressure message every X seconds. (0 or lower for disabling this feature)");
+    fuckTimer_EndConfig();
+
     delete Core.Settings;
     Core.Settings = new StringMap();
 
@@ -250,45 +256,60 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
 Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
 {
-    // TODO: Add message for sm_invalidkey command, with spam protecion
     char sBuffer[MAX_SETTING_VALUE_LENGTH];
     Player[client].Settings.GetString(SETTING_INVALIDKEYPREF, sBuffer, sizeof(sBuffer));
-    eInvalidKeyPref preference = view_as<eInvalidKeyPref>(StringToInt(sBuffer));
+    eInvalidKeyPref ePref = view_as<eInvalidKeyPref>(StringToInt(sBuffer));
 
-    
     Player[client].Settings.GetString(SETTING_STYLE, sBuffer, sizeof(sBuffer));
-    Styles style = view_as<Styles>(StringToInt(sBuffer));
+    Styles sStyle = view_as<Styles>(StringToInt(sBuffer));
 
-    if (preference == IKStop)
+    char sMessage[128];
+
+    if (ePref == IKStop)
     {
         fuckTimer_ResetClientTimer(client);
+        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Timer has been stopped.");
+
         return Plugin_Continue;
     }
-    else if (preference == IKRestart)
+    else if (ePref == IKRestart)
     {
         fuckTimer_RestartClient(client);
+        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Timer has been restarted.");
+
         return Plugin_Continue;
     }
-    else if (preference == IKNormal)
+    else if (ePref == IKNormal)
     {
         IntToString(view_as<int>(StyleNormal), sBuffer, sizeof(sBuffer));
         SetPlayerSetting(client, SETTING_STYLE, sBuffer);
+        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Style has been set to normal.");
 
         return Plugin_Continue;
     }
     
-    if (style == StyleSideways || style == StyleHSW)
+    if (sStyle == StyleSideways || sStyle == StyleHSW)
     {
         buttons &= ~IN_MOVERIGHT;
         buttons &= ~IN_MOVELEFT;
         
         vel[1] = 0.0;
+
+        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Y-Velocity has been set to 0.");
     }
-    else if (style == StyleBackwards)
+    else if (sStyle == StyleBackwards)
     {
         vel[0] = 0.0;
         vel[1] = 0.0;
         vel[2] = 0.0;
+
+        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Velocity has been reset.");
+    }
+
+    if (Core.MessageInterval.IntValue > 0 && (Player[client].LastMessage < 1 || GetTime() > Player[client].LastMessage + Core.MessageInterval.IntValue))
+    {
+        PrintToChat(client, sMessage);
+        Player[client].LastMessage = GetTime();
     }
 
     return Plugin_Changed;
