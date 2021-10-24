@@ -19,6 +19,7 @@ Requirements:
 - [EndTouchFix](https://github.com/rumourA/End-Touch-Fix/blob/master/scripting/EndTouchFix.sp) - Need to be compiled
 
 Fixes:
+- [Remove Hint Dollar](https://forums.alliedmods.net/showthread.php?p=2760175)
 - [MomSurfFix](https://forums.alliedmods.net/showthread.php?t=320971)
 - [RNGFix](https://forums.alliedmods.net/showthread.php?t=310825)
 - [Movement Unlocker](https://forums.alliedmods.net/showthread.php?t=255298)
