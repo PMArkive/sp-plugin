@@ -59,18 +59,6 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         }
     }
 
-    for (int i = 1; i <= iStyles; i++)
-    {
-        if (client > 0)
-        {
-            Player[client].Records[i] = new IntMap();
-        }
-        else
-        {
-            Core.Records[i] = new IntMap();
-        }
-    }
-
     if (response.Status == HTTPStatus_NotFound)
     {
         LogMessage("[Records.GetRecords] We found %d records for this map", 0);
@@ -204,10 +192,20 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
         if (client > 0)
         {
+            if (Player[client].Records[record.Style] == null)
+            {
+                Player[client].Records[record.Style] = new IntMap();
+            }
+
             Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
         }
         else
         {
+            if (Core.Records[record.Style] == null)
+            {
+                Core.Records[record.Style] = new IntMap();
+            }
+            
             Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));
         }
 
