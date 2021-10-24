@@ -43,7 +43,7 @@ enum struct RecordData
     float TimeInZone;
     int Attempts;
     float Sync;
-    float Speed;
+    int Speed;
     int Jumps;
     int Status;
     float StartPosition[3];
