@@ -9,27 +9,30 @@ public any Native_GetClientTime(Handle plugin, int numParams)
 
     CSDetails details;
 
-    if (type == TimeMain)
+    switch (type)
     {
-        if (Player[client].Time > 0.0)
+        case TimeMain:
         {
-            return Player[client].Time;
+            if (Player[client].Time > 0.0)
+            {
+                return Player[client].Time;
+            }
         }
-    }
-    else if (type == TimeCheckpoint)
-    {
-        if (Player[client].CheckpointDetails != null)
+        case TimeCheckpoint:
         {
-            Player[client].CheckpointDetails.GetArray(level, details, sizeof(details));
-            return details.Time;
+            if (Player[client].CheckpointDetails != null)
+            {
+                Player[client].CheckpointDetails.GetArray(level, details, sizeof(details));
+                return details.Time;
+            }
         }
-    }
-    else if (type == TimeStage)
-    {
-        if (Player[client].StageDetails != null)
+        case TimeStage:
         {
-            Player[client].StageDetails.GetArray(level, details, sizeof(details));
-            return details.Time;
+            if (Player[client].StageDetails != null)
+            {
+                Player[client].StageDetails.GetArray(level, details, sizeof(details));
+                return details.Time;
+            }
         }
     }
 

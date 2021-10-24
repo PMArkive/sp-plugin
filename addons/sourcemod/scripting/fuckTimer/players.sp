@@ -265,45 +265,51 @@ Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
 
     char sMessage[128];
 
-    if (ePref == IKStop)
+    switch (ePref)
     {
-        fuckTimer_ResetClientTimer(client);
-        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Timer has been stopped.");
+        case IKStop:
+        {
+            fuckTimer_ResetClientTimer(client);
+            FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Timer has been stopped.");
 
-        return Plugin_Continue;
-    }
-    else if (ePref == IKRestart)
-    {
-        fuckTimer_RestartClient(client);
-        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Timer has been restarted.");
+            return Plugin_Continue;
+        }
+        case IKRestart:
+        {
+            fuckTimer_RestartClient(client);
+            FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Timer has been restarted.");
 
-        return Plugin_Continue;
-    }
-    else if (ePref == IKNormal)
-    {
-        IntToString(view_as<int>(StyleNormal), sBuffer, sizeof(sBuffer));
-        SetPlayerSetting(client, SETTING_STYLE, sBuffer);
-        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Style has been set to normal.");
+            return Plugin_Continue;
+        }
+        case IKNormal:
+        {
+            IntToString(view_as<int>(StyleNormal), sBuffer, sizeof(sBuffer));
+            SetPlayerSetting(client, SETTING_STYLE, sBuffer);
+            FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Style has been set to normal.");
 
-        return Plugin_Continue;
+            return Plugin_Continue;
+        }
     }
     
-    if (sStyle == StyleSideways || sStyle == StyleHSW)
+    switch (sStyle)
     {
-        buttons &= ~IN_MOVERIGHT;
-        buttons &= ~IN_MOVELEFT;
-        
-        vel[1] = 0.0;
+        case StyleSideways, StyleHSW:
+        {
+            buttons &= ~IN_MOVERIGHT;
+            buttons &= ~IN_MOVELEFT;
+            
+            vel[1] = 0.0;
 
-        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Y-Velocity has been set to 0.");
-    }
-    else if (sStyle == StyleBackwards)
-    {
-        vel[0] = 0.0;
-        vel[1] = 0.0;
-        vel[2] = 0.0;
+            FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Y-Velocity has been set to 0.");
+        }
+        case StyleBackwards:
+        {
+            vel[0] = 0.0;
+            vel[1] = 0.0;
+            vel[2] = 0.0;
 
-        FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Velocity has been reset.");
+            FormatEx(sMessage, sizeof(sMessage), "Invalid key pressure detected, Velocity has been reset.");
+        }
     }
 
     if (Core.MessageInterval.IntValue > 0 && (Player[client].LastMessage < 1 || GetTime() > Player[client].LastMessage + Core.MessageInterval.IntValue))

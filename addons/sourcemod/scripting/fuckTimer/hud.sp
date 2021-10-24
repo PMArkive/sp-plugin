@@ -273,7 +273,7 @@ public void OnGameFrame()
                 fuckTimer_GetClientSetting(iClient, "HUDCenterSpeedSpeedColor", sBuffer);
                 ExplodeString(sBuffer, ";", sColors, sizeof(sColors), sizeof(sColors[]));
             }
-            else if (iSpeed < Player[client].Speed)
+            else
             {
                 fuckTimer_GetClientSetting(iClient, "HUDCenterSpeedNegativeSpeedColor", sBuffer);
                 ExplodeString(sBuffer, ";", sColors, sizeof(sColors), sizeof(sColors[]));

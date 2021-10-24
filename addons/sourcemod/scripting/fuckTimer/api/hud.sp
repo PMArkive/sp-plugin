@@ -51,30 +51,33 @@ public void GetPlayerHudSettings(HTTPResponse response, any userid, const char[]
 
 void PreparePlayerPostHudSettings(int client, eHUDStyle style = HUD_Default)
 {
-    if (style == HUD_Default)
+    switch (style)
     {
-        Player[client].LeftSide = HUD_DEFAULT_LEFT_SIDE;
-        Player[client].RightSide = HUD_DEFAULT_RIGHT_SIDE;
-    }
-    else if (style == HUD_KSF)
-    {
-        Player[client].LeftSide = HUD_KSF_LEFT_SIDE;
-        Player[client].RightSide = HUD_KSF_RIGHT_SIDE;
-    }
-    else if (style == HUD_SH)
-    {
-        Player[client].LeftSide = HUD_SH_LEFT_SIDE;
-        Player[client].RightSide = HUD_SH_RIGHT_SIDE;
-    }
-    else if (style == HUD_HORIZON)
-    {
-        Player[client].LeftSide = HUD_HORIZON_LEFT_SIDE;
-        Player[client].RightSide = HUD_HORIZON_RIGHT_SIDE;
-    }
-    else if (style == HUD_GOFREE)
-    {
-        Player[client].LeftSide = HUD_GOFREE_LEFT_SIDE;
-        Player[client].RightSide = HUD_GOFREE_RIGHT_SIDE;
+        case HUD_Default:
+        {
+            Player[client].LeftSide = HUD_DEFAULT_LEFT_SIDE;
+            Player[client].RightSide = HUD_DEFAULT_RIGHT_SIDE;
+        }
+        case HUD_KSF:
+        {
+            Player[client].LeftSide = HUD_KSF_LEFT_SIDE;
+            Player[client].RightSide = HUD_KSF_RIGHT_SIDE;
+        }
+        case HUD_SH:
+        {
+            Player[client].LeftSide = HUD_SH_LEFT_SIDE;
+            Player[client].RightSide = HUD_SH_RIGHT_SIDE;
+        }
+        case HUD_HORIZON:
+        {
+            Player[client].LeftSide = HUD_HORIZON_LEFT_SIDE;
+            Player[client].RightSide = HUD_HORIZON_RIGHT_SIDE;
+        }
+        case HUD_GOFREE:
+        {
+            Player[client].LeftSide = HUD_GOFREE_LEFT_SIDE;
+            Player[client].RightSide = HUD_GOFREE_RIGHT_SIDE;
+        }
     }
 
     int iAccountID = GetSteamAccountID(client);

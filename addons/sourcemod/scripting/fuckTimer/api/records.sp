@@ -90,17 +90,21 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
         char sType[12];
         jMainRecord.GetString("Type", sType, sizeof(sType));
-        if (sType[0] == 'C')
+
+        switch (sType[0])
         {
-            record.Type = TimeCheckpoint;
-        }
-        else if (sType[0] == 'S')
-        {
-            record.Type = TimeStage;
-        }
-        else
-        {
-            record.Type = TimeMain;
+            case 'C':
+            {
+                record.Type = TimeCheckpoint;
+            }
+            case 'S':
+            {
+                record.Type = TimeStage;
+            }
+            default:
+            {
+                record.Type = TimeMain;
+            }
         }
 
         record.Tickrate = jMainRecord.GetFloat("Tickrate");

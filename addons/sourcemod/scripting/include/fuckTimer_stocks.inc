@@ -105,17 +105,20 @@ stock float GetClientSpeed(int client, eHUDSpeed eSpeed = HSXY)
 
     float fSpeed = 0.0;
 
-    if (eSpeed == HSXYZ)
+    switch (eSpeed)
     {
-        fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0) + Pow(fVelocity[2], 2.0));
-    }
-    else if (eSpeed == HSZ)
-    {
-        fSpeed = fVelocity[2];
-    }
-    else
-    {
-        fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
+        case HSXYZ:
+        {
+            fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0) + Pow(fVelocity[2], 2.0));
+        }
+        case HSZ:
+        {
+            fSpeed = fVelocity[2];
+        }
+        default:
+        {
+            fSpeed = SquareRoot(Pow(fVelocity[0], 2.0) + Pow(fVelocity[1], 2.0));
+        }
     }
 
     return fSpeed;
@@ -125,17 +128,20 @@ stock float GetVelocitySpeed(float[3] velocity, eHUDSpeed eSpeed = HSXY)
 {
     float fSpeed = 0.0;
 
-    if (eSpeed == HSXYZ)
+    switch (eSpeed)
     {
-        fSpeed = SquareRoot(Pow(velocity[0], 2.0) + Pow(velocity[1], 2.0) + Pow(velocity[2], 2.0));
-    }
-    else if (eSpeed == HSZ)
-    {
-        fSpeed = velocity[2];
-    }
-    else
-    {
-        fSpeed = SquareRoot(Pow(velocity[0], 2.0) + Pow(velocity[1], 2.0));
+        case HSXYZ:
+        {
+            fSpeed = SquareRoot(Pow(velocity[0], 2.0) + Pow(velocity[1], 2.0) + Pow(velocity[2], 2.0));
+        }
+        case HSZ:
+        {
+            fSpeed = velocity[2];
+        }
+        default:
+        {
+            fSpeed = SquareRoot(Pow(velocity[0], 2.0) + Pow(velocity[1], 2.0));
+        }
     }
 
     return fSpeed;
