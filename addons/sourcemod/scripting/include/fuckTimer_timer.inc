@@ -19,7 +19,7 @@ enum struct CSDetails
     float Time;
     int GoodGains;
     int SyncCount;
-    float Speed;
+    int Speed;
     int SpeedCount;
     int Jumps;
 

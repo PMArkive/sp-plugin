@@ -22,6 +22,7 @@ enum struct PlayerData
     int Bonus;
     int Attempts;
     int Jumps;
+    int Speed;
     int SpeedCount;
     int Validator;
     int Zone;
@@ -45,7 +46,6 @@ enum struct PlayerData
 
     float Time;
     float TimeInZone;
-    float Speed;
 
     // Variables for Offset calculation
     float Fraction;
@@ -100,7 +100,7 @@ enum struct PlayerData
         this.Prestrafe = false;
 
         this.Time = 0.0;
-        this.Speed = 0.0;
+        this.Speed = 0;
         this.SpeedCount = 0;
 
         if (resetTimeInZone)
@@ -1033,6 +1033,11 @@ public Action OnPostThinkPost(int client)
     Player[client].Origin2 = Player[client].Origin1;
     GetEntPropVector(client, Prop_Data, "m_vecOrigin", Player[client].Origin1);
 
+    float fTickInterval = GetTickInterval();
+
+    float fSpeed = GetClientSpeed(client);
+    int iSpeed = RoundToNearest(fSpeed);
+
     if (Player[client].MainRunning)
     {
         if (Player[client].GetOffset)
@@ -1042,8 +1047,8 @@ public Action OnPostThinkPost(int client)
             CalculateTickIntervalOffset(client, false);
         }
 
-        Player[client].Time += GetTickInterval();
-        Player[client].Speed += GetClientSpeed(client);
+        Player[client].Time += fTickInterval;
+        Player[client].Speed += iSpeed;
         Player[client].SpeedCount++;
     }
 
@@ -1055,8 +1060,8 @@ public Action OnPostThinkPost(int client)
             SetIntMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint, false);
         }
 
-        SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, GetTickInterval());
-        SetIntMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, GetClientSpeed(client));
+        SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, fTickInterval);
+        SetIntMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, iSpeed);
     }
 
     if (Player[client].StageRunning)
@@ -1067,8 +1072,8 @@ public Action OnPostThinkPost(int client)
             SetIntMapGetOffset(Player[client].StageDetails, Player[client].Stage, false);
         }
 
-        SetIntMapTime(Player[client].StageDetails, Player[client].Stage, GetTickInterval());
-        SetIntMapSpeed(Player[client].StageDetails, Player[client].Stage, GetClientSpeed(client));
+        SetIntMapTime(Player[client].StageDetails, Player[client].Stage, fTickInterval);
+        SetIntMapSpeed(Player[client].StageDetails, Player[client].Stage, iSpeed);
     }
     
     return Plugin_Continue;
@@ -1170,7 +1175,7 @@ float GetIntMapSync(IntMap map, int key)
     return details.GoodGains / float(details.SyncCount) * 100.0;
 }
 
-void SetIntMapSpeed(IntMap map, int key, float value, bool add = true)
+void SetIntMapSpeed(IntMap map, int key, int value, bool add = true)
 {
     if (map == null)
     {
@@ -1197,17 +1202,22 @@ void SetIntMapSpeed(IntMap map, int key, float value, bool add = true)
     map.SetArray(key, details, sizeof(details));
 }
 
-float GetIntMapSpeed(IntMap map, int key)
+int GetIntMapSpeed(IntMap map, int key)
 {
     if (map == null)
     {
-        return 0.0;
+        return 0;
     }
 
     CSDetails details;
     map.GetArray(key, details, sizeof(details));
 
-    return details.Speed / float(details.SpeedCount);
+    if (details.Speed == 0)
+    {
+        return 0;
+    }
+
+    return details.Speed / details.SpeedCount;
 }
 
 void SetIntMapJumps(IntMap map, int key, int value, bool add = true)

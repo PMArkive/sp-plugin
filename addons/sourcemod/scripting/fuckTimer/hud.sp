@@ -442,7 +442,7 @@ public void OnGameFrame()
         FormatEx(sBuffer, sizeof(sBuffer), "Sync: %.2f", fuckTimer_GetClientSync(client, iBonus));
         imBuffer.SetString(HKSync, sBuffer);
 
-        FormatEx(sBuffer, sizeof(sBuffer), "AVG-Speed: %.2f", fuckTimer_GetClientAVGSpeed(client));
+        FormatEx(sBuffer, sizeof(sBuffer), "AV-Speed: %d", fuckTimer_GetClientAVGSpeed(client));
         imBuffer.SetString(HKAVGSpeed, sBuffer);
 
         FormatEx(sBuffer, sizeof(sBuffer), "Jumps: %d", fuckTimer_GetClientJumps(client));

@@ -122,14 +122,19 @@ public any Native_GetClientSync(Handle plugin, int numParams)
     return 0.0;
 }
 
-public any Native_GetClientAVGSpeed(Handle plugin, int numParams)
+public int Native_GetClientAVGSpeed(Handle plugin, int numParams)
 {
     int client = GetNativeCell(1);
     int level = GetNativeCell(2);
 
     if (level == 0)
     {
-        return Player[client].Speed / float(Player[client].SpeedCount);
+        if (Player[client].Speed == 0)
+        {
+            return 0;
+        }
+
+        return Player[client].Speed / Player[client].SpeedCount;
     }
     else if (level > 0)
     {
@@ -143,7 +148,7 @@ public any Native_GetClientAVGSpeed(Handle plugin, int numParams)
         }
     }
 
-    return 0.0;
+    return 0;
 }
 
 public int Native_GetClientJumps(Handle plugin, int numParams)
