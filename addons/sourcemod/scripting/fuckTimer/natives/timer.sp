@@ -129,7 +129,7 @@ public any Native_GetClientAVGSpeed(Handle plugin, int numParams)
 
     if (level == 0)
     {
-        return Player[client].Speed;
+        return Player[client].Speed / float(Player[client].SpeedCount);
     }
     else if (level > 0)
     {
