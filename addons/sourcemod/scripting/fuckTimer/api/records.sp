@@ -209,7 +209,7 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
             {
                 Core.Records[record.Style] = new IntMap();
             }
-            
+
             Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));
         }
 

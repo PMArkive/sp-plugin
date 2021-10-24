@@ -204,6 +204,12 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
             bPlayerRecord = true;
         }
     }
+    else
+    {
+        CPrintToChatAll("%N finished this map first time!", client);
+        bFirstRecord = true;
+        bPlayerRecord = true;
+    }
 
     if (bServerRecord || bPlayerRecord)
     {
@@ -388,6 +394,11 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     if (updatePlayer)
     {
         PostPlayerRecord(client, firstRecord, jRecord);
+        if (Player[client].Records[record.Style] == null)
+        {
+            Player[client].Records[record.Style] = new IntMap();
+        }
+
         Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
 
         delete imDetails;
@@ -395,6 +406,11 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     }
     else
     {
+        if (Core.Records[record.Style] == null)
+        {
+            Core.Records[record.Style] = new IntMap();
+        }
+
         Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));
     }
 }
@@ -412,7 +428,6 @@ public any Native_GetServerRecord(Handle plugin, int numParams)
             SetNativeArray(3, record, sizeof(record));
             return true;
         }
-
     }
 
     return false;
@@ -432,7 +447,6 @@ public any Native_GetPlayerRecord(Handle plugin, int numParams)
             SetNativeArray(4, record, sizeof(record));
             return true;
         }
-
     }
 
     return false;
