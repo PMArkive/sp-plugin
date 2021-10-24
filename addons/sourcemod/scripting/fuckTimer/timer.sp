@@ -888,6 +888,10 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Reset(.resetTimeInZone = false, .resetAttempts = false);
         Player[client].AllowPrestrafe(false);
 
+        int iSpeed = RoundToNearest(GetClientSpeed(client));
+        Player[client].Speed = iSpeed;
+        Player[client].SpeedCount = 1;
+
         Player[client].Bonus = bonus;
         Player[client].MainRunning = true;
         Player[client].GetOffset = true;
@@ -909,6 +913,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Player[client].StageRunning = true;
             SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
             SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
+            SetIntMapSpeed(Player[client].StageDetails, Player[client].Stage, iSpeed, false);
         }
 
         if (Core.Checkpoints.GetInt(bonus) > 0)
@@ -922,6 +927,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             Player[client].CheckpointRunning = true;
             SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
             SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint - 1, true, true);
+            SetIntMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, iSpeed, false);
         }
 
         if (Player[client].Attempts < 0)
@@ -1197,6 +1203,10 @@ void SetIntMapSpeed(IntMap map, int key, int value, bool add = true)
     if (add)
     {
         details.SpeedCount++;
+    }
+    else
+    {
+        details.SpeedCount = 1;
     }
 
     map.SetArray(key, details, sizeof(details));
