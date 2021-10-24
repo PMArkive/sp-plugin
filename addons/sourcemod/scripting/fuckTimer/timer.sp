@@ -246,6 +246,11 @@ public void OnCVarChange(ConVar convar, const char[] oldValue, const char[] newV
     CSetPrefix(newValue);
 }
 
+public void OnClientDisconnect(int client)
+{
+    Player[client].Reset();
+}
+
 public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 {
     StringMap smEffects = fuckZones_GetZoneEffects(entity);
@@ -1039,7 +1044,7 @@ public Action OnPostThinkPost(int client)
 
         Player[client].Time += GetTickInterval();
         Player[client].Speed += GetClientSpeed(client);
-        Player[client].SpeedCount += 1;
+        Player[client].SpeedCount++;
     }
 
     if (Player[client].CheckpointRunning)
@@ -1186,7 +1191,7 @@ void SetIntMapSpeed(IntMap map, int key, float value, bool add = true)
 
     if (add)
     {
-        details.SpeedCount += 1;
+        details.SpeedCount++;
     }
 
     map.SetArray(key, details, sizeof(details));
@@ -1202,7 +1207,7 @@ float GetIntMapSpeed(IntMap map, int key)
     CSDetails details;
     map.GetArray(key, details, sizeof(details));
 
-    return details.Speed / details.SpeedCount;
+    return details.Speed / float(details.SpeedCount);
 }
 
 void SetIntMapJumps(IntMap map, int key, int value, bool add = true)
@@ -1388,7 +1393,8 @@ void CalculateTickIntervalOffset(int client, bool end)
     Player[client].Offset[end ? OFFSET_END : OFFSET_START] = Player[client].Fraction * GetTickInterval();
 }
 
-bool TREnumTrigger(int entity, any client) {
+bool TREnumTrigger(int entity, any client)
+{
 
     if (entity <= MaxClients) {
         return true;
@@ -1435,7 +1441,8 @@ void CalculateTickIntervalOffsetCS(int client, IntMap map, int key, bool end)
     map.SetArray(key, details, sizeof(details));
 }
 
-bool TREnumTriggerCS(int entity, any fraction) {
+bool TREnumTriggerCS(int entity, any fraction)
+{
 
     if (entity <= MaxClients) {
         return true;
