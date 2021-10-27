@@ -109,18 +109,30 @@ enum struct PlayerData
         }
 
         this.Fraction = 0.0;
-        this.Origin1 = {0.0, 0.0, 0.0};
-        this.Origin2 = {0.0, 0.0, 0.0};
-        this.Offset = { 0.0, 0.0 };
         this.GetOffset = false;
 
+#if SOURCEMOD_V_MINOR > 10
+        this.Offset = { 0.0, 0.0 };
+        this.Origin1 = {0.0, 0.0, 0.0};
+        this.Origin2 = {0.0, 0.0, 0.0};
         this.StartPosition = {0.0, 0.0, 0.0};
         this.StartAngle = {0.0, 0.0, 0.0};
         this.StartVelocity = {0.0, 0.0, 0.0};
-
         this.EndPosition = {0.0, 0.0, 0.0};
         this.EndAngle = {0.0, 0.0, 0.0};
         this.EndVelocity = {0.0, 0.0, 0.0};
+#else
+        this.Offset[0] = 0.0; this.Offset[1] = 0.0;
+        this.Origin1[0] = 0.0; this.Origin1[1] = 0.0; this.Origin1[2] = 0.0;
+        this.Origin2[0] = 0.0; this.Origin2[1] = 0.0; this.Origin2[2] = 0.0;
+        this.StartPosition[0] = 0.0; this.StartPosition[1] = 0.0; this.StartPosition[2] = 0.0;
+        this.StartAngle[0] = 0.0; this.StartAngle[1] = 0.0; this.StartAngle[2] = 0.0;
+        this.StartVelocity[0] = 0.0; this.StartVelocity[1] = 0.0; this.StartVelocity[2] = 0.0;
+        this.EndPosition[0] = 0.0; this.EndPosition[1] = 0.0; this.EndPosition[2] = 0.0;
+        this.EndAngle[0] = 0.0; this.EndAngle[1] = 0.0; this.EndAngle[2] = 0.0;
+        this.EndVelocity[0] = 0.0; this.EndVelocity[1] = 0.0; this.EndVelocity[2] = 0.0;
+#endif
+
 
         delete this.CheckpointDetails;
         delete this.StageDetails;

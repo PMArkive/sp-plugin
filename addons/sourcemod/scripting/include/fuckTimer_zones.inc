@@ -51,8 +51,13 @@ enum struct ZoneDetails
         this.MapAuthor[0] = '\0';
         this.ZoneAuthor[0] = '\0';
 
+#if SOURCEMOD_V_MINOR > 10
         this.TeleportOrigin = {0.0, 0.0, 0.0};
         this.TeleportAngles = {0.0, 0.0, 0.0};
+#else
+        this.TeleportOrigin[0] = 0.0; this.TeleportOrigin[1] = 0.0; this.TeleportOrigin[2] = 0.0;
+        this.TeleportAngles[0] = 0.0; this.TeleportAngles[1] = 0.0; this.TeleportAngles[2] = 0.0;
+#endif
     }
 }
 

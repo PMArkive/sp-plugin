@@ -563,7 +563,7 @@ public int Native_TeleportEntityToZone(Handle plugin, int numParams)
         return 0;
     }
     
-    TeleportEntity(client, Zone[zone].TeleportOrigin, Zone[zone].TeleportAngles);
+    TeleportEntity(client, Zone[zone].TeleportOrigin, Zone[zone].TeleportAngles, NULL_VECTOR);
     
     return 0;
 }
