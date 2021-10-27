@@ -30,3 +30,4 @@ Optional:
 - [Example (surf/round) settings](https://github.com/fuckTimer/sp-plugin/blob/main/cfg/fuckTimer.cfg)
 - [Auto Assign Team](https://forums.alliedmods.net/showthread.php?p=2682718) Note: This spawns the player after grace time end
 - [Team Limit Bypass](https://forums.alliedmods.net/showthread.php?p=1982360)
+- [Cleaner](https://github.com/Accelerator74/Cleaner)
