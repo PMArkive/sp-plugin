@@ -127,7 +127,7 @@ public void GetMapTiers(HTTPResponse response, any value, const char[] error)
     UnloadFuckZones();
 }
 
-UnloadFuckZones()
+void UnloadFuckZones()
 {
     bool bFound = false;
     Handle hPlugin = null;
@@ -641,4 +641,6 @@ public any Native_GetMapTiers(Handle plugin, int numParams)
     }
     Call_PushCell(smList);
     Call_Finish();
+    
+    return 0;
 }

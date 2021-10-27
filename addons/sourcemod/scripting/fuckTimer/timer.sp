@@ -343,6 +343,8 @@ public Action Event_RoundReset(Event event, const char[] name, bool dontBroadcas
     {
         Player[client].Reset();
     }
+    
+    return Plugin_Continue;
 }
 
 public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
@@ -350,6 +352,8 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
     int client = GetClientOfUserId(event.GetInt("userid"));
 
     LoadPlayer(client);
+    
+    return Plugin_Continue;
 }
 
 public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcast)
@@ -372,6 +376,8 @@ public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcas
             SetIntMapJumps(Player[client].StageDetails, Player[client].Stage, 1);
         }
     }
+    
+    return Plugin_Continue;
 }
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])

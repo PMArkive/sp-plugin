@@ -47,11 +47,11 @@ public void OnConfigsExecuted()
     Core.SourceModVersion = FindConVar("sourcemod_version");
 }
 
-public any Native_GetAPIUrl(Handle plugin, int numParams)
+public int Native_GetAPIUrl(Handle plugin, int numParams)
 {
     char sUrl[MAX_URL_LENGTH];
     Core.APIUrl.GetString(sUrl, sizeof(sUrl));
-    SetNativeString(1, sUrl, sizeof(sUrl));
+    return SetNativeString(1, sUrl, sizeof(sUrl));
 }
 
 public any Native_NewHTTPRequest(Handle plugin, int numParams)

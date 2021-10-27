@@ -8,7 +8,10 @@
 #define MAX_URL_LENGTH 2048
 #define FUCKTIMER_BASE_CLOUD_URL "https://raw.githubusercontent.com/fuckTimer"
 
-native bool fuckTimer_GetAPIUrl(char[] url);
+/**
+ * @return        SP_ERROR_NONE on success, any other integer on failure.
+ */
+native int fuckTimer_GetAPIUrl(char[] url);
 native HTTPRequest fuckTimer_NewHTTPRequest(const char[] url, int length = MAX_URL_LENGTH);
 
 stock HTTPRequest fuckTimer_NewCloudHTTPRequest(const char[] endpoint)

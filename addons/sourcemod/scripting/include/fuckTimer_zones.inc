@@ -139,7 +139,7 @@ native int fuckTimer_GetZonePreSpeed(int zone);
 native int fuckTimer_GetMaxVelocity(int zone);
 native void fuckTimer_GetZoneMapAuthor(int zone, char[] author, int maxlen);
 native void fuckTimer_GetZoneZoneAuthor(int zone, char[] author, int maxlen);
-native bool fuckTimer_GetZoneTeleportCoords(int zone, float[3] origin, float[3] angles);
+native bool fuckTimer_GetZoneTeleportCoords(int zone, float origin[3], float angles[3]);
 native void fuckTimer_TeleportEntityToZone(int client, int zone);
 
 stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)

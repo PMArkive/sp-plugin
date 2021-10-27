@@ -114,6 +114,8 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
     int client = GetClientOfUserId(event.GetInt("userid"));
 
     LoadPlayer(client);
+
+    return Plugin_Continue;
 }
 
 public void OnClientDisconnect(int client)
@@ -124,6 +126,8 @@ public void OnClientDisconnect(int client)
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     RequestFrame(Frame_PlayerSpawn, event.GetInt("userid"));
+    
+    return Plugin_Continue;
 }
 
 public void Frame_PlayerSpawn(any userid)
@@ -230,6 +234,8 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
     {
         fuckTimer_ResetClientTimer(client);
     }
+    
+    return Plugin_Continue;
 }
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
@@ -297,6 +303,9 @@ Action OnInvalidKeyPressure(int client, float vel[3], int buttons)
         {
             buttons &= ~IN_MOVERIGHT;
             buttons &= ~IN_MOVELEFT;
+
+            // Workaround
+            if (buttons) {}
             
             vel[1] = 0.0;
 
@@ -335,6 +344,8 @@ public any Native_RegisterSetting(Handle plugin, int numParams)
     GetNativeString(2, sValue, sizeof(sValue));
 
     Core.Settings.SetString(sSetting, sValue);
+    
+    return 0;
 }
 
 public any Native_GetClientSetting(Handle plugin, int numParams)
@@ -395,6 +406,8 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
 
     Player[client].Settings.SetString(sSetting, sValue);
     SetPlayerSetting(client, sSetting, sValue);
+    
+    return 0;
 }
 
 public any Native_GetClientStatus(Handle plugin, int numParams)

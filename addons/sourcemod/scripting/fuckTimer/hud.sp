@@ -162,6 +162,8 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
     int client = GetClientOfUserId(event.GetInt("userid"));
 
     LoadPlayer(client);
+
+    return Plugin_Continue;
 }
 
 public void OnGameFrame()
@@ -914,7 +916,7 @@ void LoadPlayer(int client)
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerHudSettings, GetClientUserId(client));
 }
 
-void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgainst eReturn, RecordData recordPR, RecordData recordSR, bool isCheckpoint, float[3] velocity, eCompareAgainst against, eCompareMode mode, eHUDSpeed speed)
+void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgainst eReturn, RecordData recordPR, RecordData recordSR, bool isCheckpoint, float velocity[3], eCompareAgainst against, eCompareMode mode, eHUDSpeed speed)
 {
     char sUnit[4];
     fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sUnit);
@@ -1005,7 +1007,7 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
     CPrintToChat(client, "%s: %.0f%s%s", sType, fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), sSpeed);
 }
 
-void CompareHUD_LeaveZone(int client, int level, bool start, float[3] velocity, RecordData record, eCompareAgainst eReturn, eCompareMode mode, eHUDSpeed speed)
+void CompareHUD_LeaveZone(int client, int level, bool start, float velocity[3], RecordData record, eCompareAgainst eReturn, eCompareMode mode, eHUDSpeed speed)
 {
     if (eReturn == CANONE || record.Time <= 0.0)
     {

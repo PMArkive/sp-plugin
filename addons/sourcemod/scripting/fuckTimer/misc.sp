@@ -55,6 +55,8 @@ public Action Timer_Enforce(Handle timer)
     {
         SetFailState("\"cfg/fuckTimer.cfg\" not found.");
     }
+    
+    return Plugin_Continue;
 }
 
 public void Event_RoundPostStart(Event event, const char[] name, bool dontBroadcast)
@@ -104,7 +106,7 @@ public Action Command_Drop(int client, const char[] command, int args)
 {
     if (!Core.ItemCleanup.BoolValue)
     {
-        return;
+        return Plugin_Continue;
     }
 
     if (client)
@@ -123,6 +125,8 @@ public Action Command_Drop(int client, const char[] command, int args)
             }
         }
     }
+    
+    return Plugin_Continue;
 }
 
 public Action Command_Say(int client, const char[] command, int argc)

@@ -124,7 +124,7 @@ stock float GetClientSpeed(int client, eHUDSpeed eSpeed = HSXY)
     return fSpeed;
 }
 
-stock float GetVelocitySpeed(float[3] velocity, eHUDSpeed eSpeed = HSXY)
+stock float GetVelocitySpeed(float velocity[3], eHUDSpeed eSpeed = HSXY)
 {
     float fSpeed = 0.0;
 

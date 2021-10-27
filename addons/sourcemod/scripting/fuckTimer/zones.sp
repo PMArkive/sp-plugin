@@ -524,12 +524,12 @@ public int Native_GetMaxVelocity(Handle plugin, int numParams)
 
 public int Native_GetZoneMapAuthor(Handle plugin, int numParams)
 {
-    SetNativeString(2, Zone[GetNativeCell(1)].MapAuthor, GetNativeCell(3));
+    return SetNativeString(2, Zone[GetNativeCell(1)].MapAuthor, GetNativeCell(3));
 }
 
 public int Native_GetZoneZoneAuthor(Handle plugin, int numParams)
 {
-    SetNativeString(2, Zone[GetNativeCell(1)].ZoneAuthor, GetNativeCell(3));
+    return SetNativeString(2, Zone[GetNativeCell(1)].ZoneAuthor, GetNativeCell(3));
 }
 
 public any Native_GetZoneTeleportCoords(Handle plugin, int numParams)
@@ -552,7 +552,7 @@ public any Native_GetZoneTeleportCoords(Handle plugin, int numParams)
     return true;
 }
 
-public any Native_TeleportEntityToZone(Handle plugin, int numParams)
+public int Native_TeleportEntityToZone(Handle plugin, int numParams)
 {
     int client = GetNativeCell(1);
     int zone = GetNativeCell(2);
@@ -560,8 +560,10 @@ public any Native_TeleportEntityToZone(Handle plugin, int numParams)
     if (Zone[zone].TeleportOrigin[0] == 0.0 && Zone[zone].TeleportOrigin[1] == 0.0 && Zone[zone].TeleportOrigin[2] == 0.0)
     {
         fuckZones_TeleportClientToZoneIndex(client, zone);
-        return;
+        return 0;
     }
     
     TeleportEntity(client, Zone[zone].TeleportOrigin, Zone[zone].TeleportAngles);
+    
+    return 0;
 }

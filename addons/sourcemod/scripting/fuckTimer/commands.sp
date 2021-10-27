@@ -478,6 +478,8 @@ public int Menu_Styles(Menu menu, MenuAction action, int client, int param)
     {
         delete menu;
     }
+
+    return 0;
 }
 
 public Action Command_InvalidKeyPref(int client, int args)
@@ -536,6 +538,8 @@ public int Menu_InvalidKeyPref(Menu menu, MenuAction action, int client, int par
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_Tier(int client, int args)
@@ -549,6 +553,8 @@ public Action Command_Tier(int client, int args)
     }
 
     fuckTimer_GetMapTiers(client, sBuffer, OnMapTiers);
+    
+    return Plugin_Continue;
 }
 
 public void OnMapTiers(int client, StringMap tiers)
@@ -655,6 +661,8 @@ public int Menu_ListHUDCommands(Menu menu, MenuAction action, int client, int pa
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDMove(int client, int args)
@@ -768,6 +776,8 @@ public int Menu_ListHUDKeys(Menu menu, MenuAction action, int client, int param)
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 void ListHUDSides(int client)
@@ -809,6 +819,8 @@ public int Menu_ListHUDSides(Menu menu, MenuAction action, int client, int param
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 void ListHUDLines(int client)
@@ -858,6 +870,8 @@ public int Menu_ListHUDLines(Menu menu, MenuAction action, int client, int param
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 void HUDMoveOrSwap(int client)
@@ -902,6 +916,8 @@ public int HUDMenu_MoveOrSwap(Menu menu, MenuAction action, int client, int para
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDEnable(int client, int args)
@@ -1036,6 +1052,8 @@ public int Menu_HUDPreset(Menu menu, MenuAction action, int client, int param)
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDSeparator(int client, int args)
@@ -1088,6 +1106,8 @@ public int Menu_HUDSeparator(Menu menu, MenuAction action, int client, int param
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDLength(int client, int args)
@@ -1191,6 +1211,8 @@ public int Menu_HUDScale(Menu menu, MenuAction action, int client, int param)
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDShowSpeedUnit(int client, int args)
@@ -1267,6 +1289,8 @@ public int Menu_HUDSpeed(Menu menu, MenuAction action, int client, int param)
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDTime(int client, int args)
@@ -1383,6 +1407,8 @@ public int Menu_HUDCompareLocation(Menu menu, MenuAction action, int client, int
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDCompareAgainst(int client, int args)
@@ -1432,6 +1458,8 @@ public int Menu_HUDCompareAgainst(Menu menu, MenuAction action, int client, int 
     {
         delete menu;
     }
+    
+    return 0;
 }
 
 public Action Command_HUDCompareMode(int client, int args)
@@ -1633,6 +1661,8 @@ public int Native_RestartClient(Handle plugin, int numParams)
     int client = GetNativeCell(1);
 
     ClientRestart(client);
+    
+    return 0;
 }
 
 void ClientRestart(int client)

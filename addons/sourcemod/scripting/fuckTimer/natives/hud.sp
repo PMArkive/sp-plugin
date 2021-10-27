@@ -3,6 +3,8 @@
 public any Native_SetClientHUDLayout(Handle plugin, int numParams)
 {
     PreparePlayerPostHudSettings(GetNativeCell(1), view_as<eHUDStyle>(GetNativeCell(2)));
+    
+    return 0;
 }
 
 public any Native_MoveClientHUDKey(Handle plugin, int numParams)
@@ -60,4 +62,6 @@ public any Native_MoveClientHUDKey(Handle plugin, int numParams)
     }
 
     PatchPlayerHUDKeys(client, hEntry);
+    
+    return 0;
 }

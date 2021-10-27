@@ -217,4 +217,6 @@ public int Native_ResetClientTimer(Handle plugin, int numParams)
     int client = GetNativeCell(1);
 
     Player[client].Reset();
+    
+    return 0;
 }
