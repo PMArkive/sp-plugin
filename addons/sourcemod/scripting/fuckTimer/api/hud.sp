@@ -191,3 +191,69 @@ public void PatchPlayerHUDKey(HTTPResponse response, any userid, const char[] er
 
     ClientCommand(client, "sm_hudmove");
 }
+
+public void GetRecordsCount(HTTPResponse response, any records, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        LogError("[HUD.GetRecordsCount] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    JSONArray jArray = view_as<JSONArray>(response.Data);
+    JSONObject jCount;
+
+    for (int i = 0; i < jArray.Length; i++)
+    {
+        jCount = view_as<JSONObject>(jArray.Get(i));
+
+        int iStyle = jCount.GetInt("StyleId");
+        int iLevel = jCount.GetInt("Level");
+
+        if (Core.MapRecordDetails[iStyle] == null)
+        {
+            Core.MapRecordDetails[iStyle] = new IntMap();
+        }
+
+        MapRecordDetails mrDetails;
+        mrDetails.Count = jCount.GetInt("Count");
+        Core.MapRecordDetails[iStyle].SetArray(iLevel, mrDetails, sizeof(mrDetails));
+
+        delete jCount;
+    }
+
+    delete jArray;
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/AvgTime/MapId/%d", fuckTimer_GetCurrentMapId());
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecordsAvgTime);
+}
+
+public void GetRecordsAvgTime(HTTPResponse response, any records, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        LogError("[HUD.GetRecordsAvgTime] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    JSONArray jArray = view_as<JSONArray>(response.Data);
+    JSONObject jAvgTime;
+
+    for (int i = 0; i < jArray.Length; i++)
+    {
+        jAvgTime = view_as<JSONObject>(jArray.Get(i));
+
+        int iStyle = jAvgTime.GetInt("StyleId");
+        int iLevel = jAvgTime.GetInt("Level");
+
+        MapRecordDetails mrDetails;
+        Core.MapRecordDetails[iStyle].GetArray(iLevel, mrDetails, sizeof(mrDetails));
+        mrDetails.AvgTime = jAvgTime.GetInt("AvgTime");
+        Core.MapRecordDetails[iStyle].SetArray(iLevel, mrDetails, sizeof(mrDetails));
+
+        delete jAvgTime;
+    }
+
+    delete jArray;
+}

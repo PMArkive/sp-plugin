@@ -57,12 +57,20 @@ enum struct PlayerData
 }
 PlayerData Player[MAXPLAYERS + 1];
 
+enum struct MapRecordDetails
+{
+    int Count;
+    int AvgTime;
+}
+
 enum struct PluginData
 {
     ConVar cvTitle;
     ConVar Factor;
 
     char Title[32];
+
+    IntMap MapRecordDetails[MAX_STYLES + 1];
 }
 PluginData Core;
 
@@ -155,6 +163,18 @@ public void OnCvarChange(ConVar convar, const char[] oldValue, const char[] newV
     {
         strcopy(Core.Title, sizeof(PluginData::Title), newValue);
     }
+}
+
+public void fuckTimer_OnServerRecordsLoaded(int records)
+{
+    if (records < 1)
+    {
+        return;
+    }
+
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/Count/MapId/%d", fuckTimer_GetCurrentMapId());
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecordsCount, records);
 }
 
 public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
