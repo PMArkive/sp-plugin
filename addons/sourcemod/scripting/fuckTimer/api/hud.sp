@@ -249,7 +249,7 @@ public void GetRecordsAvgTime(HTTPResponse response, any records, const char[] e
 
         MapRecordDetails mrDetails;
         Core.MapRecordDetails[iStyle].GetArray(iLevel, mrDetails, sizeof(mrDetails));
-        mrDetails.AvgTime = jAvgTime.GetInt("AvgTime");
+        mrDetails.AvgTime = jAvgTime.GetFloat("AvgTime");
         Core.MapRecordDetails[iStyle].SetArray(iLevel, mrDetails, sizeof(mrDetails));
 
         delete jAvgTime;

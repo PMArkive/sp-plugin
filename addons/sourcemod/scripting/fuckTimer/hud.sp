@@ -60,7 +60,7 @@ PlayerData Player[MAXPLAYERS + 1];
 enum struct MapRecordDetails
 {
     int Count;
-    int AvgTime;
+    float AvgTime;
 }
 
 enum struct PluginData
