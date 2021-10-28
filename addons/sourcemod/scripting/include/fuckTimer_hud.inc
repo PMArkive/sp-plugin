@@ -45,6 +45,7 @@ enum eHUDKeys
     HKAttempts,
     HKSync,
     HKAVGSpeed,
+    HKAVGTime,
     HKJumps,
     HKStyle = 40,
     HKCurrentStage = 50,

@@ -464,8 +464,14 @@ public void OnGameFrame()
         FormatEx(sBuffer, sizeof(sBuffer), "Sync: %.2f", fuckTimer_GetClientSync(client, iBonus));
         imBuffer.SetString(HKSync, sBuffer);
 
-        FormatEx(sBuffer, sizeof(sBuffer), "AV-Speed: %d", fuckTimer_GetClientAVGSpeed(client));
+        FormatEx(sBuffer, sizeof(sBuffer), "Av-Speed: %d", fuckTimer_GetClientAVGSpeed(client));
         imBuffer.SetString(HKAVGSpeed, sBuffer);
+
+        MapRecordDetails mrDetails;
+        Core.MapRecordDetails[style].GetArray(iBonus, mrDetails, sizeof(mrDetails));
+        GetTimeBySeconds(iClient, mrDetails.AvgTime, sBuffer, sizeof(sBuffer));
+        FormatEx(sBuffer, sizeof(sBuffer), "Av-Time: %s", sBuffer);
+        imBuffer.SetString(HKAVGTime, sBuffer);
 
         FormatEx(sBuffer, sizeof(sBuffer), "Jumps: %d", fuckTimer_GetClientJumps(client));
         imBuffer.SetString(HKJumps, sBuffer);
