@@ -65,22 +65,22 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
         return;
     }
 
-    JSONArray jMainrecords = view_as<JSONArray>(response.Data);
+    JSONArray jMainRecords = view_as<JSONArray>(response.Data);
 
     if (client > 0 && fuckTimer_IsClientValid(client, true, true))
     {
-        LogMessage("[Records.GetRecords] We found %d player records for \"%N\" for this map", jMainrecords.Length, client);
+        LogMessage("[Records.GetRecords] We found %d player records for \"%N\" for this map", jMainRecords.Length, client);
     }
     else
     {
-        LogMessage("[Records.GetRecords] We found %d records for this map", jMainrecords.Length);
+        LogMessage("[Records.GetRecords] We found %d records for this map", jMainRecords.Length);
     }
 
     JSONObject jMainRecord = null;
 
-    for (int i = 0; i < jMainrecords.Length; i++)
+    for (int i = 0; i < jMainRecords.Length; i++)
     {
-        jMainRecord = view_as<JSONObject>(jMainrecords.Get(i));
+        jMainRecord = view_as<JSONObject>(jMainRecords.Get(i));
 
         RecordData record;
         record.PlayerId = jMainRecord.GetInt("PlayerId");
@@ -215,6 +215,19 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
         delete jMainRecord;
     }
+
+    if (client > 0)
+    {
+        Call_StartForward(Core.OnPlayerRecordsLoaded);
+        Call_PushCell(client);
+    }
+    else
+    {
+        Call_StartForward(Core.OnServerRecordsLoaded);
+    }
+
+    Call_PushCell(jMainRecords.Length);
+    Call_Finish();
 }
 
 void PostPlayerRecord(int client, bool firstRecord, JSONObject record)

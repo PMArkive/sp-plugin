@@ -12,6 +12,9 @@
 */
 forward void fuckTimer_OnNewRecord(int client, bool serverRecord, StringMap recordDetails, float oldTime);
 
+forward void fuckTimer_OnServerRecordsLoaded(int records);
+forward void fuckTimer_OnPlayerRecordsLoaded(int client, int records);
+
 /**
  * IMPORTANT: Don't delete the Details IntMap! 
  *
