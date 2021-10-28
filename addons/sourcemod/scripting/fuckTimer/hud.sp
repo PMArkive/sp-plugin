@@ -468,7 +468,13 @@ public void OnGameFrame()
         imBuffer.SetString(HKAVGSpeed, sBuffer);
 
         MapRecordDetails mrDetails;
-        Core.MapRecordDetails[style].GetArray(iBonus, mrDetails, sizeof(mrDetails));
+        mrDetails.AvgTime = 0.0;
+        
+        if (Core.MapRecordDetails[style] != null)
+        {
+            Core.MapRecordDetails[style].GetArray(iBonus, mrDetails, sizeof(mrDetails));
+        }
+        
         GetTimeBySeconds(iClient, mrDetails.AvgTime, sBuffer, sizeof(sBuffer));
         FormatEx(sBuffer, sizeof(sBuffer), "Av-Time: %s", sBuffer);
         imBuffer.SetString(HKAVGTime, sBuffer);
