@@ -73,6 +73,8 @@ public void OnPluginStart()
     RegConsoleCmd("sm_rs", Command_RestartStage, "Teleports you back to the stage (start) zone");
     RegConsoleCmd("sm_back", Command_RestartStage, "Teleports you back to the stage (start) zone");
     RegConsoleCmd("sm_restartstage", Command_RestartStage, "Teleports you back to the stage (start) zone");
+    RegConsoleCmd("sm_bonuses", Command_BonusList, "List all bonuses of the current map (main will also included)");
+    RegConsoleCmd("sm_stages", Command_StageList, "List all stages of the current map (level will disabled if no stage exists)");
     RegConsoleCmd("sm_b", Command_Bonus, "Teleports you to the bonus start zone.");
     RegConsoleCmd("sm_bonus", Command_Bonus, "Teleports you to the bonus start zone.");
     RegConsoleCmd("sm_s", Command_Stage, "Teleports you to the stage zone.");
@@ -294,6 +296,190 @@ public Action Command_RestartStage(int client, int args)
     }
 
     return Plugin_Handled;
+}
+
+public Action Command_BonusList(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    Menu menu = new Menu(Menu_BonusList);
+    menu.SetTitle("Choose level");
+
+    char sLevel[12], sDisplay[24];
+    for (int i = 0; i <= fuckTimer_GetAmountOfBonus(); i++)
+    {
+        if (i == 0)
+        {
+            menu.AddItem("0", "Main");
+        }
+        else
+        {
+            IntToString(i, sLevel , sizeof(sLevel));
+            FormatEx(sDisplay, sizeof(sDisplay), "Bonus %d", i);
+            menu.AddItem(sLevel, sDisplay);
+        }
+    }
+
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Continue;
+}
+
+public int Menu_BonusList(Menu menu, MenuAction action, int client, int param)
+{
+    switch (action)
+    {
+        case MenuAction_Select:
+        {
+            char sLevel[12];
+            menu.GetItem(param, sLevel, sizeof(sLevel));
+
+            int iLevel = StringToInt(sLevel);
+
+            int iZone = fuckTimer_GetStartZone(iLevel);
+
+            if (iZone < 1)
+            {
+                CPrintToChat(client, "Something went wrong, zone seems invalid. Process has been aborted!");
+                return 0;
+            }
+
+            CallOnClientCommand(client, iLevel, true);
+            fuckTimer_TeleportEntityToZone(client, iZone);
+        }
+        case MenuAction_End:
+        {
+            delete menu;
+        }
+    }
+
+    return 0;
+}
+
+public Action Command_StageList(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    Menu menu = new Menu(Menu_StageListLevel);
+    menu.SetTitle("Choose level");
+
+    char sLevel[12], sDisplay[24];
+    for (int i = 0; i <= fuckTimer_GetAmountOfBonus(); i++)
+    {
+        if (i == 0)
+        {
+            menu.AddItem("0", "Main", (fuckTimer_GetAmountOfStages(0) > 0) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+        }
+        else
+        {
+            IntToString(i, sLevel , sizeof(sLevel));
+            FormatEx(sDisplay, sizeof(sDisplay), "Bonus %d", i);
+            menu.AddItem(sLevel, sDisplay, (fuckTimer_GetAmountOfStages(i) > 0) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+        }
+    }
+
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Continue;
+}
+
+public int Menu_StageListLevel(Menu menu, MenuAction action, int client, int param)
+{
+    switch (action)
+    {
+        case MenuAction_Select:
+        {
+            char sLevel[12];
+            menu.GetItem(param, sLevel, sizeof(sLevel));
+
+            int iLevel = StringToInt(sLevel);
+
+            ListLevelStages(client, iLevel);
+        }
+        case MenuAction_End:
+        {
+            delete menu;
+        }
+    }
+
+    return 0;
+}
+
+void ListLevelStages(int client, int level)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return;
+    }
+
+    Menu menu = new Menu(Menu_StageList);
+    menu.SetTitle("Choose stage");
+
+    char sLevel[12], sDisplay[24];
+    IntToString(level, sLevel, sizeof(sLevel));
+    menu.AddItem(sLevel, "level", ITEMDRAW_IGNORE);
+
+    for (int i = 1; i <= fuckTimer_GetAmountOfStages(level); i++)
+    {
+        IntToString(i, sLevel , sizeof(sLevel));
+        FormatEx(sDisplay, sizeof(sDisplay), "Stage %d", i);
+        menu.AddItem(sLevel, sDisplay);
+    }
+
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return;
+}
+
+public int Menu_StageList(Menu menu, MenuAction action, int client, int param)
+{
+    switch (action)
+    {
+        case MenuAction_Select:
+        {
+            char sStage[12];
+            menu.GetItem(param, sStage, sizeof(sStage));
+
+            int iStage = StringToInt(sStage);
+
+            int iLevel = -1;
+
+            char sDisplay[24], sInfo[12];
+            for (int i = 0; i < menu.ItemCount; i++)
+            {
+                menu.GetItem(i, sInfo, sizeof(sInfo), _, sDisplay, sizeof(sDisplay));
+
+                if (sDisplay[0] == 'l')
+                {
+                    iLevel = StringToInt(sInfo);
+                    break;
+                }
+            }
+
+            int iZone = fuckTimer_GetStageZone(iLevel, iStage);
+
+            if (iZone < 1)
+            {
+                CPrintToChat(client, "Something went wrong, zone seems invalid. Process has been aborted!");
+                return 0;
+            }
+
+            CallOnClientCommand(client, iStage, true);
+            fuckTimer_TeleportEntityToZone(client, iZone);
+        }
+        case MenuAction_End:
+        {
+            delete menu;
+        }
+    }
+
+    return 0;
 }
 
 public Action Command_Bonus(int client, int args)
