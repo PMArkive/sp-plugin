@@ -23,6 +23,7 @@ native bool fuckTimer_GetClientSetting(int client, const char[] setting, char[] 
 native void fuckTimer_SetClientSetting(int client, const char[] setting, char[] value);
 
 native PlayerStatus fuckTimer_GetClientStatus(int client);
+native Styles fuckTimer_GetClientStyle(int client);
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_fuckTimer_players_SetNTVOptional()
@@ -33,6 +34,7 @@ public void __pl_fuckTimer_players_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_SetClientSetting");
 
     MarkNativeAsOptional("fuckTimer_GetClientStatus");
+    MarkNativeAsOptional("fuckTimer_GetClientStyle");
 }
 #endif
 

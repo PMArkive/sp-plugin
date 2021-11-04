@@ -62,6 +62,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_SetClientSetting", Native_SetClientSetting);
 
     CreateNative("fuckTimer_GetClientStatus", Native_GetClientStatus);
+    CreateNative("fuckTimer_GetClientStyle", Native_GetClientStyle);
 
     RegPluginLibrary("fuckTimer_players");
 
@@ -413,6 +414,13 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
 public any Native_GetClientStatus(Handle plugin, int numParams)
 {
     return Player[GetNativeCell(1)].Status;
+}
+
+public any Native_GetClientStyle(Handle plugin, int numParams)
+{
+    char sBuffer[12];
+    Player[GetNativeCell(1)].Settings.GetString(SETTING_STYLE, sBuffer, sizeof(sBuffer));
+    return view_as<Styles>(StringToInt(sBuffer));
 }
 
 void LoadPlayer(int client)
