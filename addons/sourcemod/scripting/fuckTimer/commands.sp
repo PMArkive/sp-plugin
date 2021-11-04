@@ -632,6 +632,11 @@ public Action Command_Styles(int client, int args)
     char sBuffer[8];
     for (int i = 1; i <= imStyles.Size; i++)
     {
+        if (!style.Status)
+        {
+            continue;
+        }
+
         imStyles.GetArray(i, style, sizeof(style));
         IntToString(style.Id, sBuffer, sizeof(sBuffer));
         menu.AddItem(sBuffer, style.Name);
