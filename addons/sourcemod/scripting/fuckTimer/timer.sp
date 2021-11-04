@@ -374,6 +374,11 @@ public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcas
 
     if (fuckTimer_IsClientValid(client))
     {
+        if (!fuckTimer_GetCurrentMapStatus())
+        {
+            return Plugin_Continue;
+        }
+
         if (Player[client].MainRunning)
         {
             Player[client].Jumps++;
@@ -394,6 +399,11 @@ public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcas
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
+    if (!fuckTimer_GetCurrentMapStatus())
+    {
+        return Plugin_Continue;
+    }
+
     for (int i = 0; i < 25; i++)
     {
         int button = (1 << i);
@@ -471,6 +481,11 @@ void OnButtonPress(int client, int button)
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 {
     if (!IsPlayerAlive(client))
+    {
+        return;
+    }
+    
+    if (!fuckTimer_GetCurrentMapStatus())
     {
         return;
     }
@@ -820,6 +835,11 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         return;
     }
 
+    if (!fuckTimer_GetCurrentMapStatus())
+    {
+        return;
+    }
+
     Player[client].Zone = zone;
     Player[client].Bonus = fuckTimer_GetZoneBonus(Player[client].Zone);
 
@@ -886,6 +906,11 @@ public void fuckTimer_OnClientCommand(int client, int level, bool start)
 public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 {
     if (!IsPlayerAlive(client))
+    {
+        return;
+    }
+
+    if (!fuckTimer_GetCurrentMapStatus())
     {
         return;
     }
@@ -1042,6 +1067,11 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 public Action OnPostThinkPost(int client)
 {
     if (client < 1 || IsFakeClient(client) || IsClientSourceTV(client))
+    {
+        return Plugin_Continue;
+    }
+
+    if (!fuckTimer_GetCurrentMapStatus())
     {
         return Plugin_Continue;
     }
