@@ -374,7 +374,7 @@ public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcas
 
     if (fuckTimer_IsClientValid(client))
     {
-        if (!fuckTimer_GetCurrentMapStatus())
+        if (!fuckTimer_GetCurrentMapStatus() || !fuckTimer_GetClientStatus(client))
         {
             return Plugin_Continue;
         }
@@ -399,7 +399,7 @@ public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcas
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-    if (!fuckTimer_GetCurrentMapStatus())
+    if (!fuckTimer_GetCurrentMapStatus() || !fuckTimer_GetClientStatus(client))
     {
         return Plugin_Continue;
     }
@@ -485,7 +485,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         return;
     }
     
-    if (!fuckTimer_GetCurrentMapStatus())
+    if (!fuckTimer_GetCurrentMapStatus() || !fuckTimer_GetClientStatus(client))
     {
         return;
     }
@@ -835,7 +835,7 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
         return;
     }
 
-    if (!fuckTimer_GetCurrentMapStatus())
+    if (!fuckTimer_GetCurrentMapStatus() || !fuckTimer_GetClientStatus(client))
     {
         return;
     }
@@ -910,7 +910,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         return;
     }
 
-    if (!fuckTimer_GetCurrentMapStatus())
+    if (!fuckTimer_GetCurrentMapStatus() || !fuckTimer_GetClientStatus(client))
     {
         return;
     }
@@ -1071,7 +1071,7 @@ public Action OnPostThinkPost(int client)
         return Plugin_Continue;
     }
 
-    if (!fuckTimer_GetCurrentMapStatus())
+    if (!fuckTimer_GetCurrentMapStatus() || !fuckTimer_GetClientStatus(client))
     {
         return Plugin_Continue;
     }
