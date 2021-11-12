@@ -200,12 +200,11 @@ void DownloadZoneFile()
     
     char sEndpoint[128];
     FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/Tier%d/%s.zon", iTier, sMap);
-    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     DataPack pack = new DataPack();
     pack.WriteString(sMap);
 
-    request.DownloadFile(sFile, OnZoneDownload, pack);
+    fuckTimer_NewCloudHTTPRequest(sEndpoint).DownloadFile(sFile, OnZoneDownload, pack);
 }
 
 public void OnZoneDownload(HTTPStatus status, any pack, const char[] error)
@@ -401,12 +400,10 @@ void DownloadStripperGlobal(const char[] map)
         return;
     }
 
-    HTTPRequest request = fuckTimer_NewCloudHTTPRequest("stripper/main/files/global_filters.cfg");
-
     DataPack dpPack = new DataPack();
     dpPack.WriteString(map);
     
-    request.DownloadFile(sFile, OnStripperGlobalDownload, dpPack);
+    fuckTimer_NewCloudHTTPRequest("stripper/main/files/global_filters.cfg").DownloadFile(sFile, OnStripperGlobalDownload, dpPack);
 }
 
 public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] error)
@@ -463,12 +460,11 @@ void DownloadStripperMap(const char[] map)
 
     char sEndpoint[128];
     FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/%s.cfg", map);
-    HTTPRequest request = fuckTimer_NewCloudHTTPRequest(sEndpoint);
 
     DataPack dpPack = new DataPack();
     dpPack.WriteString(map);
     
-    request.DownloadFile(sFile, OnStripperMapDownload, dpPack);
+    fuckTimer_NewCloudHTTPRequest(sEndpoint).DownloadFile(sFile, OnStripperMapDownload, dpPack);
 }
 
 public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] error)
