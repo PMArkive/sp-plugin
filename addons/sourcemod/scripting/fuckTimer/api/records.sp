@@ -109,6 +109,7 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
         record.Tickrate = jMainRecord.GetFloat("Tickrate");
         record.Time = jMainRecord.GetFloat("Time");
+        record.Rank = jMainRecord.GetInt("Rank");
         record.TimeInZone = jMainRecord.GetFloat("TimeInZone");
         record.Attempts = jMainRecord.GetInt("Attempts");
         record.Status = jMainRecord.GetInt("Status");
@@ -265,5 +266,24 @@ public void SendRecord(HTTPResponse response, any userid, const char[] error)
     {
         SetFailState("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
+    }
+
+    char sEndpoint[32];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Ranks/MapId/%d", fuckTimer_GetCurrentMapId());
+    fuckTimer_NewAPIHTTPRequest("Ranks").Get(RecalculateRanks);
+}
+
+public void RecalculateRanks(HTTPResponse response, any pack, const char[] error)
+{
+    if (response.Status != HTTPStatus_OK)
+    {
+        delete view_as<DataPack>(pack);
+        SetFailState("[Records.RecalculateRanks] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    fuckTimer_LoopClients(client, false, false)
+    {
+        fuckTimer_OnPlayerLoaded(client);
     }
 }

@@ -326,11 +326,13 @@ public void OnGameFrame()
 
         fTime = fuckTimer_GetClientTime(client, TimeMain, iBonus);
 
+        int iRank = 0;
         RecordData record;
         if (fuckTimer_GetPlayerRecord(client, style, iBonus, record))
         {
             GetTimeBySeconds(iClient, record.Time, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "PR: %s", sBuffer);
+            iRank = record.Rank;
         }
         else
         {
@@ -349,7 +351,15 @@ public void OnGameFrame()
         }
         imBuffer.SetString(HKServerRecord, sBuffer);
 
-        FormatEx(sBuffer, sizeof(sBuffer), "Rank: None");
+        MapRecordDetails mrDetails;
+        mrDetails.AvgTime = 0.0;
+        
+        if (Core.MapRecordDetails[style] != null)
+        {
+            Core.MapRecordDetails[style].GetArray(iBonus, mrDetails, sizeof(mrDetails));
+        }
+
+        FormatEx(sBuffer, sizeof(sBuffer), "Rank: %d/%d", iRank, mrDetails.Count);
         imBuffer.SetString(HKRank, sBuffer);
 
         if (Player[client].CompareTime == 0 || Player[client].CompareTime <= GetTime())
@@ -466,14 +476,6 @@ public void OnGameFrame()
 
         FormatEx(sBuffer, sizeof(sBuffer), "Av-Speed: %d", fuckTimer_GetClientAVGSpeed(client));
         imBuffer.SetString(HKAVGSpeed, sBuffer);
-
-        MapRecordDetails mrDetails;
-        mrDetails.AvgTime = 0.0;
-        
-        if (Core.MapRecordDetails[style] != null)
-        {
-            Core.MapRecordDetails[style].GetArray(iBonus, mrDetails, sizeof(mrDetails));
-        }
         
         GetTimeBySeconds(iClient, mrDetails.AvgTime, sBuffer, sizeof(sBuffer));
         FormatEx(sBuffer, sizeof(sBuffer), "Av-Time: %s", sBuffer);

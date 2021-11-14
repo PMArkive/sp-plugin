@@ -41,6 +41,7 @@ enum struct RecordData
     TimeType Type;
     float Tickrate;
     float Time;
+    int Rank;
     float TimeInZone;
     int Attempts;
     float Sync;
