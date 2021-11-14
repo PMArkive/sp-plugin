@@ -192,7 +192,7 @@ public void PatchPlayerHUDKey(HTTPResponse response, any userid, const char[] er
     ClientCommand(client, "sm_hudmove");
 }
 
-public void GetRecordsCount(HTTPResponse response, any records, const char[] error)
+public void GetRecordsCount(HTTPResponse response, any data, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {

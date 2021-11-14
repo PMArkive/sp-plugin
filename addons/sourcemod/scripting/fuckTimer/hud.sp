@@ -172,9 +172,7 @@ public void fuckTimer_OnServerRecordsLoaded(int records)
         return;
     }
 
-    char sEndpoint[MAX_URL_LENGTH];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/Count/MapId/%d", fuckTimer_GetCurrentMapId());
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecordsCount, records);
+    LoadServerRecordCount();
 }
 
 public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
@@ -214,7 +212,7 @@ public void OnGameFrame()
 
         bool success = fuckTimer_GetClientSetting(client, "HUD", sSetting);
 
-        if (!success || !view_as<bool>(StringToInt(sSetting)))
+        if (!success || !view_as<bool>(StringToInt(sSetting)) || fuckTimer_GetClientStatus(client) == psInactive)
         {
             continue;
         }
@@ -360,7 +358,7 @@ public void OnGameFrame()
         }
 
         FormatEx(sBuffer, sizeof(sBuffer), "Rank: %d/%d", iRank, mrDetails.Count);
-        imBuffer.SetString(HKRank, sBuffer);
+        imBuffer.SetString(HKMapRank, sBuffer);
 
         if (Player[client].CompareTime == 0 || Player[client].CompareTime <= GetTime())
         {
@@ -832,6 +830,12 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap timemap)
 
         CompareHUD_TimerEnd(client, fTime, eMode, record, eReturn, fRecordSpeed, fClientSpeed);
     }
+
+}
+
+public void fuckTimer_OnNewRecord(int client, bool serverRecord, StringMap recordDetails, float oldTime)
+{
+    LoadServerRecordCount();
 }
 
 bool GetOldPosition(int client, int key, HUDEntry hEntry[2])
@@ -1420,4 +1424,12 @@ eCompareAgainst GetRecord(int client, Styles style, int bonus, eCompareAgainst a
     {
         return CANONE;
     }
+}
+
+void LoadServerRecordCount()
+{
+    char sEndpoint[MAX_URL_LENGTH];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Records/Count/MapId/%d", fuckTimer_GetCurrentMapId());
+    LogMessage(sEndpoint);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecordsCount);
 }
