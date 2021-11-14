@@ -393,7 +393,7 @@ public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcas
             SetIntMapJumps(Player[client].StageDetails, Player[client].Stage, 1);
         }
     }
-    
+
     return Plugin_Continue;
 }
 

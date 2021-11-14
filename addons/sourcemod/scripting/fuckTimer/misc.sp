@@ -42,20 +42,19 @@ public void OnMapStart()
 {
     // Workaround temporarily copied from SurfTimer
     // Maybe we find another more cleaner solution
-    CreateTimer(1.0, Timer_Enforce);
+    if (FileExists("cfg/" ... FUCKTIMER_CFG_FILENAME))
+    {
+        CreateTimer(1.0, Timer_Enforce);
+    }
+    else
+    {
+        SetFailState("\"cfg/" ... FUCKTIMER_CFG_FILENAME ... "\" not found.");
+    }
 }
 
 public Action Timer_Enforce(Handle timer)
 {
-    if (FileExists("cfg/fuckTimer.cfg"))
-    {
-        ServerCommand("exec fuckTimer.cfg");
-    }
-    else
-    {
-        SetFailState("\"cfg/fuckTimer.cfg\" not found.");
-    }
-    
+    ServerCommand("exec " ... FUCKTIMER_CFG_FILENAME);
     return Plugin_Continue;
 }
 
@@ -89,15 +88,17 @@ void ItemCleanup()
 
     for (int iWeapon = MaxClients; iWeapon < MAX_ENTITIES; iWeapon++)
     {
-        if (IsValidEntity(iWeapon))
+        if (!sValidEntity(iWeapon))
         {
-            char sClassname[32];
-            GetEntityClassname(iWeapon, sClassname, sizeof(sClassname));
+            continue;
+        }
 
-            if (StrContains(sClassname, "weapon", false) != -1 || StrContains(sClassname, "item", false) != -1)
-            {
-                RemoveEntity(iWeapon);
-            }
+        char sClassname[32];
+        GetEntityClassname(iWeapon, sClassname, sizeof(sClassname));
+
+        if (StrContains(sClassname, "weapon", false) != -1 || StrContains(sClassname, "item", false) != -1)
+        {
+            RemoveEntity(iWeapon);
         }
     }
 }
@@ -113,16 +114,18 @@ public Action Command_Drop(int client, const char[] command, int args)
     {
         int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 
-        if (IsValidEntity(iWeapon))
+        if (!sValidEntity(iWeapon))
         {
-            char sClassname[32];
-            GetEntityClassname(iWeapon, sClassname, sizeof(sClassname));
+            continue;
+        }
 
-            if (StrContains(sClassname, "weapon", false) != -1 || StrContains(sClassname, "item", false) != -1)
-            {
-                SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
-                RemoveEntity(iWeapon);
-            }
+        char sClassname[32];
+        GetEntityClassname(iWeapon, sClassname, sizeof(sClassname));
+
+        if (StrContains(sClassname, "weapon", false) != -1 || StrContains(sClassname, "item", false) != -1)
+        {
+            SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+            RemoveEntity(iWeapon);
         }
     }
     

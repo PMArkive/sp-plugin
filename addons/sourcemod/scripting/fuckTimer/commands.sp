@@ -455,11 +455,13 @@ public int Menu_StageList(Menu menu, MenuAction action, int client, int param)
             {
                 menu.GetItem(i, sInfo, sizeof(sInfo), _, sDisplay, sizeof(sDisplay));
 
-                if (sDisplay[0] == 'l')
+                if (sDisplay[0] != 'l')
                 {
-                    iLevel = StringToInt(sInfo);
-                    break;
+                    continue;
                 }
+                
+                iLevel = StringToInt(sInfo);
+                break;
             }
 
             int iZone = fuckTimer_GetStageZone(iLevel, iStage);

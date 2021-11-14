@@ -300,10 +300,12 @@ public int Native_GetStartZone(Handle plugin, int numParams)
 {
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[i].Start && Zone[i].Bonus == GetNativeCell(1))
+        if (Zone[i].Start && Zone[i].Bonus != GetNativeCell(1))
         {
-            return i;
+            contine;
         }
+
+        return i;
     }
 
     return -1;
@@ -313,10 +315,12 @@ public int Native_GetEndZone(Handle plugin, int numParams)
 {
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[i].End && Zone[i].Bonus == GetNativeCell(1))
+        if (Zone[i].End && Zone[i].Bonus != GetNativeCell(1))
         {
-            return i;
+            contine;
         }
+
+        return i;
     }
 
     return -1;
@@ -434,10 +438,12 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
 
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[i].Bonus == bonus && Zone[i].Checkpoint == checkpoint)
+        if (Zone[i].Bonus == bonus && Zone[i].Checkpoint != checkpoint)
         {
-            return i;
+            continue;
         }
+        
+        return i;
     }
 
     return -1;
@@ -450,10 +456,12 @@ public int Native_GetZoneCheckpoint(Handle plugin, int numParams)
 
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[zone].Bonus == bonus && Zone[zone].Checkpoint > 0)
+        if (Zone[zone].Bonus != bonus || Zone[zone].Checkpoint < 1)
         {
-            return Zone[zone].Checkpoint;
+            continue;
         }
+        
+        return Zone[zone].Checkpoint;
     }
 
     return -1;
@@ -466,10 +474,12 @@ public int Native_GetStageZone(Handle plugin, int numParams)
 
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[i].Bonus == bonus && Zone[i].Stage == stage)
+        if (Zone[i].Bonus != bonus || Zone[i].Stage != stage)
         {
-            return i;
+            continue;
         }
+
+        return i;
     }
 
     return -1;
@@ -482,10 +492,12 @@ public int Native_GetZoneStage(Handle plugin, int numParams)
 
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[zone].Bonus == bonus && Zone[zone].Stage > 0)
+        if (Zone[zone].Bonus != bonus || Zone[zone].Stage < 1)
         {
-            return Zone[zone].Stage;
+            continue;
         }
+        
+        return Zone[zone].Stage;
     }
 
     return -1;

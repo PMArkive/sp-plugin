@@ -566,12 +566,14 @@ public void OnGameFrame()
 
             if (iSeparator == HSTabs)
             {
-                if (strlen(sBuffer) < iLength)
+                if (strlen(sBuffer) >= iLength)
                 {
-                    for (int j = strlen(sBuffer); j < iLength; j++)
-                    {
-                        Format(sBuffer, sizeof(sBuffer), "%s ", sBuffer);
-                    }
+                    continue;
+                }
+                
+                for (int j = strlen(sBuffer); j < iLength; j++)
+                {
+                    Format(sBuffer, sizeof(sBuffer), "%s ", sBuffer);
                 }
 
                 Format(sHUDBuffer, sizeof(sHUDBuffer), "%s%s\t%s\n", sHUDBuffer, sBuffer, sRightBuffer);

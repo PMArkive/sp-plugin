@@ -121,19 +121,21 @@ public void OnClientDisconnect(int client)
 {
     for (int i = 0; i <= MAX_STYLES; i++)
     {
-        if (Player[client].Records[i] != null)
+        if (Player[client].Records[i] == null)
         {
-            RecordData record;
-            IntMapSnapshot snap = Player[client].Records[i].Snapshot();
-
-            for (int j = 0; j < snap.Length; j++)
-            {
-                Player[client].Records[i].GetArray(j, record, sizeof(record));
-                delete record.Details;
-            }
-
-            delete snap;
+            continue;
         }
+
+        RecordData record;
+        IntMapSnapshot snap = Player[client].Records[i].Snapshot();
+
+        for (int j = 0; j < snap.Length; j++)
+        {
+            Player[client].Records[i].GetArray(j, record, sizeof(record));
+            delete record.Details;
+        }
+
+        delete snap;
 
         delete Player[client].Records[i];
     }
