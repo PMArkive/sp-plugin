@@ -159,15 +159,13 @@ stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] val
     {
         keys.GetKey(x, sKey, sizeof(sKey));
 
-        if (!StrEqual(sKey, key, false))
+        if (StrEqual(sKey, key, false))
         {
-            continue;
+            smValues.GetString(sKey, value, length);
+
+            delete keys;
+            return true;
         }
-
-        smValues.GetString(sKey, value, length);
-
-        delete keys;
-        return true;
     }
 
     delete keys;

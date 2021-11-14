@@ -11,8 +11,8 @@ enum eInvalidKeyPref {
 }
 
 enum PlayerStatus {
-    psActive = 0,
-    psInactive = 1
+    psInactive = 0,
+    psActive = 1
 }
 
 forward void fuckTimer_OnPlayerLoaded(int client);

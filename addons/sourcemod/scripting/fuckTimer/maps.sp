@@ -270,7 +270,7 @@ void AddMapsToDatabase()
         jMap = new JSONObject();
         jMap.SetString("Name", sMap);
         jMap.SetInt("Tier", iTier);
-        jMap.SetInt("Status", 0);
+        jMap.SetInt("Status", 1);
         jMap.SetString("MapAuthor", sMapAuthor);
         jMap.SetString("ZoneAuthor", sZoneAuthor);
 

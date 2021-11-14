@@ -59,7 +59,7 @@ void PreparePlayerPostData(int client)
     jPlayer.SetString("CommunityId", sCommunityId);
 
     jPlayer.SetString("Name", sName);
-    jPlayer.SetInt("Status", 0);
+    jPlayer.SetInt("Status", 1);
 
     fuckTimer_NewAPIHTTPRequest("Player").Post(jPlayer, PostPlayerData, GetClientUserId(client));
     delete jPlayer;

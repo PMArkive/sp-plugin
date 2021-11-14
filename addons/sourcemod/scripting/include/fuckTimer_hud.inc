@@ -37,7 +37,7 @@ enum eHUDKeys
     HKTimeInZone,
     HKPersonalRecord = 20,
     HKServerRecord,
-    HKRank,
+    HKMapRank,
     HKTier = 30,
     HKZone,
     HKMap,

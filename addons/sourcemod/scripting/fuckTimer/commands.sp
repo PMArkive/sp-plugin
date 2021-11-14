@@ -914,6 +914,10 @@ public Action Command_HUDMove(int client, int args)
     FormatEx(sDisplay, sizeof(sDisplay), "ServerRecord");
     menu.AddItem(sNumber, sDisplay);
 
+    IntToString(HKMapRank, sNumber, sizeof(sNumber));
+    FormatEx(sDisplay, sizeof(sDisplay), "MapRank");
+    menu.AddItem(sNumber, sDisplay);
+
     IntToString(HKTier, sNumber, sizeof(sNumber));
     FormatEx(sDisplay, sizeof(sDisplay), "Tier");
     menu.AddItem(sNumber, sDisplay);

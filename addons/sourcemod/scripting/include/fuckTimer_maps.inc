@@ -6,8 +6,8 @@
 typedef fuckTimer_OnGetMapTier = function void (int client, StringMap maps);
 
 enum MapStatus {
-    msActive = 0,
-    msInactive = 1
+    msInactive = 0,
+    msActive = 1
 }
 
 forward void fuckTimer_OnZoneDownload(const char[] map, bool success);
