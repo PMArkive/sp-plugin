@@ -284,59 +284,62 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
         {
             snap.GetKey(i, sKey, sizeof(sKey));
 
-            if (sKey[0] == 'B')
+            switch (sKey[0])
             {
-                smValues.GetString(sKey, sValue, sizeof(sValue));
-
-                iBonus = StringToInt(sValue);
-
-                if (iBonus > 0 && iBonus > Core.Bonus)
+                case 'B':
                 {
-                    Core.Bonus = iBonus;
-                }
-            }
+                    smValues.GetString(sKey, sValue, sizeof(sValue));
 
-            if (sKey[0] == 'S')
-            {
-                if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
-                {
                     iBonus = StringToInt(sValue);
+
+                    if (iBonus > 0 && iBonus > Core.Bonus)
+                    {
+                        Core.Bonus = iBonus;
+                    }
                 }
 
-                smValues.GetString(sKey, sValue, sizeof(sValue));
-
-                iStage = StringToInt(sValue);
-
-                if (iStage > 0 && iStage > Core.Stages.GetInt(iBonus))
+                case 'S':
                 {
-                    Core.Stages.SetValue(iBonus, iStage);
-                }
-            }
+                    if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
+                    {
+                        iBonus = StringToInt(sValue);
+                    }
 
-            if (sKey[0] == 'C')
-            {
-                if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
-                {
-                    iBonus = StringToInt(sValue);
-                }
+                    smValues.GetString(sKey, sValue, sizeof(sValue));
 
-                if (Core.Checkpoints.GetInt(iBonus) == -1)
-                {
-                    Core.Checkpoints.SetValue(iBonus, 0);
-                }
-                
-                if (Core.Checkpoints.GetInt(iBonus) == 1)
-                {
-                    Core.Checkpoints.SetValue(iBonus, 2); // If we've a checkpoint map here, add one additional checkpoint more for the end zone as workaround without adding/changing each map zone config.
+                    iStage = StringToInt(sValue);
+
+                    if (iStage > 0 && iStage > Core.Stages.GetInt(iBonus))
+                    {
+                        Core.Stages.SetValue(iBonus, iStage);
+                    }
                 }
 
-                smValues.GetString(sKey, sValue, sizeof(sValue));
-
-                iCheckpoint = StringToInt(sValue);
-
-                if (iCheckpoint > 0 && iCheckpoint > Core.Checkpoints.GetInt(iBonus))
+                case 'C':
                 {
-                    Core.Checkpoints.SetValue(iBonus, Core.Checkpoints.GetInt(iBonus) + 1);
+                    if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
+                    {
+                        iBonus = StringToInt(sValue);
+                    }
+
+                    if (Core.Checkpoints.GetInt(iBonus) == -1)
+                    {
+                        Core.Checkpoints.SetValue(iBonus, 0);
+                    }
+                    
+                    if (Core.Checkpoints.GetInt(iBonus) == 1)
+                    {
+                        Core.Checkpoints.SetValue(iBonus, 2); // If we've a checkpoint map here, add one additional checkpoint more for the end zone as workaround without adding/changing each map zone config.
+                    }
+
+                    smValues.GetString(sKey, sValue, sizeof(sValue));
+
+                    iCheckpoint = StringToInt(sValue);
+
+                    if (iCheckpoint > 0 && iCheckpoint > Core.Checkpoints.GetInt(iBonus))
+                    {
+                        Core.Checkpoints.SetValue(iBonus, Core.Checkpoints.GetInt(iBonus) + 1);
+                    }
                 }
             }
 
@@ -442,14 +445,14 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
             float fAbsVelocity[3];
             GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", fAbsVelocity);
 
-            if(GetClientSpeed(client) > 0.0)
+            if (GetClientSpeed(client) > 0.0)
             {
                 float fTempAngle = angles[1];
 
                 float fAngles[3];
                 GetVectorAngles(fAbsVelocity, fAngles);
 
-                if(fTempAngle < 0.0)
+                if (fTempAngle < 0.0)
                 {
                     fTempAngle += 360.0;
                 }
@@ -1463,15 +1466,15 @@ void CalculateTickIntervalOffset(int client, bool end)
 
 bool TREnumTrigger(int entity, any client)
 {
-
-    if (entity <= MaxClients) {
+    if (entity <= MaxClients)
+    {
         return true;
     }
 
     char sClass[32];
     GetEntityClassname(entity, sClass, sizeof(sClass));
 
-    if(StrContains(sClass, "trigger_multiple") > -1)
+    if (StrContains(sClass, "trigger_multiple") > -1)
     {
         TR_ClipCurrentRayToEntity(MASK_ALL, entity);
         
@@ -1511,15 +1514,15 @@ void CalculateTickIntervalOffsetCS(int client, IntMap map, int key, bool end)
 
 bool TREnumTriggerCS(int entity, any fraction)
 {
-
-    if (entity <= MaxClients) {
+    if (entity <= MaxClients)
+    {
         return true;
     }
 
     char sClass[32];
     GetEntityClassname(entity, sClass, sizeof(sClass));
 
-    if(StrContains(sClass, "trigger_multiple") > -1)
+    if (StrContains(sClass, "trigger_multiple") > -1)
     {
         TR_ClipCurrentRayToEntity(MASK_ALL, entity);
         
@@ -1538,7 +1541,7 @@ float GetAngleDiff(float current, float previous)
 
 void TestAngles(int client, float dirangle, float yawdelta, float vel[3])
 {
-    if(dirangle < 0.0)
+    if (dirangle < 0.0)
     {
         dirangle = -dirangle;
     }
@@ -1546,29 +1549,29 @@ void TestAngles(int client, float dirangle, float yawdelta, float vel[3])
     bool bCount = false;
     bool bGain = false;
 
-    if(dirangle < 22.5 || dirangle > 337.5)
+    if (dirangle < 22.5 || dirangle > 337.5)
     {
         bCount = true;
 
-        if((yawdelta > 0.0 && vel[1] <= -100.0) || (yawdelta < 0.0 && vel[1] >= 100.0))
+        if ((yawdelta > 0.0 && vel[1] <= -100.0) || (yawdelta < 0.0 && vel[1] >= 100.0))
         {
             bGain = true;
         }
     }
-    else if((dirangle > 22.5 && dirangle < 67.5)) // HSW
+    else if ((dirangle > 22.5 && dirangle < 67.5)) // HSW
     {
         bCount = true;
 
-        if((yawdelta != 0.0) && (vel[0] >= 100.0 || vel[1] >= 100.0) && (vel[0] >= -100.0 || vel[1] >= -100.0))
+        if ((yawdelta != 0.0) && (vel[0] >= 100.0 || vel[1] >= 100.0) && (vel[0] >= -100.0 || vel[1] >= -100.0))
         {
             bGain = true;
         }
     }
-    else if((dirangle > 67.5 && dirangle < 112.5) || (dirangle > 247.5 && dirangle < 292.5)) // SW
+    else if ((dirangle > 67.5 && dirangle < 112.5) || (dirangle > 247.5 && dirangle < 292.5)) // SW
     {
         bCount = true;
 
-        if(vel[0] <= -100.0 || vel[0] >= 100.0)
+        if (vel[0] <= -100.0 || vel[0] >= 100.0)
         {
             bGain = true;
         }

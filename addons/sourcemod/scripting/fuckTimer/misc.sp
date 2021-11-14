@@ -88,9 +88,9 @@ void ItemCleanup()
 
     for (int iWeapon = MaxClients; iWeapon < MAX_ENTITIES; iWeapon++)
     {
-        if (!sValidEntity(iWeapon))
+        if (!IsValidEntity(iWeapon))
         {
-            continue;
+            return;
         }
 
         char sClassname[32];
@@ -114,9 +114,9 @@ public Action Command_Drop(int client, const char[] command, int args)
     {
         int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 
-        if (!sValidEntity(iWeapon))
+        if (!IsValidEntity(iWeapon))
         {
-            continue;
+            return Plugin_Continue;
         }
 
         char sClassname[32];

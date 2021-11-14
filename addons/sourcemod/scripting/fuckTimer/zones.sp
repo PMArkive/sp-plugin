@@ -86,14 +86,11 @@ public void OnConfigsExecuted()
 
 public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-    if (convar == Core.DisableCZZones)
-    {
-        bool bDisable = view_as<bool>(StringToInt(newValue));
+    bool bDisable = view_as<bool>(StringToInt(newValue));
 
-        if (!bDisable)
-        {
-            Core.DisableCZZones.SetBool(true);
-        }
+    if (!bDisable)
+    {
+        Core.DisableCZZones.SetBool(true);
     }
 }
 
@@ -302,7 +299,7 @@ public int Native_GetStartZone(Handle plugin, int numParams)
     {
         if (Zone[i].Start && Zone[i].Bonus != GetNativeCell(1))
         {
-            contine;
+            continue;
         }
 
         return i;
@@ -317,7 +314,7 @@ public int Native_GetEndZone(Handle plugin, int numParams)
     {
         if (Zone[i].End && Zone[i].Bonus != GetNativeCell(1))
         {
-            contine;
+            continue;
         }
 
         return i;
