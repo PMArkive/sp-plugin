@@ -297,7 +297,7 @@ public int Native_GetStartZone(Handle plugin, int numParams)
 {
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[i].Start && Zone[i].Bonus != GetNativeCell(1))
+        if (!Zone[i].Start || Zone[i].Bonus != GetNativeCell(1))
         {
             continue;
         }
@@ -312,7 +312,7 @@ public int Native_GetEndZone(Handle plugin, int numParams)
 {
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[i].End && Zone[i].Bonus != GetNativeCell(1))
+        if (!Zone[i].End || Zone[i].Bonus != GetNativeCell(1))
         {
             continue;
         }
@@ -435,7 +435,7 @@ public int Native_GetCheckpointZone(Handle plugin, int numParams)
 
     for (int i = MaxClients; i < MAX_ENTITIES; i++)
     {
-        if (Zone[i].Bonus == bonus && Zone[i].Checkpoint != checkpoint)
+        if (Zone[i].Bonus == bonus || Zone[i].Checkpoint != checkpoint)
         {
             continue;
         }
