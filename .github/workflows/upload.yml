@@ -50,7 +50,7 @@ jobs:
           for file in *.sp
           do
             echo -e "\nCompiling $file..."
-            spcomp -E -w234 -O2 -v2 -i $SCRIPTING_PATH/include -o $PLUGINS_PATH/fucktimer/$file $file
+            spcomp -E -w234 -O2 -v2 -i$includePath -i$SCRIPTING_PATH/include -o $PLUGINS_PATH/fucktimer/$file $file
           done
         working-directory: ${{ env.SCRIPTING_PATH }}/fuckTimer
 
@@ -66,7 +66,7 @@ jobs:
           for file in *.sp
           do
             echo -e "\nCompiling $file..."
-            spcomp -E -w234 -O2 -v2 -i $SCRIPTING_PATH/include -o $PLUGINS_PATH/$file $file
+            spcomp -E -w234 -O2 -v2 -i$includePath -i$SCRIPTING_PATH/include -o $PLUGINS_PATH/$file $file
           done
         working-directory: ${{ env.SCRIPTING_PATH }}
 
