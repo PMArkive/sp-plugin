@@ -160,7 +160,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     bool bPlayerRecord = false;
     bool bFirstRecord = false;
 
-    float fOldTime = 0.0;
+    // float fOldTime = 0.0;
 
     // Check for new server record
     if (Core.Records[iStyle] != null)
@@ -172,7 +172,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         {
             CPrintToChatAll("%N has beaten %s's server record!", client, record.PlayerName);
 
-            fOldTime = record.Time;
+            // fOldTime = record.Time;
             bServerRecord = true;
         }
     }
@@ -206,7 +206,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
                     CPrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
                 }
 
-                fOldTime = record.Time;
+                // fOldTime = record.Time;
             }
 
             bPlayerRecord = true;
@@ -224,7 +224,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
     if (bServerRecord)
     {
-        UpdateRecord(smRecord, false, .serverRecord=true, .oldTime=fOldTime);
+        UpdateRecord(smRecord, false/* .serverRecord=true, .oldTime=fOldTime*/);
     }
 
     if (bPlayerRecord)
@@ -233,7 +233,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     }
 }
 
-void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool firstRecord = false, bool serverRecord = false, float oldTime = 0.0)
+void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool firstRecord = false/*, bool serverRecord = false, float oldTime = 0.0*/)
 {
     RecordData record;
     smRecord.GetValue("PlayerId", record.PlayerId);
