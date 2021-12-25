@@ -167,6 +167,7 @@ public void OnCvarChange(ConVar convar, const char[] oldValue, const char[] newV
 
 public void fuckTimer_OnServerRecordsLoaded(int records)
 {
+    LogMessage("Records: %d", records);
     if (records < 1)
     {
         return;
@@ -835,6 +836,8 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap timemap)
 
 public void fuckTimer_OnNewRecord(int client, bool serverRecord, StringMap recordDetails, float oldTime)
 {
+    LogMessage("fuckTimer_OnNewRecord");
+    
     LoadServerRecordCount();
 }
 
@@ -1430,6 +1433,6 @@ void LoadServerRecordCount()
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/Count/MapId/%d", fuckTimer_GetCurrentMapId());
-    LogMessage(sEndpoint);
+    LogStackTrace(sEndpoint);
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecordsCount);
 }

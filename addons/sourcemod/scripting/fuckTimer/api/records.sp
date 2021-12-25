@@ -70,10 +70,21 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
     if (client > 0 && fuckTimer_IsClientValid(client, true, true))
     {
         LogMessage("[Records.GetRecords] We found %d player records for \"%N\" for this map", jMainRecords.Length, client);
+
+        Call_StartForward(Core.OnPlayerRecordsLoaded);
+        Call_PushCell(client);
+        Call_PushCell(jMainRecords.Length);
+        int iSuccess = Call_Finish();
+        LogMessage("Line: %d, Success: %d", __LINE__, iSuccess);
     }
     else
     {
         LogMessage("[Records.GetRecords] We found %d records for this map", jMainRecords.Length);
+
+        Call_StartForward(Core.OnServerRecordsLoaded);
+        Call_PushCell(jMainRecords.Length);
+        int iSuccess = Call_Finish();
+        LogMessage("Line: %d, Success: %d", __LINE__, iSuccess);
     }
 
     JSONObject jMainRecord = null;
@@ -216,35 +227,29 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
         delete jMainRecord;
     }
-
-    if (client > 0)
-    {
-        Call_StartForward(Core.OnPlayerRecordsLoaded);
-        Call_PushCell(client);
-    }
-    else
-    {
-        Call_StartForward(Core.OnServerRecordsLoaded);
-    }
-
-    Call_PushCell(jMainRecords.Length);
-    Call_Finish();
 }
 
-void PostPlayerRecord(int client, bool firstRecord, JSONObject record)
+void PostPlayerRecord(int client, bool firstRecord, JSONObject record, bool serverRecord, float oldTime, StringMap smRecord/*, IntMap imDetails*/)
 {
-    // For debugging
+    // TODO: For debugging
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", firstRecord ? "post" : "put");
     record.ToFile(sFile, 0x1F);
-    
+
+    DataPack pack = new DataPack();
+    pack.WriteCell(GetClientUserId(client));
+    pack.WriteCell(view_as<int>(serverRecord));
+    pack.WriteFloat(oldTime);
+    pack.WriteCell(view_as<int>(smRecord));
+    // pack.WriteCell(view_as<int>(imDetails));
+
     if (firstRecord)
     {
-        fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord, GetClientUserId(client));
+        fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord, pack);
     }
     else
     {
-        fuckTimer_NewAPIHTTPRequest("Records").Put(record, SendRecord, GetClientUserId(client));
+        fuckTimer_NewAPIHTTPRequest("Records").Put(record, SendRecord, pack);
     }
 
     JSONArray jArr = view_as<JSONArray>(record.Get("Details"));
@@ -260,25 +265,50 @@ void PostPlayerRecord(int client, bool firstRecord, JSONObject record)
     delete record;
 }
 
-public void SendRecord(HTTPResponse response, any userid, const char[] error)
+public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
 {
     if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_Created)
     {
         SetFailState("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        delete pack;
         return;
     }
 
-    char sEndpoint[32];
-    FormatEx(sEndpoint, sizeof(sEndpoint), "Ranks/MapId/%d", fuckTimer_GetCurrentMapId());
-    fuckTimer_NewAPIHTTPRequest("Ranks").Get(RecalculateRanks);
+    pack.Reset();
+    int client = GetClientOfUserId(pack.ReadCell());
+    bool bServerRecord = view_as<bool>(pack.ReadCell());
+    float fOldTime = pack.ReadFloat();
+    StringMap smRecord = view_as<StringMap>(pack.ReadCell());
+    // IntMap imDetails = view_as<IntMap>(pack.ReadCell());
+    delete pack;
+
+    Call_StartForward(Core.OnNewRecord);
+    Call_PushCell(client);
+    Call_PushCell(view_as<int>(bServerRecord));
+    Call_PushCell(view_as<int>(smRecord));
+    Call_PushFloat(fOldTime);
+    Call_Finish();
+
+    // delete imDetails;
+    delete smRecord;
+
+    RecalculateRanks();
 }
 
-public void RecalculateRanks(HTTPResponse response, any pack, const char[] error)
+void RecalculateRanks()
+{
+    char sEndpoint[32];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "Ranks/MapId/%d", fuckTimer_GetCurrentMapId());
+    LogStackTrace("RecalculateRanks on Line %d was called. Endpoint: %s", __LINE__, sEndpoint);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(RecalculateRanksCallback);
+}
+
+public void RecalculateRanksCallback(HTTPResponse response, any pack, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {
         delete view_as<DataPack>(pack);
-        SetFailState("[Records.RecalculateRanks] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+        SetFailState("[Records.RecalculateRanksCallback] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 

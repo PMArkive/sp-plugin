@@ -105,6 +105,8 @@ void CheckState()
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, pack);
+
+    RecalculateRanks();
 }
 
 public void fuckTimer_OnPlayerLoaded(int client)
@@ -217,37 +219,21 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         bPlayerRecord = true;
     }
 
-    if (bServerRecord || bPlayerRecord)
-    {
-        Call_StartForward(Core.OnNewRecord);
-        Call_PushCell(client);
-        Call_PushCell(view_as<int>(bServerRecord));
-        Call_PushCell(view_as<int>(temp));
-        Call_PushFloat(fOldTime);
-        Call_Finish();
-    }
-
     IntMap imDetails;
     smRecord.GetValue("Details", imDetails);
 
     if (bServerRecord)
     {
-        UpdateRecord(smRecord, false);
+        UpdateRecord(smRecord, false, .serverRecord=true, .oldTime=fOldTime);
     }
 
     if (bPlayerRecord)
     {
         UpdateRecord(smRecord, true, client, bFirstRecord);
     }
-
-    if (!bServerRecord && !bPlayerRecord)
-    {
-        delete imDetails;
-        delete smRecord;
-    }
 }
 
-void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool firstRecord = false)
+void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool firstRecord = false, bool serverRecord = false, float oldTime = 0.0)
 {
     RecordData record;
     smRecord.GetValue("PlayerId", record.PlayerId);
@@ -402,16 +388,13 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     if (updatePlayer)
     {
-        PostPlayerRecord(client, firstRecord, jRecord);
+        PostPlayerRecord(client, firstRecord, jRecord, serverRecord, oldTime, smRecord/*, imDetails*/);
         if (Player[client].Records[record.Style] == null)
         {
             Player[client].Records[record.Style] = new IntMap();
         }
 
         Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
-
-        delete imDetails;
-        delete smRecord;
     }
     else
     {
