@@ -383,12 +383,13 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     jRecord.Set("Details", jRecords);
 
-    // Note: We delete imDetails here, because it'll currently not used anymore.
+    // Note: We delete imDetails and smRecord here, because it'll currently not used anymore.
     delete imDetails;
+    delete smRecord;
 
     if (updatePlayer)
     {
-        PostPlayerRecord(client, firstRecord, jRecord, serverRecord, oldTime, smRecord/*, imDetails*/);
+        PostPlayerRecord(/* client, */firstRecord, jRecord/*, serverRecord, oldTime, smRecord, imDetails*/);
         if (Player[client].Records[record.Style] == null)
         {
             Player[client].Records[record.Style] = new IntMap();

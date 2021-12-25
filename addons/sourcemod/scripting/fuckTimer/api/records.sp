@@ -229,27 +229,27 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
     }
 }
 
-void PostPlayerRecord(int client, bool firstRecord, JSONObject record, bool serverRecord, float oldTime, StringMap smRecord/*, IntMap imDetails*/)
+void PostPlayerRecord(/*int client, */bool firstRecord, JSONObject record/*, bool serverRecord, float oldTime, StringMap smRecord, IntMap imDetails*/)
 {
     // TODO: For debugging
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", firstRecord ? "post" : "put");
     record.ToFile(sFile, 0x1F);
 
-    DataPack pack = new DataPack();
-    pack.WriteCell(GetClientUserId(client));
-    pack.WriteCell(view_as<int>(serverRecord));
-    pack.WriteFloat(oldTime);
-    pack.WriteCell(view_as<int>(smRecord));
+    // DataPack pack = new DataPack();
+    // pack.WriteCell(GetClientUserId(client));
+    // pack.WriteCell(view_as<int>(serverRecord));
+    // pack.WriteFloat(oldTime);
+    // pack.WriteCell(view_as<int>(smRecord));
     // pack.WriteCell(view_as<int>(imDetails));
 
     if (firstRecord)
     {
-        fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord, pack);
+        fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord/*, pack*/);
     }
     else
     {
-        fuckTimer_NewAPIHTTPRequest("Records").Put(record, SendRecord, pack);
+        fuckTimer_NewAPIHTTPRequest("Records").Put(record, SendRecord /*, pack*/);
     }
 
     JSONArray jArr = view_as<JSONArray>(record.Get("Details"));
@@ -270,11 +270,11 @@ public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
     if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_Created)
     {
         SetFailState("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
-        delete pack;
+        // delete pack;
         return;
     }
 
-    pack.Reset();
+    /* pack.Reset();
     int client = GetClientOfUserId(pack.ReadCell());
     bool bServerRecord = view_as<bool>(pack.ReadCell());
     float fOldTime = pack.ReadFloat();
@@ -290,7 +290,7 @@ public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
     Call_Finish();
 
     // delete imDetails;
-    delete smRecord;
+    delete smRecord; */
 
     RecalculateRanks();
 }
@@ -299,7 +299,7 @@ void RecalculateRanks()
 {
     char sEndpoint[32];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Ranks/MapId/%d", fuckTimer_GetCurrentMapId());
-    LogStackTrace("RecalculateRanks on Line %d was called. Endpoint: %s", __LINE__, sEndpoint);
+    LogMessage("RecalculateRanks on Line %d was called. Endpoint: %s", __LINE__, sEndpoint);
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(RecalculateRanksCallback);
 }
 
