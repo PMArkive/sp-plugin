@@ -77,7 +77,7 @@ public void PostPlayerData(HTTPResponse response, any userid, const char[] error
 
     if (response.Status != HTTPStatus_Created)
     {
-        LogError("[Players.PostPlayerData] Can't post player data. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[Players.PostPlayerData] Error while updating database with player details. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
@@ -175,7 +175,7 @@ public void PostPlayerSetting(HTTPResponse response, any userid, const char[] er
 
     if (response.Status != HTTPStatus_Created)
     {
-        LogError("[Players.PostPlayerSetting] Can't post player setting. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[Players.PostPlayerSetting] Error while updating database with player setting details. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 

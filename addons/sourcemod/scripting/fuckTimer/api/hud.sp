@@ -133,7 +133,7 @@ public void PostPlayerHudSettings(HTTPResponse response, any userid, const char[
 
     if (response.Status != HTTPStatus_Created)
     {
-        LogError("[HUD.PostPlayerHudSettings] Can't post player hud. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[HUD.PostPlayerHudSettings] Error while updating database with player hud settings. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 

@@ -84,7 +84,7 @@ public void GetMapTiers(HTTPResponse response, any value, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {
-        LogError("[Maps.GetMapTiers] Can't get maptiers.json. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[Maps.GetMapTiers] Error while loading \"maptiers.json\". Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
@@ -297,7 +297,7 @@ public void PostMaps(HTTPResponse response, any value, const char[] error)
 {
     if (response.Status != HTTPStatus_Created)
     {
-        LogError("[Maps.PostMaps] Can't post maps. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[Maps.PostMaps] Error while adding maps to the database. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
@@ -315,7 +315,7 @@ public void GetMap(HTTPResponse response, any value, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {
-        LogError("[Maps.GetMap] Can't get maps. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[Maps.GetMap] Error while loading maps. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
@@ -378,7 +378,7 @@ public void UpdateMap(HTTPResponse response, any value, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {
-        LogError("[Maps.UpdateMap] Can't update map. Status Code: %d, Error: %s", response.Status, error);
+        LogError("[Maps.UpdateMap] Error while updating database with map details. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
