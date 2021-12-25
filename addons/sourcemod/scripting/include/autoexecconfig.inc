@@ -23,7 +23,7 @@
 #define _autoexecconfig_included
 
 
-#include "sourcemod"
+#include <sourcemod>
 
 #define AUTOEXECCONFIG_VERSION "0.1.5"
 #define AUTOEXECCONFIG_URL     "https://forums.alliedmods.net/showthread.php?t=204254"

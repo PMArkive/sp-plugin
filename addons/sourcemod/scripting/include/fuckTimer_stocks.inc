@@ -3,13 +3,13 @@
 #endif
 #define _fuckTimer_stocks_included
 
-#include "autoexecconfig"
-#include "sdktools"
-#include "multicolors"
-#include "intmap"
-#include "fuckTimer_hud"
-#include "fuckTimer_styles"
-#include "fuckTimer_timer"
+#include <autoexecconfig>
+#include <sdktools>
+#include <multicolors>
+#include <intmap>
+#include <fuckTimer_hud>
+#include <fuckTimer_styles>
+#include <fuckTimer_timer>
 
 #define FUCKTIMER_PLUGIN_NAME "fuckTimer - "
 #define FUCKTIMER_PLUGIN_AUTHOR "fuckTimer Contributors"
