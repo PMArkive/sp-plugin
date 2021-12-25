@@ -397,6 +397,9 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     jRecord.Set("Details", jRecords);
 
+    // Note: We delete imDetails here, because it'll currently not used anymore.
+    delete imDetails;
+
     if (updatePlayer)
     {
         PostPlayerRecord(client, firstRecord, jRecord);
