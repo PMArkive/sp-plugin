@@ -358,7 +358,19 @@ public void OnGameFrame()
             Core.MapRecordDetails[style].GetArray(iBonus, mrDetails, sizeof(mrDetails));
         }
 
-        FormatEx(sBuffer, sizeof(sBuffer), "Rank: %d/%d", iRank, mrDetails.Count);
+        if (mrDetails.Count < 1)
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "No records");
+        }
+        else if (iRank < 1)
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "No record");
+        }
+        else
+        {
+            FormatEx(sBuffer, sizeof(sBuffer), "Rank: %d/%d", iRank, mrDetails.Count);
+        }
+
         imBuffer.SetString(HKMapRank, sBuffer);
 
         if (Player[client].CompareTime == 0 || Player[client].CompareTime <= GetTime())
