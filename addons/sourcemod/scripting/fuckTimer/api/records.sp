@@ -1,16 +1,12 @@
-public void GetRecords(HTTPResponse response, any pack, const char[] error)
+public void GetRecords(HTTPResponse response, int userid, const char[] error)
 {
     if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_NotFound)
     {
-        delete view_as<DataPack>(pack);
         SetFailState("[Records.GetRecords] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
     }
 
-    view_as<DataPack>(pack).Reset();
-    int userid = view_as<DataPack>(pack).ReadCell();
     int client = userid != 0 ? GetClientOfUserId(userid) : 0;
-    delete view_as<DataPack>(pack);
 
     int iStyles = fuckTimer_GetStyles().Size;
 
@@ -61,7 +57,15 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
 
     if (response.Status == HTTPStatus_NotFound)
     {
-        LogMessage("[Records.GetRecords] We found %d records for this map", 0);
+        if (client > 0 && fuckTimer_IsClientValid(client, true, true))
+        {
+            LogMessage("[Records.GetRecords] We found %d player records for \"%N\" for this map", 0, client);
+        }
+        else
+        {
+            LogMessage("[Records.GetRecords] We found %d records for this map", 0);
+        }
+
         return;
     }
 
@@ -229,27 +233,26 @@ public void GetRecords(HTTPResponse response, any pack, const char[] error)
     }
 }
 
-void PostPlayerRecord(/*int client, */bool firstRecord, JSONObject record/*, bool serverRecord, float oldTime, StringMap smRecord, IntMap imDetails*/)
+void PostPlayerRecord(int client, bool firstRecord, JSONObject record, bool serverRecord, float oldTime, StringMap smRecord)
 {
     // TODO: For debugging
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", firstRecord ? "post" : "put");
     record.ToFile(sFile, 0x1F);
 
-    // DataPack pack = new DataPack();
-    // pack.WriteCell(GetClientUserId(client));
-    // pack.WriteCell(view_as<int>(serverRecord));
-    // pack.WriteFloat(oldTime);
-    // pack.WriteCell(view_as<int>(smRecord));
-    // pack.WriteCell(view_as<int>(imDetails));
+    DataPack pack = new DataPack();
+    pack.WriteCell(GetClientUserId(client));
+    pack.WriteCell(view_as<int>(serverRecord));
+    pack.WriteFloat(oldTime);
+    pack.WriteCell(view_as<int>(smRecord));
 
     if (firstRecord)
     {
-        fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord/*, pack*/);
+        fuckTimer_NewAPIHTTPRequest("Records").Post(record, SendRecord, pack);
     }
     else
     {
-        fuckTimer_NewAPIHTTPRequest("Records").Put(record, SendRecord /*, pack*/);
+        fuckTimer_NewAPIHTTPRequest("Records").Put(record, SendRecord, pack);
     }
 
     JSONArray jArr = view_as<JSONArray>(record.Get("Details"));
@@ -270,16 +273,15 @@ public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
     if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_Created)
     {
         SetFailState("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
-        // delete pack;
+        delete pack;
         return;
     }
 
-    /* pack.Reset();
+    pack.Reset();
     int client = GetClientOfUserId(pack.ReadCell());
     bool bServerRecord = view_as<bool>(pack.ReadCell());
     float fOldTime = pack.ReadFloat();
     StringMap smRecord = view_as<StringMap>(pack.ReadCell());
-    // IntMap imDetails = view_as<IntMap>(pack.ReadCell());
     delete pack;
 
     Call_StartForward(Core.OnNewRecord);
@@ -289,8 +291,10 @@ public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
     Call_PushFloat(fOldTime);
     Call_Finish();
 
-    // delete imDetails;
-    delete smRecord; */
+    IntMap imDetails;
+    smRecord.GetValue("Details", imDetails);
+    delete imDetails;
+    delete smRecord;
 
     RecalculateRanks();
 }

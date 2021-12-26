@@ -99,24 +99,19 @@ void CheckState()
         return;
     }
 
-    DataPack pack = new DataPack();
-    pack.WriteCell(0);
-
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, pack);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, 0);
 
     RecalculateRanks();
 }
 
 public void fuckTimer_OnPlayerLoaded(int client)
 {
-    DataPack pack = new DataPack();
-    pack.WriteCell(GetClientUserId(client));
-
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d/PlayerId/%d", fuckTimer_GetCurrentMapId(), GetSteamAccountID(client));
-    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, pack);
+    LogMessage(sEndpoint);
+    fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, GetClientUserId(client));
 }
 
 public void OnClientDisconnect(int client)
@@ -145,7 +140,16 @@ public void OnClientDisconnect(int client)
 
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
+    for (int i = 0; i < 3; i++)
+    {
+        PrintToServer("fuckTimer_OnClientTimerEnd");
+    }
+    
+    // Cloning handles
     StringMap smRecord = view_as<StringMap>(CloneHandle(temp));
+    IntMap imDetails;
+    temp.GetValue("Details", imDetails);
+    smRecord.SetValue("Details", CloneHandle(imDetails));
 
     Styles iStyle;
     smRecord.GetValue("StyleId", iStyle);
@@ -160,7 +164,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     bool bPlayerRecord = false;
     bool bFirstRecord = false;
 
-    // float fOldTime = 0.0;
+    float fOldTime = 0.0;
 
     // Check for new server record
     if (Core.Records[iStyle] != null)
@@ -172,7 +176,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         {
             CPrintToChatAll("%N has beaten %s's server record!", client, record.PlayerName);
 
-            // fOldTime = record.Time;
+            fOldTime = record.Time;
             bServerRecord = true;
         }
     }
@@ -206,7 +210,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
                     CPrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
                 }
 
-                // fOldTime = record.Time;
+                fOldTime = record.Time;
             }
 
             bPlayerRecord = true;
@@ -219,12 +223,9 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         bPlayerRecord = true;
     }
 
-    IntMap imDetails;
-    smRecord.GetValue("Details", imDetails);
-
     if (bServerRecord)
     {
-        UpdateRecord(smRecord, false /*, .serverRecord=true, .oldTime=fOldTime*/);
+        UpdateRecord(smRecord, false, .serverRecord=true, .oldTime=fOldTime);
     }
 
     if (bPlayerRecord)
@@ -233,7 +234,7 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     }
 }
 
-void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool firstRecord = false /*, bool serverRecord = false, float oldTime = 0.0*/)
+void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool firstRecord = false, bool serverRecord = false, float oldTime = 0.0)
 {
     RecordData record;
     smRecord.GetValue("PlayerId", record.PlayerId);
@@ -383,13 +384,9 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     jRecord.Set("Details", jRecords);
 
-    // Note: We delete imDetails and smRecord here, because it'll currently not used anymore.
-    delete imDetails;
-    delete smRecord;
-
     if (updatePlayer)
     {
-        PostPlayerRecord(/* client, */firstRecord, jRecord/*, serverRecord, oldTime, smRecord, imDetails*/);
+        PostPlayerRecord(client,firstRecord, jRecord, serverRecord, oldTime, smRecord);
         if (Player[client].Records[record.Style] == null)
         {
             Player[client].Records[record.Style] = new IntMap();
