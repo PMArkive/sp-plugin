@@ -761,7 +761,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         if (Player[client].CheckpointDetails != null)
         {
             map.SetValue("Type", TimeCheckpoint);
-            map.SetValue("Details", view_as<any>(Player[client].CheckpointDetails));
+            map.SetValue("Details", CloneHandle(Player[client].CheckpointDetails));
         }
         else if (Player[client].StageDetails != null)
         {
@@ -790,7 +790,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
             delete snap;
 
-            map.SetValue("Details", view_as<any>(Player[client].StageDetails));
+            map.SetValue("Details", CloneHandle(Player[client].StageDetails));
         }
         else
         {
@@ -826,9 +826,13 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     }
 }
 
-public void Frame_DeleteStringMap(any map)
+public void Frame_DeleteStringMap(StringMap map)
 {
-    delete view_as<StringMap>(map);
+    IntMap details;
+    map.GetValue("Details", details);
+    delete details;
+    
+    delete map;
 }
 
 public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
