@@ -57,7 +57,7 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
 
     if (response.Status == HTTPStatus_NotFound)
     {
-        if (client > 0 && fuckTimer_IsClientValid(client, true, true))
+        if (fuckTimer_IsClientValid(client, true, true))
         {
             LogMessage("[Records.GetRecords] We found %d player records for \"%N\" for this map", 0, client);
         }
@@ -71,25 +71,21 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
 
     JSONArray jMainRecords = view_as<JSONArray>(response.Data);
 
-    if (client > 0 && fuckTimer_IsClientValid(client, true, true))
+    bool bValid = fuckTimer_IsClientValid(client, true, true);
+
+    if (bValid)
     {
         LogMessage("[Records.GetRecords] We found %d player records for \"%N\" for this map", jMainRecords.Length, client);
-
-        Call_StartForward(Core.OnPlayerRecordsLoaded);
-        Call_PushCell(client);
-        Call_PushCell(jMainRecords.Length);
-        int iSuccess = Call_Finish();
-        LogMessage("Line: %d, Success: %d", __LINE__, iSuccess);
     }
     else
     {
         LogMessage("[Records.GetRecords] We found %d records for this map", jMainRecords.Length);
-
-        Call_StartForward(Core.OnServerRecordsLoaded);
-        Call_PushCell(jMainRecords.Length);
-        int iSuccess = Call_Finish();
-        LogMessage("Line: %d, Success: %d", __LINE__, iSuccess);
     }
+
+    DataPack pack = new DataPack();
+    pack.WriteCell(jMainRecords.Length);
+    pack.WriteCell(bValid ? client : 0);
+    CreateTimer(0.1, Timer_CallForward, pack);
 
     JSONObject jMainRecord = null;
 
@@ -231,6 +227,24 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
 
         delete jMainRecord;
     }
+}
+
+public Action Timer_CallForward(Handle timer, DataPack pack)
+{
+    pack.Reset();
+    int iRecords = pack.ReadCell();
+    int client = pack.ReadCell();
+    delete pack;
+
+    Call_StartForward(client == 0 ? Core.OnServerRecordsLoaded : Core.OnPlayerRecordsLoaded);
+    Call_PushCell(iRecords);
+    if (client != 0)
+    {
+        Call_PushCell(client);
+    }
+    Call_Finish();
+
+    return Plugin_Stop;
 }
 
 void PostPlayerRecord(int client, bool firstRecord, JSONObject record, bool serverRecord, float oldTime, StringMap smRecord)

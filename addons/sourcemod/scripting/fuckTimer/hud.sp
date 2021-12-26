@@ -167,7 +167,6 @@ public void OnCvarChange(ConVar convar, const char[] oldValue, const char[] newV
 
 public void fuckTimer_OnServerRecordsLoaded(int records)
 {
-    LogMessage("Records: %d", records);
     if (records < 1)
     {
         return;

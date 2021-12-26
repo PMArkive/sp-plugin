@@ -46,8 +46,8 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     Core.OnNewRecord = new GlobalForward("fuckTimer_OnNewRecord", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float);
-    Core.OnPlayerRecordsLoaded = new GlobalForward("fuckTimer_OnPlayerRecordsLoaded", ET_Ignore, Param_Cell, Param_Cell);
     Core.OnServerRecordsLoaded = new GlobalForward("fuckTimer_OnServerRecordsLoaded", ET_Ignore, Param_Cell);
+    Core.OnPlayerRecordsLoaded = new GlobalForward("fuckTimer_OnPlayerRecordsLoaded", ET_Ignore, Param_Cell, Param_Cell);
 
     CreateNative("fuckTimer_GetServerRecord", Native_GetServerRecord);
     CreateNative("fuckTimer_GetPlayerRecord", Native_GetPlayerRecord);
