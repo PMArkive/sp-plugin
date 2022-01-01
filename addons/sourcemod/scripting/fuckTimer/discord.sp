@@ -41,7 +41,7 @@ public void OnPluginStart()
     Core.PRColor = AutoExecConfig_CreateConVar("discord_personal_color", "65427", "Decimal color code for personal records\nHex to Decimal - https://www.rapidtables.com/convert/number/hex-to-decimal.html");
     Core.SRColor = AutoExecConfig_CreateConVar("discord_server_color", "16758272", "Decimal color code for server records\nHex to Decimal - https://www.rapidtables.com/convert/number/hex-to-decimal.html");
     Core.MapImage = AutoExecConfig_CreateConVar("discord_map_image", "1", "Where the map image should be shown. (0 - Disabled, 1 - Thumbnail, 2 - Big Image)", _, true, 0.0, true, 2.0);
-    Core.MapBase = AutoExecConfig_CreateConVar("discord_map_base", "https://image.gametracker.com/images/maps/160x120/csgo/<MAP>.jpg", "Base URL for map images.\nNote: <MAP> must be definied as map name\nExample: \"surf_easy1\" becomes <MAP>");
+    Core.MapBase = AutoExecConfig_CreateConVar("discord_map_base", "https://raw.githubusercontent.com/Sayt123/SurfMapPics/Maps-and-bonuses/csgo/<MAP>.jpg", "Base URL for map images.\nNote: <MAP> must be definied as map name\nExample: \"surf_easy1\" becomes <MAP>");
     fuckTimer_EndConfig();
 }
 
