@@ -15,7 +15,7 @@ Requirements:
 - [RIPExt 1.3.0 (or higher)](https://github.com/ErikMinekus/sm-ripext/releases)
 - [Accelerator](https://forums.alliedmods.net/showthread.php?t=277703)
 - [fuckZones](https://github.com/Bara/fuckZones)
-- [Running PHP-API](https://github.com/fuckTimer/php-api)
+- [Running PHP-API](https://github.com/fuckTimer/php-api) (php-testapi is for testing purpose, so usage at your own risk.)
 - [EndTouchFix](https://github.com/rumourA/End-Touch-Fix/blob/master/scripting/EndTouchFix.sp) - Need to be compiled
 
 Fixes:
