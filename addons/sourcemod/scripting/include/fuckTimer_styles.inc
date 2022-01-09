@@ -28,7 +28,8 @@ enum Styles {
     StyleHSW,
     StyleBackwards,
     StyleLowGravity,
-    StyleSlowMotion
+    StyleSlowMotion,
+    StylePractice
 }
 
 forward void fuckTimer_OnStylesLoaded();
