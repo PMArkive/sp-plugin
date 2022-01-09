@@ -212,7 +212,7 @@ public void OnGameFrame()
 
         bool success = fuckTimer_GetClientSetting(client, "HUD", sSetting);
 
-        if (!success || !view_as<bool>(StringToInt(sSetting)) || fuckTimer_GetClientStatus(client) == psInactive)
+        if (!success || !StringToBool(sSetting) || fuckTimer_GetClientStatus(client) == psInactive)
         {
             continue;
         }
@@ -221,7 +221,7 @@ public void OnGameFrame()
         {
             success = fuckTimer_GetClientSetting(client, "HUDDeadHUD", sSetting);
 
-            if (!success || !view_as<bool>(StringToInt(sSetting)))
+            if (!success || !StringToBool(sSetting))
             {
                 continue;
             }
@@ -260,7 +260,7 @@ public void OnGameFrame()
         fuckTimer_GetClientSetting(iClient, "HUDSpeed", sSpeed);
         fuckTimer_GetClientSetting(iClient, "HUDShowSpeedUnit", sSetting);
         fuckTimer_GetClientSetting(iClient, "HUDCenterSpeed", sBuffer);
-        bool bCenterSpeed = view_as<bool>(StringToInt(sBuffer));
+        bool bCenterSpeed = StringToBool(sBuffer);
 
         float fSpeed = 0.0;
 
@@ -311,7 +311,7 @@ public void OnGameFrame()
             Player[client].Speed = iSpeed;
         }
 
-        FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", fSpeed, (view_as<bool>(StringToInt(sSetting)) ? " u/s" : ""));
+        FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", fSpeed, (StringToBool(sSetting) ? " u/s" : ""));
         imBuffer.SetString(HKSpeed, sBuffer);
         
         Styles style = fuckTimer_GetClientStyle(iClient);
@@ -917,7 +917,7 @@ void GetTimeBySeconds(int client = 0, float seconds, char[] time, int length, eH
         format = view_as<eHUDTime>(StringToInt(sSetting));
 
         fuckTimer_GetClientSetting(client, "HUDShowTime0Hours", sSetting);
-        show0Hours = view_as<bool>(StringToInt(sSetting));
+        show0Hours = StringToBool(sSetting);
     }
 
     int iBuffer = RoundToFloor(seconds);
@@ -1020,11 +1020,11 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
 
             if (mode == CMFull)
             {
-                FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             }
             else
             {
-                FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - fClientSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             }
         }
         else if (against == CABoth)
@@ -1049,16 +1049,16 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
 
             if (mode == CMFull)
             {
-                FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", fClientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", fClientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""), fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             }
             else
             {
-                FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", fClientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", fClientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - fClientSpeed, (StringToBool(sUnit) ? " u/s" : ""), fClientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - fClientSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             }
         }
     }
 
-    CPrintToChat(client, "%s: %.0f%s%s", sType, fClientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), sSpeed);
+    CPrintToChat(client, "%s: %.0f%s%s", sType, fClientSpeed, (StringToBool(sUnit) ? " u/s" : ""), sSpeed);
 }
 
 void CompareHUD_LeaveZone(int client, int level, bool start, float velocity[3], RecordData record, eCompareAgainst eReturn, eCompareMode mode, eHUDSpeed speed)
@@ -1195,7 +1195,7 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
 
                 if (type == TimeCheckpoint)
                 {
-                    FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                    FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""));
                 }
                 else
                 {
@@ -1209,7 +1209,7 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
 
                 if (type == TimeCheckpoint)
                 {
-                    FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                    FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (StringToBool(sUnit) ? " u/s" : ""));
                 }
                 else
                 {
@@ -1243,7 +1243,7 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
 
                 if (type == TimeCheckpoint)
                 {
-                    FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                    FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""));
                 }
                 else
                 {
@@ -1257,7 +1257,7 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
 
                 if (type == TimeCheckpoint)
                 {
-                    FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+                    FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - clientSpeed, (StringToBool(sUnit) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (StringToBool(sUnit) ? " u/s" : ""));
                 }
                 else
                 {
@@ -1272,7 +1272,7 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
     
     if (type == TimeCheckpoint)
     {
-        CPrintToChat(client, "Speed: %.0f%s%s", clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), sSpeed);
+        CPrintToChat(client, "Speed: %.0f%s%s", clientSpeed, (StringToBool(sUnit) ? " u/s" : ""), sSpeed);
     }
     else
     {
@@ -1362,14 +1362,14 @@ void CompareChat_TimerEnd(int client, StringMap timemap, eCompareMode mode, eCom
         if (mode == CMFull)
         {
             FormatEx(sTime, sizeof(sTime), " (%s: %s%.3f{default})", sRecordType, time < record.Time ? "{green}" : "{darkred}", record.Time);
-            FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             FormatEx(sAttempts, sizeof(sAttempts), " (%s: %s%d{default})", sRecordType, iAttempts <= record.Attempts ? "{green}" : "{darkred}", record.Attempts);
             FormatEx(sTimeInZone, sizeof(sTimeInZone), " (%s: %s%.3f{default})", sRecordType, fTimeInZone < record.TimeInZone ? "{green}" : "{darkred}", record.TimeInZone);
         }
         else
         {
             FormatEx(sTime, sizeof(sTime), " (%s: %s%.3f{default})", sRecordType, time < record.Time ? "{green}" : "{darkred}", time - record.Time);
-            FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sSpeed, sizeof(sSpeed), " (%s: %s%.0f%s{default})", sRecordType, clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             FormatEx(sAttempts, sizeof(sAttempts), " (%s: %s%d{default})", sRecordType, iAttempts <= record.Attempts ? "{green}" : "{darkred}", iAttempts - record.Attempts);
             FormatEx(sTimeInZone, sizeof(sTimeInZone), " (%s: %s%.3f{default})", sRecordType, fTimeInZone < record.TimeInZone ? "{green}" : "{darkred}", fTimeInZone - record.TimeInZone);
         }
@@ -1382,14 +1382,14 @@ void CompareChat_TimerEnd(int client, StringMap timemap, eCompareMode mode, eCom
         if (mode == CMFull)
         {
             FormatEx(sTime, sizeof(sTime), " (SR: %s%.3f{default}, PR: %s%.3f{default})", time < recordSR.Time ? "{green}" : "{darkred}", recordSR.Time, time < recordPR.Time ? "{green}" : "{darkred}", recordPR.Time);
-            FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             FormatEx(sAttempts, sizeof(sAttempts), " (SR: %s%d{default}), (PR: %s%d{default})", iAttempts <= recordSR.Attempts ? "{green}" : "{darkred}", recordSR.Attempts, iAttempts <= recordPR.Attempts ? "{green}" : "{darkred}", recordPR.Attempts);
             FormatEx(sTimeInZone, sizeof(sTimeInZone), " (SR: %s%.3f{default}, PR: %s%.3f{default})", fTimeInZone < recordSR.TimeInZone ? "{green}" : "{darkred}", recordSR.TimeInZone, fTimeInZone < recordPR.TimeInZone ? "{green}" : "{darkred}", recordPR.TimeInZone);
         }
         else
         {
             FormatEx(sTime, sizeof(sTime), " (SR: %s%.3f{default}, PR: %s%.3f{default})", time < recordSR.Time ? "{green}" : "{darkred}", time - recordSR.Time, time < recordPR.Time ? "{green}" : "{darkred}", time - recordPR.Time);
-            FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""));
+            FormatEx(sSpeed, sizeof(sSpeed), " (SR: %s%.0f%s{default}, PR: %s%.0f%s{default})", clientSpeed >= fServerRecordSpeed ? "{green}" : "{darkred}", fServerRecordSpeed - clientSpeed, (StringToBool(sUnit) ? " u/s" : ""), clientSpeed >= fRecordSpeed ? "{green}" : "{darkred}", fRecordSpeed - clientSpeed, (StringToBool(sUnit) ? " u/s" : ""));
             FormatEx(sAttempts, sizeof(sAttempts), " (SR: %s%d{default}), (PR: %s%d{default})", iAttempts <= recordSR.Attempts ? "{green}" : "{darkred}", iAttempts - recordSR.Attempts, iAttempts <= recordPR.Attempts ? "{green}" : "{darkred}", iAttempts - recordPR.Attempts);
             FormatEx(sTimeInZone, sizeof(sTimeInZone), " (SR: %s%.3f{default}, PR: %s%.3f{default})", fTimeInZone < recordSR.TimeInZone ? "{green}" : "{darkred}", fTimeInZone - recordSR.TimeInZone, fTimeInZone < recordPR.TimeInZone ? "{green}" : "{darkred}", fTimeInZone - recordPR.TimeInZone);
         }
@@ -1403,7 +1403,7 @@ void CompareChat_TimerEnd(int client, StringMap timemap, eCompareMode mode, eCom
     }
 
     CPrintToChat(client, "Time%s: %.3f%s", sBonus, time, sTime);
-    CPrintToChat(client, "Speed: %.0f%s%s", clientSpeed, (view_as<bool>(StringToInt(sUnit)) ? " u/s" : ""), sSpeed);
+    CPrintToChat(client, "Speed: %.0f%s%s", clientSpeed, (StringToBool(sUnit) ? " u/s" : ""), sSpeed);
     CPrintToChat(client, "Attempts: %d%s", iAttempts, sAttempts);
     CPrintToChat(client, "Time in Zone: %.3f%s", fTimeInZone, sTimeInZone);
 }

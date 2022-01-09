@@ -999,7 +999,7 @@ public int Menu_ListHUDSides(Menu menu, MenuAction action, int client, int param
         char sParam[4];
         if (menu.GetItem(param, sParam, sizeof(sParam)))
         {
-            Player[client].Side = view_as<bool>(StringToInt(sParam));
+            Player[client].Side = StringToBool(sParam);
 
             ListHUDLines(client);
         }
@@ -1093,7 +1093,7 @@ public int HUDMenu_MoveOrSwap(Menu menu, MenuAction action, int client, int para
         char sParam[4];
         if (menu.GetItem(param, sParam, sizeof(sParam)))
         {
-            bool swapPosition = view_as<bool>(StringToInt(sParam));
+            bool swapPosition = StringToBool(sParam);
 
             fuckTimer_MoveClientHUDKey(client, Player[client].Key, Player[client].Side, Player[client].Line, swapPosition);
 
@@ -1130,7 +1130,7 @@ public Action Command_HUDEnable(int client, int args)
 
     char sSetting[MAX_SETTING_VALUE_LENGTH];
     fuckTimer_GetClientSetting(client, "HUD", sSetting);
-    bool status = view_as<bool>(StringToInt(sSetting));
+    bool status = StringToBool(sSetting);
 
     status = !status;
 
@@ -1425,7 +1425,7 @@ public Action Command_HUDShowSpeedUnit(int client, int args)
 
     char sSetting[MAX_SETTING_VALUE_LENGTH];
     fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sSetting);
-    bool status = view_as<bool>(StringToInt(sSetting));
+    bool status = StringToBool(sSetting);
 
     status = !status;
 
@@ -1505,7 +1505,7 @@ public Action Command_HUDTime(int client, int args)
     fuckTimer_GetClientSetting(client, "HUDTime", sSetting);
 
     // This will replaced by menu, if we've more than 3 options
-    bool format = view_as<bool>(StringToInt(sSetting));
+    bool format = StringToBool(sSetting);
     format = !format;
 
     IntToString(view_as<int>(format), sSetting, sizeof(sSetting));
@@ -1526,7 +1526,7 @@ public Action Command_HUDShow0Hours(int client, int args)
     char sSetting[MAX_SETTING_VALUE_LENGTH];
     fuckTimer_GetClientSetting(client, "HUDShowTime0Hours", sSetting);
 
-    bool format = view_as<bool>(StringToInt(sSetting));
+    bool format = StringToBool(sSetting);
     format = !format;
 
     IntToString(view_as<int>(format), sSetting, sizeof(sSetting));
@@ -1547,7 +1547,7 @@ public Action Command_HUDDeadHud(int client, int args)
     char sSetting[MAX_SETTING_VALUE_LENGTH];
     fuckTimer_GetClientSetting(client, "HUDDeadHud", sSetting);
 
-    bool format = view_as<bool>(StringToInt(sSetting));
+    bool format = StringToBool(sSetting);
     format = !format;
 
     IntToString(view_as<int>(format), sSetting, sizeof(sSetting));
@@ -1673,7 +1673,7 @@ public Action Command_HUDCompareMode(int client, int args)
     char sSetting[MAX_SETTING_VALUE_LENGTH];
     fuckTimer_GetClientSetting(client, "HUDCompareMode", sSetting);
 
-    bool bMode = view_as<bool>(StringToInt(sSetting));
+    bool bMode = StringToBool(sSetting);
     bMode = !bMode;
 
     IntToString(view_as<int>(bMode), sSetting, sizeof(sSetting));

@@ -235,3 +235,8 @@ stock void GetClientVelocity(int client, float velocity[3])
 {
     GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
 }
+
+stock bool StringToBool(const char[] value)
+{
+    return view_as<bool>(StringToInt(value));
+}

@@ -86,7 +86,7 @@ public void OnConfigsExecuted()
 
 public void OnChangeHook(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-    bool bDisable = view_as<bool>(StringToInt(newValue));
+    bool bDisable = StringToBool(newValue);
 
     if (!bDisable)
     {
@@ -127,10 +127,10 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     char sValue[12];
 
     GetfuckTimerZoneValue(smEffects, "Start", sValue, sizeof(sValue));
-    Zone[entity].Start = view_as<bool>(StringToInt(sValue));
+    Zone[entity].Start = StringToBool(sValue);
 
     GetfuckTimerZoneValue(smEffects, "End", sValue, sizeof(sValue));
-    Zone[entity].End = view_as<bool>(StringToInt(sValue));
+    Zone[entity].End = StringToBool(sValue);
 
     GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue));
     Zone[entity].Bonus = StringToInt(sValue);
@@ -166,31 +166,31 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     if (GetfuckTimerZoneValue(smEffects, "Misc", sValue, sizeof(sValue)))
     {
-        Zone[entity].Misc = view_as<bool>(StringToInt(sValue));
+        Zone[entity].Misc = StringToBool(sValue);
 
         if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
         {
-            Zone[entity].Validator = view_as<bool>(StringToInt(sValue));
+            Zone[entity].Validator = StringToBool(sValue);
         }
 
         if (GetfuckTimerZoneValue(smEffects, "TeleToStart", sValue, sizeof(sValue)))
         {
-            Zone[entity].TeleToStart = view_as<bool>(StringToInt(sValue));
+            Zone[entity].TeleToStart = StringToBool(sValue);
         }
 
         if (GetfuckTimerZoneValue(smEffects, "Stop", sValue, sizeof(sValue)))
         {
-            Zone[entity].Stop = view_as<bool>(StringToInt(sValue));
+            Zone[entity].Stop = StringToBool(sValue);
         }
 
         if (GetfuckTimerZoneValue(smEffects, "AntiJump", sValue, sizeof(sValue)))
         {
-            Zone[entity].AntiJump = view_as<bool>(StringToInt(sValue));
+            Zone[entity].AntiJump = StringToBool(sValue);
         }
 
         if (GetfuckTimerZoneValue(smEffects, "Checker", sValue, sizeof(sValue)))
         {
-            Zone[entity].Checker = view_as<bool>(StringToInt(sValue));
+            Zone[entity].Checker = StringToBool(sValue);
             
             if (GetfuckTimerZoneValue(smEffects, "Validator", sValue, sizeof(sValue)))
             {
