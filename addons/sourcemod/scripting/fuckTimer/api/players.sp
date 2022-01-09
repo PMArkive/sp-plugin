@@ -146,6 +146,8 @@ public void GetPlayerSetting(HTTPResponse response, any userid, const char[] err
     }
 
     delete alSettings;
+
+    LoadPlayerLocations(client);
 }
 
 void PreparePlayerPostSetting(int client, const char[] setting)

@@ -90,7 +90,6 @@ public any Native_GetStyles(Handle plugin, int numParams)
     return Core.Styles;
 }
 
-
 public int Native_GetStyleName(Handle plugin, int numParams)
 {
     int iStyle = GetNativeCell(1);

@@ -6,6 +6,7 @@
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
+#include <fuckTimer_maps>
 #include <fuckTimer_zones>
 #include <fuckTimer_players>
 #include <fuckTimer_commands>
@@ -42,6 +43,8 @@ enum struct PluginData
 PluginData Core;
 
 #include "api/players.sp"
+#include "api/locations.sp"
+#include "players/locations.sp"
 
 public Plugin myinfo =
 {
@@ -93,6 +96,11 @@ public void OnPluginStart()
     {
         SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
     }
+}
+
+public void OnConfigsExecuted()
+{
+    LoadSharedLocations();
 }
 
 public void OnClientPutInServer(int client)
