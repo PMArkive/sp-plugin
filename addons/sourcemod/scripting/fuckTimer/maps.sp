@@ -164,7 +164,7 @@ void DownloadZoneFile()
     char sMap[MAX_NAME_LENGTH];
     fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
 
-    LogMessage("[fuckTimer.Downloader] Download %s.zon...", sMap);
+    LogMessage("[Maps.DownloadZoneFile] Download %s.zon...", sMap);
     
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
@@ -173,7 +173,7 @@ void DownloadZoneFile()
     {
         if (FileSize(sFile) > 16)
         {
-            LogMessage("[fuckTimer.Downloader] %s.zon already exist.", sMap);
+            LogMessage("[Maps.DownloadZoneFile] %s.zon already exist.", sMap);
             CallZoneDownload(sMap, true);
 
             char sEndpoint[MAX_URL_LENGTH];
@@ -218,7 +218,7 @@ public void OnZoneDownload(HTTPStatus status, any pack, const char[] error)
 
     if (status == HTTPStatus_OK)
     {
-        LogMessage("[fuckTimer.Downloader] %s.zon downloaded!", sMap);
+        LogMessage("[Maps.OnZoneDownload] %s.zon downloaded!", sMap);
 
         AddMapsToDatabase();
         DownloadStripperGlobal(sMap);
@@ -387,7 +387,7 @@ public void UpdateMap(HTTPResponse response, any value, const char[] error)
 
 void DownloadStripperGlobal(const char[] map)
 {
-    LogMessage("[fuckTimer.Downloader] Download global_filters.cfg...");
+    LogMessage("[Maps.DownloadStripperGlobal] Download global_filters.cfg...");
     
     char sFile[PLATFORM_MAX_PATH + 1];
     FormatEx(sFile, sizeof(sFile), "addons/stripper/global_filters.cfg");
@@ -395,7 +395,7 @@ void DownloadStripperGlobal(const char[] map)
 
     if (Core.StripperGlobal)
     {
-        LogMessage("[fuckTimer.Downloader] global_filters.cfg already exist.");
+        LogMessage("[Maps.DownloadStripperGlobal] global_filters.cfg already exist.");
         DownloadStripperMap(map);
         return;
     }
@@ -417,7 +417,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] e
 
     if (status == HTTPStatus_OK)
     {
-        LogMessage("[fuckTimer.Downloader] global_filters.cfg downloaded!");
+        LogMessage("[Maps.OnStripperGlobalDownload] global_filters.cfg downloaded!");
     }
     else if (status == HTTPStatus_NotFound)
     {
@@ -429,7 +429,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] e
             DeleteFile(sFile);
         }
 
-        SetFailState("[fuckTimer.Downloader] global_filters.cfg doesn't exist! Status Code: %d, Error: %s", status, error);
+        SetFailState("[Maps.OnStripperGlobalDownload] global_filters.cfg doesn't exist! Status Code: %d, Error: %s", status, error);
         return;
     }
     else
@@ -443,7 +443,7 @@ public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] e
 
 void DownloadStripperMap(const char[] map)
 {
-    LogMessage("[fuckTimer.Downloader] Download %s.cfg if exists...", map);
+    LogMessage("[Maps.DownloadStripperMap] Download %s.cfg if exists...", map);
 
     char sFile[PLATFORM_MAX_PATH + 1];
     FormatEx(sFile, sizeof(sFile), "addons/stripper/maps/%s.cfg", map);
@@ -451,7 +451,7 @@ void DownloadStripperMap(const char[] map)
 
     if (Core.StripperMap)
     {
-        LogMessage("[fuckTimer.Downloader] %s.cfg already exist.", map);
+        LogMessage("[Maps.DownloadStripperMap] %s.cfg already exist.", map);
 
         CheckStatus(map);
 
@@ -478,7 +478,7 @@ public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] erro
 
     if (status == HTTPStatus_OK)
     {
-        LogMessage("[fuckTimer.Downloader] %s.cfg downloaded!", sMap);
+        LogMessage("[Maps.OnStripperMapDownload] %s.cfg downloaded!", sMap);
     }
     else if (status == HTTPStatus_NotFound)
     {
@@ -490,7 +490,7 @@ public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] erro
             DeleteFile(sFile);
         }
 
-        LogMessage("[fuckTimer.Downloader] %s.cfg doesn't exist!", sMap);
+        LogMessage("[Maps.OnStripperMapDownload] %s.cfg doesn't exist!", sMap);
 
         // Set bMapExist to true to probably avoid infinity map reloading, because map doesn't exist on the server + cloud
         // so bExistMap is always false and should result into infinity map reloading
@@ -509,7 +509,7 @@ void CheckStatus(const char[] map)
 {
     if (!Core.StripperGlobal || !Core.StripperMap)
     {
-        LogMessage("[fuckTimer.Downloader] Reloading map to activate stripper config(s)...");
+        LogMessage("[Maps.CheckStatus] Reloading map to activate stripper config(s)...");
         ForceChangeLevel(map, "Stripper config(s) added");
         return;
     }
