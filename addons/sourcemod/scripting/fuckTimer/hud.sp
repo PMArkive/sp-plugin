@@ -1444,6 +1444,5 @@ void LoadServerRecordCount()
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/Count/MapId/%d", fuckTimer_GetCurrentMapId());
-    LogStackTrace(sEndpoint);
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecordsCount);
 }
