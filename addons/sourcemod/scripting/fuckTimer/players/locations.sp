@@ -109,6 +109,7 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             }
             else // otherwise set the location status to lsTemp/0
             {
+                PrintToChat(client, "Location is not valid and will not saved permanently. You can change the location status over the menu.");
                 jLocation.SetInt("Status", 0);
             }
 
