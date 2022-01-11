@@ -98,6 +98,7 @@ public void OnPluginStart()
     }
 
     Locations_RegisterCommands();
+    Locations_RegisterSettings();
 }
 
 public void OnConfigsExecuted()

@@ -1,6 +1,11 @@
 Locations_RegisterCommands()
 {
-    RegConsoleCmd("sm_locations", Command_Locations);
+    RegConsoleCmd("sm_locations", Command_Locations, "Opens the locatios main menu");
+}
+
+Locations_RegisterSettings()
+{
+    fuckTimer_RegisterSetting("ShareLocations", "0");
 }
 
 public Action Command_Locations(int client, int args)
@@ -92,6 +97,10 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             jLocation.SetFloat("VelocityX", fVelocity[0]);
             jLocation.SetFloat("VelocityY", fVelocity[1]);
             jLocation.SetFloat("VelocityZ", fVelocity[2]);
+
+            char sShare[4];
+            fuckTimer_GetClientSetting(client, "ShareLocations", sShare);
+            jLocation.SetInt("Status", StringToInt(sShare) + 1);
 
             if (fuckTimer_IsClientTimeRunning(client) && (iCSLevel == 0 || (iCSLevel > 0 && fCSTime > 0.0)))
             {
