@@ -96,6 +96,8 @@ public void OnPluginStart()
     {
         SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
     }
+
+    Locations_RegisterCommands();
 }
 
 public void OnConfigsExecuted()
