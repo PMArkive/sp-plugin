@@ -106,6 +106,9 @@ public void OnPluginStart()
     RegConsoleCmd("sm_hudcomparetime", Command_HUDCompareTime, "How long the comparison should be shown in HUD");
     RegConsoleCmd("sm_hudcenterspeedposition", Command_HUDCenterSpeedPosition, "Specify the position of the X- and Y-Axis for the speed (center) hud");
     RegConsoleCmd("sm_hudcenterspeedcolor", Command_HUDCenterSpeedColor, "Specify the color of the X- and Y-Axis for the speed (center) hud");
+
+    // Locations commands
+    RegConsoleCmd("sm_sharelocations", Command_ShareLocations, "Enable/Disable sharing locations by default");
 }
 
 public void OnConfigsExecuted()
@@ -1775,6 +1778,27 @@ public Action Command_HUDCenterSpeedPosition(int client, int args)
     }
 
     fuckTimer_SetClientSetting(client, "HUDCenterSpeedPosition", sBuffer);
+
+    return Plugin_Handled;
+}
+
+public Action Command_ShareLocations(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "ShareLocations", sSetting);
+    bool status = StringToBool(sSetting);
+
+    status = !status;
+
+    IntToString(view_as<int>(status), sSetting, sizeof(sSetting));
+    fuckTimer_SetClientSetting(client, "ShareLocations", sSetting);
+
+    CReplyToCommand(client, "Share locations by default %s", status ? "enabled" : "disabled");
 
     return Plugin_Handled;
 }
