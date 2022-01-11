@@ -107,10 +107,14 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             {
                 fuckTimer_NewAPIHTTPRequest("Location").Post(jLocation, PostPlayerLocation, GetClientUserId(client));
             }
+            else // otherwise set the location status to lsTemp/0
+            {
+                jLocation.SetInt("Status", 0);
+            }
 
             // TODO: Store this locally too
 
-            delete jLocation;
+            delete jLocation; // Delete this after locally created enum struct into a arraylist(?)
         }
         else
         {
