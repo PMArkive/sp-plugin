@@ -48,21 +48,27 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             jLocation.SetInt("Speed", fuckTimer_GetClientAVGSpeed(client));
             jLocation.SetInt("Jumps", fuckTimer_GetClientJumps(client));
 
+            int iCSLevel = 0;
+            float fCSTime = 0.0;
             if (fuckTimer_GetAmountOfCheckpoints(iLevel) > 0)
             {
-                int iCSLevel = fuckTimer_GetClientCheckpoint(client);
+                iCSLevel = fuckTimer_GetClientCheckpoint(client);
 
                 jLocation.SetString("Type", "Checkpoint");
                 jLocation.SetInt("CSLevel", iCSLevel);
-                jLocation.SetFloat("CSTime", fuckTimer_GetClientTime(client, TimeCheckpoint, iCSLevel));
+
+                fCSTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCSLevel);
+                jLocation.SetFloat("CSTime", fCSTime);
             }
             else if (fuckTimer_GetAmountOfStages(iLevel) > 0)
             {
-                int iCSLevel = fuckTimer_GetClientStage(client);
+                iCSLevel = fuckTimer_GetClientStage(client);
 
                 jLocation.SetString("Type", "Stage");
                 jLocation.SetInt("CSLevel", iCSLevel);
-                jLocation.SetFloat("CSTime", fuckTimer_GetClientTime(client, TimeStage, iCSLevel));
+
+                fCSTime = fuckTimer_GetClientTime(client, TimeStage, iCSLevel);
+                jLocation.SetFloat("CSTime", fCSTime);
             }
             else
             {
@@ -87,7 +93,13 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             jLocation.SetFloat("VelocityY", fVelocity[1]);
             jLocation.SetFloat("VelocityZ", fVelocity[2]);
 
-            fuckTimer_NewAPIHTTPRequest("Location").Post(jLocation, PostPlayerLocation, GetClientUserId(client));
+            if (fuckTimer_IsClientTimeRunning(client) && (iCSLevel == 0 || (iCSLevel > 0 && fCSTime > 0.0)))
+            {
+                fuckTimer_NewAPIHTTPRequest("Location").Post(jLocation, PostPlayerLocation, GetClientUserId(client));
+            }
+
+            // TODO: Store this locally too
+
             delete jLocation;
         }
         else
