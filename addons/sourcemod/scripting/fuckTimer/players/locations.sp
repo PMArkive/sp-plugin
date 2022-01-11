@@ -102,7 +102,8 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             fuckTimer_GetClientSetting(client, "ShareLocations", sShare);
             jLocation.SetInt("Status", StringToInt(sShare) + 1);
 
-            if (fuckTimer_IsClientTimeRunning(client) && (iCSLevel == 0 || (iCSLevel > 0 && fCSTime > 0.0)))
+            // Only allowing posting Locations while timer is running in a main level and player isn't staying in a stage zone
+            if (fuckTimer_IsClientTimeRunning(client)  && iLevel == 0 && (iCSLevel == 0 || (iCSLevel > 0 && fCSTime > 0.0)))
             {
                 fuckTimer_NewAPIHTTPRequest("Location").Post(jLocation, PostPlayerLocation, GetClientUserId(client));
             }
