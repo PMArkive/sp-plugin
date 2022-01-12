@@ -8,10 +8,18 @@ public void GetLocations(HTTPResponse response, any userid, const char[] error)
     if (bValidClient)
     {
         LogMessage("[Locations.GetLocations] We found %d locations for \"%N\" for this map", jLocations.Length, client);
+
+        delete g_alPlayerLocations[client];
+        g_alPlayerLocations[client] = new ArrayList();
+        LocationsJSONArrayToArrayList(jLocations, g_alPlayerLocations[client], bValidClient);
     }
     else
     {
         LogMessage("[Locations.GetLocations] We found %d shared locations for this map", jLocations.Length);
+
+        delete g_alSharedLocations;
+        g_alSharedLocations = new ArrayList();
+        LocationsJSONArrayToArrayList(jLocations, g_alSharedLocations, bValidClient);
     }
 }
 

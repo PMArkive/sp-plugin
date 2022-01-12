@@ -42,9 +42,9 @@ enum struct PluginData
 }
 PluginData Core;
 
+#include "players/locations.sp"
 #include "api/players.sp"
 #include "api/locations.sp"
-#include "players/locations.sp"
 
 public Plugin myinfo =
 {

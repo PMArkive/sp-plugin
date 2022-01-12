@@ -1,3 +1,47 @@
+/*
+    TODO:
+        - Adding locations (from api and temp locations) to 2 arraylists (player and shared)
+*/
+enum LocationStatus
+{
+    lsTemp = 0,
+    lsActive,
+    lsShared
+}
+
+enum struct LocationData
+{
+    int Id;
+    int MapId;
+    int PlayerId;
+    char PlayerName[MAX_NAME_LENGTH];
+    Styles StyleId;
+    int Level;
+    TimeType Type;
+    float Tickrate;
+    float Time;
+    float Sync;
+    int Speed;
+    int Jumps;
+    int CSLevel;
+    float CSTime;
+    LocationStatus Status;
+    float Position[3];
+    float Angle[3];
+    float Velocity[3];
+}
+
+enum struct PlayerLocationData
+{
+    int LastId;
+}
+// PlayerLocationData LPlayer[MAXPLAYERS + 1];
+
+ArrayList g_alSharedLocations = null;
+ArrayList g_alPlayerLocations[MAXPLAYERS + 1] = { null, ... };
+
+static int g_iLowestId = 0;
+
 Locations_RegisterCommands()
 {
     RegConsoleCmd("sm_locations", Command_Locations, "Opens the locatios main menu");
@@ -25,8 +69,13 @@ void ShowLocationsMainMenu(int client)
     Menu menu = new Menu(MenuHandler_LocationsMain);
     menu.SetTitle("Player Locations");
     menu.AddItem("c", "Create Location\n ");
-    menu.AddItem("m", "My Locations");
-    menu.AddItem("s", "Shared Locations");
+
+    char sBuffer[32];
+    FormatEx(sBuffer, sizeof(sBuffer), "My Locations (%d)", (g_alPlayerLocations[client] != null) ? g_alPlayerLocations[client].Length : 0);
+    menu.AddItem("m", sBuffer);
+    FormatEx(sBuffer, sizeof(sBuffer), "Shared Locations (%d)", (g_alSharedLocations != null) ? g_alSharedLocations.Length : 0);
+    menu.AddItem("s", sBuffer);
+
     menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -43,6 +92,8 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             int iLevel = fuckTimer_GetClientBonus(client);
 
             JSONObject jLocation = new JSONObject();
+
+            jLocation.SetInt("Id", g_iLowestId - 1);
             jLocation.SetFloat("Tickrate", GetServerTickrate());
             jLocation.SetInt("MapId", fuckTimer_GetCurrentMapId());
             jLocation.SetInt("PlayerId", GetSteamAccountID(client));
@@ -113,9 +164,12 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
                 jLocation.SetInt("Status", 0);
             }
 
-            // TODO: Store this locally too
-
-            delete jLocation; // Delete this after locally created enum struct into a arraylist(?)
+            if (g_alPlayerLocations[client] == null)
+            {
+                g_alPlayerLocations[client] = new ArrayList();
+            }
+            
+            LocationsJSONObjectToArrayList(jLocation, g_alPlayerLocations[client], true);
         }
         else
         {
@@ -144,4 +198,77 @@ LoadPlayerLocations(int client)
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Location/MapId/%d/PlayerId/%d", fuckTimer_GetCurrentMapId(), GetSteamAccountID(client));
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetLocations, GetClientUserId(client));
+}
+
+LocationsJSONArrayToArrayList(JSONArray jArray, ArrayList aArray, bool isCLient)
+{
+    JSONObject jLocation = null;
+    for (int i = 0; i < jArray.Length; i++)
+    {
+        jLocation = view_as<JSONObject>(jArray.Get(i));
+        LocationsJSONObjectToArrayList(jLocation, aArray, isCLient);
+    }
+
+    delete jArray;
+}
+
+LocationsJSONObjectToArrayList(JSONObject jLocation, ArrayList aArray, bool isClient)
+{
+    LocationData Location;
+
+    Location.Status = view_as<LocationStatus>(jLocation.GetInt("Status"));
+
+    Location.Id = jLocation.GetInt("Id");
+
+    if (g_iLowestId == 0 || Location.Id < g_iLowestId)
+    {
+        g_iLowestId = Location.Id;
+    }
+
+    Location.MapId = jLocation.GetInt("MapId");
+    Location.PlayerId = jLocation.GetInt("PlayerId");
+
+    if (!isClient)
+    {
+        jLocation.GetString("Name", Location.PlayerName, sizeof(LocationData::PlayerName));
+    }
+
+    Location.StyleId = view_as<Styles>(jLocation.GetInt("Level"));
+    Location.Level = jLocation.GetInt("Level");
+    
+    char sType[12];
+    jLocation.GetString("Type", sType, sizeof(sType));
+    if (sType[0] == 'C')
+    {
+        Location.Type = TimeCheckpoint;
+    }
+    else if (sType[0] == 'S')
+    {
+        Location.Type = TimeStage;
+    }
+    else
+    {
+        Location.Type = TimeMain;
+    }
+    
+    Location.Tickrate = jLocation.GetFloat("Tickrate");
+    Location.Time = jLocation.GetFloat("Time");
+    Location.Sync = jLocation.GetFloat("Sync");
+    Location.Speed = jLocation.GetInt("Speed");
+    Location.Jumps = jLocation.GetInt("Jumps");
+    Location.CSLevel = jLocation.GetInt("CSLevel");
+    Location.CSTime = jLocation.GetFloat("CSTime");
+    Location.Position[0] = jLocation.GetFloat("PositionX");
+    Location.Position[1] = jLocation.GetFloat("PositionY");
+    Location.Position[2] = jLocation.GetFloat("PositionZ");
+    Location.Angle[0] = jLocation.GetFloat("AngleX");
+    Location.Angle[1] = jLocation.GetFloat("AngleY");
+    Location.Angle[2] = jLocation.GetFloat("AngleZ");
+    Location.Velocity[0] = jLocation.GetFloat("VelocityX");
+    Location.Velocity[1] = jLocation.GetFloat("VelocityY");
+    Location.Velocity[2] = jLocation.GetFloat("VelocityZ");
+
+    aArray.PushArray(Location, sizeof(Location));
+
+    delete jLocation;
 }
