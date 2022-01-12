@@ -101,7 +101,12 @@ public void OnPluginStart()
     Locations_RegisterSettings();
 }
 
-public void OnConfigsExecuted()
+public void OnMapStart()
+{
+    Locations_OnMapStart();
+}
+
+public void fuckTimer_OnMapDataLoaded()
 {
     LoadSharedLocations();
 }
@@ -109,6 +114,8 @@ public void OnConfigsExecuted()
 public void OnClientPutInServer(int client)
 {
     SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
+
+    Locations_OnClientPutInServer(client);
 }
 
 public void fuckTimer_OnClientRestart(int client)
@@ -133,6 +140,7 @@ public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroa
 public void OnClientDisconnect(int client)
 {
     UpdatePlayer(client, true);
+    Locations_OnClientDisconnect(client);
 }
 
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)

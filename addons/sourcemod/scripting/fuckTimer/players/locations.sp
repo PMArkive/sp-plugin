@@ -33,9 +33,16 @@ enum struct LocationData
 
 enum struct PlayerLocationData
 {
-    int LastId;
+    int TeleportId;
+    bool Target;
+
+    void Reset()
+    {
+        this.Target = false;
+        this.TeleportId = 0;
+    }
 }
-// PlayerLocationData LPlayer[MAXPLAYERS + 1];
+PlayerLocationData LPlayer[MAXPLAYERS + 1];
 
 ArrayList g_alSharedLocations = null;
 ArrayList g_alPlayerLocations[MAXPLAYERS + 1] = { null, ... };
@@ -50,6 +57,23 @@ Locations_RegisterCommands()
 Locations_RegisterSettings()
 {
     fuckTimer_RegisterSetting("ShareLocations", "0");
+}
+
+void Locations_OnMapStart()
+{
+    delete g_alSharedLocations;
+}
+
+void Locations_OnClientPutInServer(client)
+{
+    LPlayer[client].Reset();
+}
+
+void Locations_OnClientDisconnect(int client)
+{
+    LPlayer[client].Reset();
+
+    delete g_alPlayerLocations[client];
 }
 
 public Action Command_Locations(int client, int args)
@@ -69,12 +93,16 @@ void ShowLocationsMainMenu(int client)
     Menu menu = new Menu(MenuHandler_LocationsMain);
     menu.SetTitle("Player Locations");
     menu.AddItem("c", "Create Location\n ");
+    menu.AddItem("t", "Teleport\n ", (LPlayer[client].Target) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+
+    int iPlayerCount = (g_alPlayerLocations[client] != null) ? g_alPlayerLocations[client].Length : 0;
+    int iSharedCount = (g_alSharedLocations != null) ? g_alSharedLocations.Length : 0;
 
     char sBuffer[32];
-    FormatEx(sBuffer, sizeof(sBuffer), "My Locations (%d)", (g_alPlayerLocations[client] != null) ? g_alPlayerLocations[client].Length : 0);
-    menu.AddItem("m", sBuffer);
-    FormatEx(sBuffer, sizeof(sBuffer), "Shared Locations (%d)", (g_alSharedLocations != null) ? g_alSharedLocations.Length : 0);
-    menu.AddItem("s", sBuffer);
+    FormatEx(sBuffer, sizeof(sBuffer), "My Locations (%d)", iPlayerCount);
+    menu.AddItem("m", sBuffer, (iPlayerCount == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+    FormatEx(sBuffer, sizeof(sBuffer), "Shared Locations (%d)", iSharedCount);
+    menu.AddItem("s", sBuffer, (iSharedCount == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 
     menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
@@ -151,7 +179,8 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
 
             char sShare[4];
             fuckTimer_GetClientSetting(client, "ShareLocations", sShare);
-            jLocation.SetInt("Status", StringToInt(sShare) + 1);
+            LocationStatus sStatus = view_as<LocationStatus>(StringToInt(sShare) + 1);
+            jLocation.SetInt("Status", view_as<int>(sStatus));
 
             // Only allowing posting Locations while timer is running in a main level and player isn't staying in a stage zone
             if (fuckTimer_IsClientTimeRunning(client)  && iLevel == 0 && (iCSLevel == 0 || (iCSLevel > 0 && fCSTime > 0.0)))
@@ -162,14 +191,20 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
             {
                 PrintToChat(client, "Location is not valid and will not saved permanently. You can change the location status over the menu.");
                 jLocation.SetInt("Status", 0);
+                LocationsJSONObjectToArrayList(jLocation, g_alPlayerLocations[client], true);
             }
 
             if (g_alPlayerLocations[client] == null)
             {
-                g_alPlayerLocations[client] = new ArrayList();
+                LocationData Location;
+                g_alPlayerLocations[client] = new ArrayList(sizeof(Location));
             }
-            
-            LocationsJSONObjectToArrayList(jLocation, g_alPlayerLocations[client], true);
+        }
+        else if (sOption[0] == 's')
+        {
+            ListSharedLocations(client);
+
+            return 0;
         }
         else
         {
@@ -186,10 +221,73 @@ public int MenuHandler_LocationsMain(Menu menu, MenuAction action, int client, i
     return 0;
 }
 
+ListSharedLocations(int client)
+{
+    Menu menu = new Menu(MenuHandler_SharedLocationsList);
+    menu.SetTitle("Select a shared location\n ");
+
+    LocationData Location;
+    char sCSDetails[32];
+    char sDisplay[512];
+    char sId[12];
+    for (int i = 0; i < g_alSharedLocations.Length; i++)
+    {
+        g_alSharedLocations.GetArray(i, Location, sizeof(Location));
+
+        if (Location.Type == TimeCheckpoint)
+        {
+            FormatEx(sCSDetails, sizeof(sCSDetails), "Checkpoint %d: %.3f", Location.CSLevel, Location.CSTime);
+        }
+        else if (Location.Type == TimeStage)
+        {
+            FormatEx(sCSDetails, sizeof(sCSDetails), "Stage %d: %.3f", Location.CSLevel, Location.CSTime);
+        }
+        
+        FormatEx(sDisplay, sizeof(sDisplay), "Location #%d\nTime: %.3f\n%s", Location.Id, Location.Time, sCSDetails);
+        IntToString(Location.Id, sId, sizeof(sId));
+        menu.AddItem(sId, sDisplay);
+
+        sCSDetails[0] = '\0';
+        sDisplay[0] = '\0';
+        sId[0] = '\0';
+    }
+
+    menu.ExitBackButton = true;
+    menu.ExitButton = false;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int MenuHandler_SharedLocationsList(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sOption[8];
+        menu.GetItem(param, sOption, sizeof(sOption));
+
+        LPlayer[client].TeleportId = StringToInt(sOption);
+        LPlayer[client].Target = true;
+
+        PrintToChat(client, "Set Location #%d as target", LPlayer[client].TeleportId);
+
+        ShowLocationsMainMenu(client);
+    }
+    else if (action == MenuAction_Cancel && param == MenuCancel_ExitBack)
+    {
+        ShowLocationsMainMenu(client);
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+
+    return 0;
+}
+
 LoadSharedLocations()
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Location/MapId/%d", fuckTimer_GetCurrentMapId());
+    LogStackTrace(sEndpoint);
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetLocations, 0);
 }
 
@@ -253,6 +351,7 @@ LocationsJSONObjectToArrayList(JSONObject jLocation, ArrayList aArray, bool isCl
     
     Location.Tickrate = jLocation.GetFloat("Tickrate");
     Location.Time = jLocation.GetFloat("Time");
+    LogMessage("Location.Time: %.3f, jLocation: %.3f", Location.Time, jLocation.GetFloat("Time"));
     Location.Sync = jLocation.GetFloat("Sync");
     Location.Speed = jLocation.GetInt("Speed");
     Location.Jumps = jLocation.GetInt("Jumps");
@@ -270,5 +369,27 @@ LocationsJSONObjectToArrayList(JSONObject jLocation, ArrayList aArray, bool isCl
 
     aArray.PushArray(Location, sizeof(Location));
 
+    SortADTArrayCustom(aArray, SortLocations);
+
     delete jLocation;
+}
+
+public int SortLocations(int i, int j, Handle array, Handle hndl)
+{
+    LocationData Location1;
+    LocationData Location2;
+
+    GetArrayArray(array, i, Location1);
+    GetArrayArray(array, j, Location2);
+
+    if (Location1.Id < Location2.Id)
+    {
+        return -1;
+    }
+    else if (Location1.Id > Location2.Id)
+    {
+        return 1;
+    }
+
+    return 0;
 }

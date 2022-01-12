@@ -10,7 +10,8 @@ public void GetLocations(HTTPResponse response, any userid, const char[] error)
         LogMessage("[Locations.GetLocations] We found %d locations for \"%N\" for this map", jLocations.Length, client);
 
         delete g_alPlayerLocations[client];
-        g_alPlayerLocations[client] = new ArrayList();
+        LocationData Location;
+        g_alPlayerLocations[client] = new ArrayList(sizeof(Location));
         LocationsJSONArrayToArrayList(jLocations, g_alPlayerLocations[client], bValidClient);
     }
     else
@@ -18,7 +19,8 @@ public void GetLocations(HTTPResponse response, any userid, const char[] error)
         LogMessage("[Locations.GetLocations] We found %d shared locations for this map", jLocations.Length);
 
         delete g_alSharedLocations;
-        g_alSharedLocations = new ArrayList();
+        LocationData Location;
+        g_alSharedLocations = new ArrayList(sizeof(Location));
         LocationsJSONArrayToArrayList(jLocations, g_alSharedLocations, bValidClient);
     }
 }
@@ -42,6 +44,6 @@ public void PostPlayerLocation(HTTPResponse response, any userid, const char[] e
     JSONObject jLocation = view_as<JSONObject>(response.Data);
 
     PrintToChat(client, "Location #%d has been created successfully!", jLocation.GetInt("Id"));
-
-    delete jLocation;
+    LocationStatus sStatus = view_as<LocationStatus>(jLocation.GetInt("Status"));
+    LocationsJSONObjectToArrayList(jLocation, (sStatus == lsActive) ? g_alPlayerLocations[client] : g_alSharedLocations, (sStatus == lsActive) ? true : false);
 }
