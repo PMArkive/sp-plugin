@@ -67,7 +67,7 @@ public void OnMapStart()
     Core.ResetStripper();
 }
 
-public void OnConfigsExecuted()
+public void fuckTimer_OnAPIReady()
 {
     DownloadMapTiers();
 }
@@ -347,7 +347,8 @@ public void GetMap(HTTPResponse response, any value, const char[] error)
     LogMessage("Id: %d, Name: %s, Tier: %d, Status: %d, MapAuthor: %s, ZoneAuthor: %s", Map.Id, sName, Map.Tier, Map.Status, Map.MapAuthor, Map.ZoneAuthor);
 
     Call_StartForward(Core.OnMapDataLoaded);
-    Call_Finish();
+    int iResult = Call_Finish();
+    PrintToServer("Call_Finish Good? %d", (iResult == SP_ERROR_NONE));
 }
 
 void UpdateAuthor(JSONObject map)

@@ -16,6 +16,7 @@ enum PlayerStatus {
 }
 
 forward void fuckTimer_OnPlayerLoaded(int client);
+forward void fuckTimer_OnSharedLocationsLoaded();
 
 native void fuckTimer_RegisterSetting(const char[] setting, const char[] defaultValue);
 

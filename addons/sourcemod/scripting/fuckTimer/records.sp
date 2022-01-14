@@ -9,20 +9,11 @@
 
 enum struct PluginData
 {
-    bool MapLoaded;
-    bool StylesLoaded;
-
     IntMap Records[MAX_STYLES + 1];
 
     GlobalForward OnNewRecord;
     GlobalForward OnPlayerRecordsLoaded;
     GlobalForward OnServerRecordsLoaded;
-
-    void Reset()
-    {
-        this.MapLoaded = false;
-        this.StylesLoaded = false;
-    }
 }
 PluginData Core;
 
@@ -57,11 +48,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-public void OnMapStart()
-{
-    Core.Reset();
-}
-
 public void OnConfigsExecuted()
 {
     ConVar cChatMessage = FindConVar("misc_chat_prefix");
@@ -78,27 +64,8 @@ public void OnCVarChange(ConVar convar, const char[] oldValue, const char[] newV
     CSetPrefix(newValue);
 }
 
-public void fuckTimer_OnMapDataLoaded()
+public void fuckTimer_OnSharedLocationsLoaded()
 {
-    Core.MapLoaded = true;
-
-    CheckState();
-}
-
-public void fuckTimer_OnStylesLoaded()
-{
-    Core.StylesLoaded = true;
-
-    CheckState();
-}
-
-void CheckState()
-{
-    if (!Core.StylesLoaded || !Core.MapLoaded)
-    {
-        return;
-    }
-
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, 0);

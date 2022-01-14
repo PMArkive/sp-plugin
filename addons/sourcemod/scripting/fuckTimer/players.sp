@@ -38,7 +38,9 @@ enum struct PluginData
 {
     StringMap Settings;
     ConVar MessageInterval;
+
     GlobalForward OnPlayerLoaded;
+    GlobalForward OnSharedLocationsLoaded;
 }
 PluginData Core;
 
@@ -58,6 +60,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     Core.OnPlayerLoaded = new GlobalForward("fuckTimer_OnPlayerLoaded", ET_Ignore, Param_Cell);
+    Core.OnSharedLocationsLoaded = new GlobalForward("fuckTimer_OnSharedLocationsLoaded", ET_Ignore);
     
     CreateNative("fuckTimer_RegisterSetting", Native_RegisterSetting);
 
@@ -106,7 +109,7 @@ public void OnMapStart()
     Locations_OnMapStart();
 }
 
-public void fuckTimer_OnMapDataLoaded()
+public void fuckTimer_OnStylesLoaded()
 {
     LoadSharedLocations();
 }

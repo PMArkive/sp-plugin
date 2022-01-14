@@ -22,6 +22,9 @@ public void GetLocations(HTTPResponse response, any userid, const char[] error)
         LocationData Location;
         g_alSharedLocations = new ArrayList(sizeof(Location));
         LocationsJSONArrayToArrayList(jLocations, g_alSharedLocations, bValidClient);
+
+        Call_StartForward(Core.OnSharedLocationsLoaded);
+        Call_Finish();
     }
 }
 
