@@ -221,7 +221,6 @@ public void OnZoneDownload(HTTPStatus status, any pack, const char[] error)
         LogMessage("[Maps.OnZoneDownload] %s.zon downloaded!", sMap);
 
         AddMapsToDatabase();
-        DownloadStripperGlobal(sMap);
         CallZoneDownload(sMap, true);
     }
     else if (status == HTTPStatus_NotFound)
@@ -349,6 +348,8 @@ public void GetMap(HTTPResponse response, any value, const char[] error)
     Call_StartForward(Core.OnMapDataLoaded);
     int iResult = Call_Finish();
     PrintToServer("Call_Finish Good? %d", (iResult == SP_ERROR_NONE));
+
+    DownloadStripperGlobal(sName);
 }
 
 void UpdateAuthor(JSONObject map)
