@@ -287,7 +287,6 @@ LoadSharedLocations()
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Location/MapId/%d", fuckTimer_GetCurrentMapId());
-    LogStackTrace(sEndpoint);
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetLocations, 0);
 }
 

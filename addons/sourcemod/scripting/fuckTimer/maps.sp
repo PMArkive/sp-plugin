@@ -22,7 +22,8 @@ enum struct PluginData
     bool StripperGlobal;
     bool StripperMap;
 
-    char Name[64];
+    char Name_fuckZones[64];
+    bool Unloaded_fuckZones;
 
     StringMap MapTiers;
 
@@ -68,11 +69,6 @@ public void OnMapStart()
 }
 
 public void fuckTimer_OnAPIReady()
-{
-    DownloadMapTiers();
-}
-
-void DownloadMapTiers()
 {
     char sURL[MAX_URL_LENGTH];
     FormatEx(sURL, sizeof(sURL), "%s/zones/main/files/maptiers.json", FUCKTIMER_BASE_CLOUD_URL);
@@ -136,9 +132,9 @@ void UnloadFuckZones()
     while (MorePlugins(hIter))
     {
         hPlugin = ReadPlugin(hIter);
-        GetPluginFilename(hPlugin, Core.Name, sizeof(Core.Name));
+        GetPluginFilename(hPlugin, Core.Name_fuckZones, sizeof(Core.Name_fuckZones));
 
-        if (StrContains(Core.Name, "fuckZones.smx", false) != -1)
+        if (StrContains(Core.Name_fuckZones, "fuckZones.smx", false) != -1)
         {
             bFound = true;
             break;
@@ -154,7 +150,8 @@ void UnloadFuckZones()
     delete hIter;
     delete hPlugin;
 
-    ServerCommand("sm plugins unload %s", Core.Name);
+    ServerCommand("sm plugins unload %s", Core.Name_fuckZones);
+    Core.Unloaded_fuckZones = true;
     
     DownloadZoneFile();
 }
@@ -345,10 +342,6 @@ public void GetMap(HTTPResponse response, any value, const char[] error)
 
     LogMessage("Id: %d, Name: %s, Tier: %d, Status: %d, MapAuthor: %s, ZoneAuthor: %s", Map.Id, sName, Map.Tier, Map.Status, Map.MapAuthor, Map.ZoneAuthor);
 
-    Call_StartForward(Core.OnMapDataLoaded);
-    int iResult = Call_Finish();
-    PrintToServer("Call_Finish Good? %d", (iResult == SP_ERROR_NONE));
-
     DownloadStripperGlobal(sName);
 }
 
@@ -516,7 +509,19 @@ void CheckStatus(const char[] map)
         return;
     }
 
-    ServerCommand("sm plugins load %s", Core.Name);
+    // TODO: That's a workaround. Why? CheckStatus will called twice and results into calling fuckTimer_OnMapDataLoaded multiple times - which won't perform great while loading all stuff twice.
+    if (!Core.Unloaded_fuckZones)
+    {
+        LogMessage("fuckZones already running, following code will not executed.");
+        return;
+    }
+
+    ServerCommand("sm plugins load %s", Core.Name_fuckZones);
+    Core.Unloaded_fuckZones = false;
+
+    Call_StartForward(Core.OnMapDataLoaded);
+    Call_Finish();
+    LogStackTrace("1");
 }
 
 void CallZoneDownload(const char[] map, bool success)
