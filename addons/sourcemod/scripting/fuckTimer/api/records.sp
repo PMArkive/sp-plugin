@@ -321,11 +321,11 @@ void RecalculateRanks()
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(RecalculateRanksCallback);
 }
 
-public void RecalculateRanksCallback(HTTPResponse response, any pack, const char[] error)
+public void RecalculateRanksCallback(HTTPResponse response, DataPack pack, const char[] error)
 {
     if (response.Status != HTTPStatus_OK)
     {
-        delete view_as<DataPack>(pack);
+        delete pack;
         SetFailState("[Records.RecalculateRanksCallback] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         return;
     }

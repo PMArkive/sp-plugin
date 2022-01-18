@@ -204,14 +204,14 @@ void DownloadZoneFile()
     fuckTimer_NewCloudHTTPRequest(sEndpoint).DownloadFile(sFile, OnZoneDownload, pack);
 }
 
-public void OnZoneDownload(HTTPStatus status, any pack, const char[] error)
+public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
-    view_as<DataPack>(pack).Reset();
+    pack.Reset();
 
     char sMap[MAX_NAME_LENGTH];
-    view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
+    pack.ReadString(sMap, sizeof(sMap));
 
-    delete view_as<DataPack>(pack);
+    delete pack;
 
     if (status == HTTPStatus_OK)
     {
@@ -401,14 +401,14 @@ void DownloadStripperGlobal(const char[] map)
     fuckTimer_NewCloudHTTPRequest("stripper/main/files/global_filters.cfg").DownloadFile(sFile, OnStripperGlobalDownload, dpPack);
 }
 
-public void OnStripperGlobalDownload(HTTPStatus status, any pack, const char[] error)
+public void OnStripperGlobalDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
-    view_as<DataPack>(pack).Reset();
+    pack.Reset();
 
     char sMap[MAX_NAME_LENGTH];
-    view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
+    pack.ReadString(sMap, sizeof(sMap));
 
-    delete view_as<DataPack>(pack);
+    delete pack;
 
     if (status == HTTPStatus_OK)
     {
@@ -449,7 +449,6 @@ void DownloadStripperMap(const char[] map)
         LogMessage("[Maps.DownloadStripperMap] %s.cfg already exist.", map);
 
         CheckStatus(map);
-
         return;
     }
 
@@ -462,14 +461,14 @@ void DownloadStripperMap(const char[] map)
     fuckTimer_NewCloudHTTPRequest(sEndpoint).DownloadFile(sFile, OnStripperMapDownload, dpPack);
 }
 
-public void OnStripperMapDownload(HTTPStatus status, any pack, const char[] error)
+public void OnStripperMapDownload(HTTPStatus status, DataPack pack, const char[] error)
 {
-    view_as<DataPack>(pack).Reset();
+    pack.Reset();
 
     char sMap[MAX_NAME_LENGTH];
-    view_as<DataPack>(pack).ReadString(sMap, sizeof(sMap));
+    pack.ReadString(sMap, sizeof(sMap));
 
-    delete view_as<DataPack>(pack);
+    delete pack;
 
     if (status == HTTPStatus_OK)
     {

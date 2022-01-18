@@ -153,7 +153,7 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
     return Plugin_Continue;
 }
 
-public void Frame_PlayerSpawn(any userid)
+public void Frame_PlayerSpawn(int userid)
 {
     int client = GetClientOfUserId(userid);
 

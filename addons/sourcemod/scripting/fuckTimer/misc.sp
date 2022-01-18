@@ -69,7 +69,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
     RequestFrame(Frame_RespawnPlayer, event.GetInt("userid"));
 }
 
-public void Frame_RespawnPlayer(any userid)
+public void Frame_RespawnPlayer(int userid)
 {
     int client = GetClientOfUserId(userid);
 

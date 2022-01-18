@@ -1,4 +1,4 @@
-public void GetLocations(HTTPResponse response, any userid, const char[] error)
+public void GetLocations(HTTPResponse response, int userid, const char[] error)
 {
     JSONArray jLocations = view_as<JSONArray>(response.Data);
 
@@ -28,7 +28,7 @@ public void GetLocations(HTTPResponse response, any userid, const char[] error)
     }
 }
 
-public void PostPlayerLocation(HTTPResponse response, any userid, const char[] error)
+public void PostPlayerLocation(HTTPResponse response, int userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
