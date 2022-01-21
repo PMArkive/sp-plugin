@@ -91,7 +91,6 @@ public void OnPluginStart()
     IntToString(view_as<int>(IKBlock), sValue, sizeof(sValue));
     Core.Settings.SetString(SETTING_INVALIDKEYPREF, sValue);
 
-    HookEvent("player_activate", Event_PlayerActivate);
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
 
@@ -118,6 +117,7 @@ public void OnClientPutInServer(int client)
 {
     SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
 
+    LoadPlayer(client);
     Locations_OnClientPutInServer(client);
 }
 
@@ -129,15 +129,6 @@ public void fuckTimer_OnClientRestart(int client)
     {
         fuckTimer_TeleportEntityToZone(client, iZone);
     }
-}
-
-public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
-{
-    int client = GetClientOfUserId(event.GetInt("userid"));
-
-    LoadPlayer(client);
-
-    return Plugin_Continue;
 }
 
 public void OnClientDisconnect(int client)
