@@ -22,8 +22,10 @@ Fixes:
 - [Remove Hint Dollar](https://forums.alliedmods.net/showthread.php?p=2760175)
 - [MomSurfFix](https://forums.alliedmods.net/showthread.php?t=320971)
 - [RNGFix](https://forums.alliedmods.net/showthread.php?t=310825)
-- [Movement Unlocker](https://forums.alliedmods.net/showthread.php?t=255298)
-- [Push/Crouchboost Fix](https://github.com/t5mat/boostfix/blob/master/boostfix.sp) - Need to be compiled
+- [Movement Unlocker](https://forums.alliedmods.net/showthread.php?t=255298) | [Gamedata](https://forums.alliedmods.net/attachment.php?attachmentid=141521&d=1495261818)
+- [Crouchboost Fix](https://github.com/Ciallo-Ani/boostfix) - Need to be compiled
+- [PushFixDE](https://github.com/GAMMACASE/PushFixDE)
+- [HeadBugFix](https://github.com/GAMMACASE/HeadBugFix)
 
 Optional:
 - [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)
