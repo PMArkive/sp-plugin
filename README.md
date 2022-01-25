@@ -23,7 +23,7 @@ Fixes:
 - [MomSurfFix](https://forums.alliedmods.net/showthread.php?t=320971)
 - [RNGFix](https://forums.alliedmods.net/showthread.php?t=310825)
 - [Movement Unlocker](https://forums.alliedmods.net/showthread.php?t=255298)
-- [Push/Crouchboost Fix](https://github.com/t5mat/boostfix/blob/master/boostfix.sp) - Need to be compiled
+- [Crouchboost Fix](https://github.com/t5mat/crouchboostfix/releases)
 
 Optional:
 - [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)
