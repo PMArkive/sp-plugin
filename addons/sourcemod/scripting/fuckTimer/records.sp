@@ -116,7 +116,11 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     StringMap smRecord = view_as<StringMap>(CloneHandle(temp));
     IntMap imDetails;
     temp.GetValue("Details", imDetails);
-    smRecord.SetValue("Details", CloneHandle(imDetails));
+
+    if (imDetails != null)
+    {
+        smRecord.SetValue("Details", CloneHandle(imDetails));
+    }
 
     Styles iStyle;
     smRecord.GetValue("StyleId", iStyle);
