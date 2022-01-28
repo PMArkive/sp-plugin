@@ -496,11 +496,18 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     Player[client].Zone = zone;
 
     int iBonus = 0;
+    float fClientSpeed = GetClientSpeed(client);
+    int iPreSpeed = fuckTimer_GetZonePreSpeed(zone);
 
     if (fuckTimer_IsStartZone(zone, iBonus) && !fuckTimer_IsMiscZone(zone, iBonus))
     {
         SetClientStartValues(client, iBonus);
         Player[client].AllowPrestrafe(false);
+
+        if (iPreSpeed > 0 && fClientSpeed > view_as<float>(iPreSpeed))
+        {
+            SetClientSpeed(client, iPreSpeed);
+        }
 
         return;
     }
@@ -604,6 +611,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     
     if (Player[client].StageRunning && iStage > 0)
     {
+        if (iPreSpeed > 0 && fClientSpeed > view_as<float>(iPreSpeed))
+        {
+            SetClientSpeed(client, iPreSpeed);
+        }
+
         Player[client].Validator = 0;
         Player[client].SetSpeed = true;
 
