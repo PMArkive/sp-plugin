@@ -234,15 +234,7 @@ ListSharedLocations(int client)
     {
         g_alSharedLocations.GetArray(i, Location, sizeof(Location));
 
-        if (Location.Type == TimeCheckpoint)
-        {
-            FormatEx(sCSDetails, sizeof(sCSDetails), "Checkpoint %d: %.3f", Location.CSLevel, Location.CSTime);
-        }
-        else if (Location.Type == TimeStage)
-        {
-            FormatEx(sCSDetails, sizeof(sCSDetails), "Stage %d: %.3f", Location.CSLevel, Location.CSTime);
-        }
-        
+        FormatEx(sCSDetails, sizeof(sCSDetails), "%s %d: %.3f", (Location.Type == TimeCheckpoint) ? "Checkpoint" : "Stage", Location.CSLevel, Location.CSTime);
         FormatEx(sDisplay, sizeof(sDisplay), "Location #%d\nTime: %.3f\n%s", Location.Id, Location.Time, sCSDetails);
         IntToString(Location.Id, sId, sizeof(sId));
         menu.AddItem(sId, sDisplay);
