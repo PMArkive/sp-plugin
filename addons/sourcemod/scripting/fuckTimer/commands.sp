@@ -1729,10 +1729,10 @@ public Action Command_HUDCenterSpeedPosition(int client, int args)
         return Plugin_Handled;
     }
 
-    char sBuffer[12];
+    char sBuffer[33];
     fuckTimer_GetClientSetting(client, "HUDCenterSpeedPosition", sBuffer);
 
-    char sPrevPositions[2][4];
+    char sPrevPositions[2][16];
     ExplodeString(sBuffer, ";", sPrevPositions, sizeof(sPrevPositions), sizeof(sPrevPositions[]));
 
     if (args != 2)
