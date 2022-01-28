@@ -498,6 +498,12 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
     int iBonus = 0;
     float fClientSpeed = GetClientSpeed(client);
     int iPreSpeed = fuckTimer_GetZonePreSpeed(zone);
+    int iMaxSpeed = fuckTimer_GetZoneMaxSpeed(zone);
+
+    if (iMaxSpeed > 0 && fClientSpeed > view_as<float>(iMaxSpeed))
+    {
+        SetClientSpeed(client, iMaxSpeed);
+    }
 
     if (fuckTimer_IsStartZone(zone, iBonus) && !fuckTimer_IsMiscZone(zone, iBonus))
     {

@@ -64,6 +64,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetStageByIndex", Native_GetStageByIndex);
 
     CreateNative("fuckTimer_GetZonePreSpeed", Native_GetZonePreSpeed);
+    CreateNative("fuckTimer_GetZoneMaxSpeed", Native_GetZoneMaxSpeed);
     CreateNative("fuckTimer_GetMaxVelocity", Native_GetMaxVelocity);
 
     CreateNative("fuckTimer_GetZoneMapAuthor", Native_GetZoneMapAuthor);
@@ -205,6 +206,11 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     if (Zone[entity].PreSpeed == -1)
     {
         Zone[entity].PreSpeed = PRESPEED_LIMIT;
+    }
+
+    if (GetfuckTimerZoneValue(smEffects, "Speed", sValue, sizeof(sValue)))
+    {
+        Zone[entity].MaxSpeed = StringToInt(sValue);
     }
 
     GetfuckTimerZoneValue(smEffects, "MapAuthor", Zone[entity].MapAuthor, sizeof(ZoneDetails::MapAuthor));
@@ -524,6 +530,11 @@ public int Native_GetStageByIndex(Handle plugin, int numParams)
 public int Native_GetZonePreSpeed(Handle plugin, int numParams)
 {
     return Zone[GetNativeCell(1)].PreSpeed;
+}
+
+public int Native_GetZoneMaxSpeed(Handle plugin, int numParams)
+{
+    return Zone[GetNativeCell(1)].MaxSpeed;
 }
 
 public int Native_GetMaxVelocity(Handle plugin, int numParams)
