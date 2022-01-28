@@ -1770,11 +1770,11 @@ public Action Command_HUDCenterSpeedPosition(int client, int args)
 
     if (sAxis[0] == 'x')
     {
-        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", sPosition, sPrevPositions[1]);
+        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", (fPosition != -1.0) ? sPosition : "-1.0", sPrevPositions[1]);
     }
     else
     {
-        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", sPrevPositions[0], sPosition);
+        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", sPrevPositions[0], (fPosition != -1.0) ? sPosition : "0.6");
     }
 
     fuckTimer_SetClientSetting(client, "HUDCenterSpeedPosition", sBuffer);
