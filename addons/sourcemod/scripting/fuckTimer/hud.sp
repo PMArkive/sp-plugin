@@ -686,6 +686,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     RecordData recordPR;
     RecordData recordSR;
     eCompareAgainst eReturn = GetRecord(client, sStyle, iBonus, eAgainst, recordPR, recordSR);
+    PrintToChatAll("%N - eReturn: %d", client, eReturn);
 
     float fVelocity[3];
     GetClientVelocity(client, fVelocity);
@@ -1029,23 +1030,20 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
         }
         else if (against == CABoth)
         {
-            float fRecordSpeed = 0.0;
-            float fServerRecordSpeed = 0.0;
-            
             CSDetails recordDetailsPR;
             if (recordPR.Details != null)
             {
                 recordPR.Details.GetArray(level, recordDetailsPR, sizeof(recordDetailsPR));
-                fRecordSpeed = GetVelocitySpeed(startZone ? recordPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
             }
 
             CSDetails recordDetailsSR;
             if (recordSR.Details != null)
             {
                 recordSR.Details.GetArray(level, recordDetailsSR, sizeof(recordDetailsSR));
-                fServerRecordSpeed = GetVelocitySpeed(startZone ? recordSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
             }
 
+            float fRecordSpeed = GetVelocitySpeed(startZone ? recordPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
+            float fServerRecordSpeed = GetVelocitySpeed(startZone ? recordSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
 
             if (mode == CMFull)
             {
@@ -1220,8 +1218,8 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
         }
         else if (against == CABoth)
         {
-            float fRecordSpeed = 0.0;
-            float fServerRecordSpeed = 0.0;
+            float fRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordPR.StartVelocity : recordPR.EndVelocity, speed);
+            float fServerRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordSR.StartVelocity : recordSR.EndVelocity, speed);
 
             CSDetails recordDetailsPR;
             if (recordPR.Details != null)
