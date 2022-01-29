@@ -692,7 +692,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
 
     if (eLocation == CLChat || eLocation == CLBoth)
     {
-        CompareChat_LeaveZone(client, bStart, level, eReturn, recordPR, recordSR, bCheckpoint, fVelocity, eAgainst, eMode, eSpeed);
+        CompareChat_LeaveZone(client, bStart, iBonus, level, eReturn, recordPR, recordSR, bCheckpoint, fVelocity, eAgainst, eMode, eSpeed);
     }
 
     if (eLocation == CLHUD || eLocation == CLBoth)
@@ -714,7 +714,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
             return;
         }
         
-        CompareHUD_LeaveZone(client, level, bStart, fVelocity, record, eReturn, eMode, eSpeed);
+        CompareHUD_LeaveZone(client, iBonus, bStart, fVelocity, record, eReturn, eMode, eSpeed);
     }
 }
 
@@ -736,13 +736,13 @@ public void fuckTimer_OnClientZoneTouchStart(int client, bool stop, int bonus, T
     CSDetails detailsPR;
     if (recordPR.Details != null)
     {
-        recordPR.Details.GetArray(level, detailsPR, sizeof(detailsPR));
+        recordPR.Details.GetArray(bonus, detailsPR, sizeof(detailsPR));
     }
 
     CSDetails detailsSR;
     if (recordSR.Details != null)
     {
-        recordSR.Details.GetArray(level, detailsSR, sizeof(detailsSR));
+        recordSR.Details.GetArray(bonus, detailsSR, sizeof(detailsSR));
     }
 
     eCompareLocation eLocation = fuckTimer_GetClientCompareLocation(client);
@@ -970,7 +970,7 @@ void LoadPlayer(int client)
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetPlayerHudSettings, GetClientUserId(client));
 }
 
-void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgainst eReturn, RecordData recordPR, RecordData recordSR, bool isCheckpoint, float velocity[3], eCompareAgainst against, eCompareMode mode, eHUDSpeed speed)
+void CompareChat_LeaveZone(int client, bool startZone, int bonus, int level, eCompareAgainst eReturn, RecordData recordPR, RecordData recordSR, bool isCheckpoint, float velocity[3], eCompareAgainst against, eCompareMode mode, eHUDSpeed speed)
 {
     char sUnit[4];
     fuckTimer_GetClientSetting(client, "HUDShowSpeedUnit", sUnit);
@@ -1007,12 +1007,12 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
 
             if (against == CAPR)
             {
-                recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+                recordPR.Details.GetArray(bonus, recordDetails, sizeof(recordDetails));
                 record = recordPR;
             }
             else if (against == CASR)
             {
-                recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+                recordSR.Details.GetArray(bonus, recordDetails, sizeof(recordDetails));
                 record = recordSR;
             }
 
@@ -1035,14 +1035,14 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
             CSDetails recordDetailsPR;
             if (recordPR.Details != null)
             {
-                recordPR.Details.GetArray(level, recordDetailsPR, sizeof(recordDetailsPR));
+                recordPR.Details.GetArray(bonus, recordDetailsPR, sizeof(recordDetailsPR));
                 fRecordSpeed = GetVelocitySpeed(startZone ? recordPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
             }
 
             CSDetails recordDetailsSR;
             if (recordSR.Details != null)
             {
-                recordSR.Details.GetArray(level, recordDetailsSR, sizeof(recordDetailsSR));
+                recordSR.Details.GetArray(bonus, recordDetailsSR, sizeof(recordDetailsSR));
                 fServerRecordSpeed = GetVelocitySpeed(startZone ? recordSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
             }
 
@@ -1061,7 +1061,7 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
     CPrintToChat(client, "%s: %.0f%s%s", sType, fClientSpeed, (StringToBool(sUnit) ? " u/s" : ""), sSpeed);
 }
 
-void CompareHUD_LeaveZone(int client, int level, bool start, float velocity[3], RecordData record, eCompareAgainst eReturn, eCompareMode mode, eHUDSpeed speed)
+void CompareHUD_LeaveZone(int client, int bonus, bool start, float velocity[3], RecordData record, eCompareAgainst eReturn, eCompareMode mode, eHUDSpeed speed)
 {
     if (eReturn == CANONE || record.Time <= 0.0)
     {
@@ -1090,7 +1090,7 @@ void CompareHUD_LeaveZone(int client, int level, bool start, float velocity[3], 
             return;
         }
 
-        record.Details.GetArray(level, details, sizeof(details));
+        record.Details.GetArray(bonus, details, sizeof(details));
         fRecordSpeed = GetVelocitySpeed(details.StartVelocity, speed);
     }
 
@@ -1180,11 +1180,11 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
 
             if (against == CAPR)
             {
-                recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+                recordPR.Details.GetArray(bonus, recordDetails, sizeof(recordDetails));
             }
             else if (against == CASR)
             {
-                recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
+                recordSR.Details.GetArray(bonus, recordDetails, sizeof(recordDetails));
             }
 
             float fRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordDetails.StartVelocity : recordDetails.EndVelocity, speed);
@@ -1226,14 +1226,14 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
             CSDetails recordDetailsPR;
             if (recordPR.Details != null)
             {
-                recordPR.Details.GetArray(level, recordDetailsPR, sizeof(recordDetailsPR));
+                recordPR.Details.GetArray(bonus, recordDetailsPR, sizeof(recordDetailsPR));
                 fRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordDetailsPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
             }
 
             CSDetails recordDetailsSR;
             if (recordSR.Details != null)
             {
-                recordSR.Details.GetArray(level, recordDetailsSR, sizeof(recordDetailsSR));
+                recordSR.Details.GetArray(bonus, recordDetailsSR, sizeof(recordDetailsSR));
                 fServerRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordDetailsSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
             }
 
