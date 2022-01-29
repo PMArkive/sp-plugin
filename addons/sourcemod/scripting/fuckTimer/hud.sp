@@ -1005,12 +1005,12 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
             RecordData record;
             CSDetails recordDetails;
 
-            if (against == CAPR)
+            if (against == CAPR && recordPR.Details != null)
             {
                 recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
                 record = recordPR;
             }
-            else if (against == CASR)
+            else if (against == CASR && recordSR.Details != null)
             {
                 recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
                 record = recordSR;
@@ -1178,11 +1178,11 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
         {
             CSDetails recordDetails;
 
-            if (against == CAPR)
+            if (against == CAPR && recordPR.Details != null)
             {
                 recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
             }
-            else if (against == CASR)
+            else if (against == CASR && recordSR.Details != null)
             {
                 recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
             }
