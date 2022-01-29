@@ -305,7 +305,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetFloat("TimeInZone", details.TimeInZone);
                 jDetails.SetInt("Attempts", details.Attempts);
                 jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
-                jDetails.SetInt("Speed", details.Speed);
+                jDetails.SetInt("Speed", details.Speed / details.SpeedCount);
                 jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("StartPositionX", details.StartPosition[0]);
                 jDetails.SetFloat("StartPositionY", details.StartPosition[1]);
@@ -333,7 +333,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetInt("Checkpoint", iPoint);
                 jDetails.SetFloat("Time", details.Time);
                 jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
-                jDetails.SetInt("Speed", details.Speed);
+                jDetails.SetInt("Speed", details.Speed / details.SpeedCount);
                 jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("PositionX", details.StartPosition[0]);
                 jDetails.SetFloat("PositionY", details.StartPosition[1]);
@@ -357,7 +357,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     if (updatePlayer)
     {
-        PostPlayerRecord(client,firstRecord, jRecord, serverRecord, oldTime, smRecord);
+        PostPlayerRecord(client, firstRecord, jRecord, serverRecord, oldTime, smRecord);
         if (Player[client].Records[record.Style] == null)
         {
             Player[client].Records[record.Style] = new IntMap();
