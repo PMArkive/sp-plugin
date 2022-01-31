@@ -324,6 +324,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetInt("Checkpoint", iPoint);
                 jDetails.SetFloat("Time", details.Time);
                 jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
+                LogMessage("Checkpoint: %d, Sync: %.2f", iPoint, jDetails.GetFloat("Sync"));
                 jDetails.SetInt("Speed", details.Speed / details.SpeedCount);
                 jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("PositionX", details.StartPosition[0]);
