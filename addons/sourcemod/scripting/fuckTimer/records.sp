@@ -165,25 +165,16 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
         if (record.Time == 0.0 || fTime < record.Time)
         {
-            if (record.Time == 0.0)
+            if (!bServerRecord)
             {
-                CPrintToChatAll("%N finished this map first time!", client);
-                bFirstRecord = true;
+                CPrintToChatAll("%N has beaten his record!", client, record.PlayerName);
             }
             else
             {
-                if (!bServerRecord)
-                {
-                    CPrintToChatAll("%N has beaten his record!", client, record.PlayerName);
-                }
-                else
-                {
-                    CPrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
-                }
-
-                fOldTime = record.Time;
+                CPrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
             }
 
+            fOldTime = record.Time;
             bPlayerRecord = true;
         }
     }
