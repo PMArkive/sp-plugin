@@ -422,6 +422,11 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 
     Player[client].LastButtons = buttons;
 
+    if (!Player[client].MainRunning)
+    {
+        return Plugin_Continue;
+    }
+
     if (IsPlayerAlive(client))
     {
         if (Player[client].SetSpeed && !Player[client].Prestrafe)
