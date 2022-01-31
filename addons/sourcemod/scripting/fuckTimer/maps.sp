@@ -56,6 +56,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetCurrentMapTier", Native_GetCurrentMapTier);
     CreateNative("fuckTimer_GetCurrentMapStatus", Native_GetCurrentMapStatus);
 
+    CreateNative("fuckTimer_GetMapTier", Native_GetMapTier);
+
     CreateNative("fuckTimer_GetMapTiers", Native_GetMapTiers);
 
     RegPluginLibrary("fuckTimer_maps");
@@ -599,6 +601,29 @@ public int Native_GetCurrentMapTier(Handle plugin, int numParams)
 public any Native_GetCurrentMapStatus(Handle plugin, int numParams)
 {
     return Map.Status;
+}
+
+public int Native_GetMapTier(Handle plugin, int numParams)
+{
+    char sName[MAX_NAME_LENGTH];
+    GetNativeString(1, sName, sizeof(sName));
+
+    int iTier = -1;
+    char sMap[MAX_NAME_LENGTH];
+    StringMapSnapshot snap = Core.MapTiers.Snapshot();
+
+    for (int i = 0; i < snap.Length; i++)
+    {
+        snap.GetKey(i, sMap, sizeof(sMap));
+
+        if (StrContains(sMap, sName, false) != -1)
+        {
+            Core.MapTiers.GetValue(sMap, iTier);
+            break;
+        }
+    }
+
+    return iTier;
 }
 
 public any Native_GetMapTiers(Handle plugin, int numParams)
