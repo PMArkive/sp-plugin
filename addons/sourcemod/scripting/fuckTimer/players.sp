@@ -465,6 +465,8 @@ void UpdatePlayer(int client, bool reset = false)
     jPlayer.SetString("LastIP", sBuffer);
 
     jPlayer.SetInt("Status", view_as<int>(Player[client].Status));
+    
+    LogStackTrace("Status set to %d (%d)", Player[client].Status, jPlayer.GetInt("Status"));
 
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(jPlayer, UpdatePlayerData);
 
