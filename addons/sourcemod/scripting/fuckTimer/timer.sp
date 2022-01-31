@@ -821,7 +821,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         map.SetValue("TimeInZone", Player[client].TimeInZone);
         map.SetValue("Attempts", Player[client].Attempts);
         map.SetValue("Sync", fuckTimer_GetClientSync(client, Player[client].Bonus));
-        map.SetValue("Speed", Player[client].Speed);
+        map.SetValue("Speed", Player[client].Speed / Player[client].SpeedCount);
         map.SetValue("Jumps", Player[client].Jumps);
         map.SetArray("StartPosition", Player[client].StartPosition, 3);
         map.SetArray("StartAngle", Player[client].StartAngle, 3);
