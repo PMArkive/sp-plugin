@@ -323,10 +323,22 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails = new JSONObject();
                 jDetails.SetInt("Checkpoint", iPoint);
                 jDetails.SetFloat("Time", details.Time);
-                jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
-                LogMessage("Checkpoint: %d, Sync: %.2f", iPoint, jDetails.GetFloat("Sync"));
-                jDetails.SetInt("Speed", details.Speed / details.SpeedCount);
-                jDetails.SetInt("Jumps", details.Jumps);
+
+                if (iPoint > 0)
+                {
+                    jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
+                    jDetails.SetInt("Speed", details.Speed / details.SpeedCount);
+                    jDetails.SetInt("Jumps", details.Jumps);
+
+                    LogMessage("Speed: %d", jDetails.GetInt("Speed"));
+                }
+                else
+                {
+                    jDetails.SetFloat("Sync", 0.0);
+                    jDetails.SetInt("Speed", 0);
+                    jDetails.SetInt("Jumps", 0);
+                }
+                
                 jDetails.SetFloat("PositionX", details.StartPosition[0]);
                 jDetails.SetFloat("PositionY", details.StartPosition[1]);
                 jDetails.SetFloat("PositionZ", details.StartPosition[2]);
