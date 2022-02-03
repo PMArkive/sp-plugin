@@ -1083,10 +1083,15 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Call_PushCell(TimeCheckpoint);
         Call_PushCell(Player[client].Checkpoint);
     }
-    if (Player[client].StageRunning)
+    else if (Player[client].StageRunning)
     {
         Call_PushCell(TimeStage);
         Call_PushCell(Player[client].Stage);
+    }
+    else
+    {
+        Call_PushCell(TimeMain);
+        Call_PushCell(0);
     }
 
     Call_Finish();
