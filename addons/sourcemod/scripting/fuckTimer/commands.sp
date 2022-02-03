@@ -291,6 +291,11 @@ public Action Command_RestartStage(int client, int args)
         iZone = fuckTimer_GetStartZone(iBonus);
         iLevel = 0;
     }
+    else
+    {
+        CallOnClientCommand(client, 0, true);
+        ClientRestart(client);
+    }
 
     if (iZone > 0)
     {
