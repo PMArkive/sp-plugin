@@ -104,11 +104,11 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
 
         switch (sType[0])
         {
-            case 'C':
+            case 'C', 'c':
             {
                 record.Type = TimeCheckpoint;
             }
-            case 'S':
+            case 'S', 's':
             {
                 record.Type = TimeStage;
             }

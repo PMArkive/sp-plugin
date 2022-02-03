@@ -286,7 +286,7 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
             switch (sKey[0])
             {
-                case 'B':
+                case 'B', 'b':
                 {
                     smValues.GetString(sKey, sValue, sizeof(sValue));
 
@@ -298,7 +298,7 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
                     }
                 }
 
-                case 'S':
+                case 'S', 's':
                 {
                     if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
                     {
@@ -315,7 +315,7 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
                     }
                 }
 
-                case 'C':
+                case 'C', 'c':
                 {
                     if (GetfuckTimerZoneValue(smEffects, "Bonus", sValue, sizeof(sValue)))
                     {
