@@ -410,7 +410,7 @@ public void OnGameFrame()
             fuckTimer_IsCheckerZone(Player[client].LastZone, iTemp, iValidator);
         }
 
-        if (imStages.GetInt(iBonus) > 0)
+        if (imStages.GetInt(iBonus) > 1)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
 
@@ -436,11 +436,11 @@ public void OnGameFrame()
             }
             
 
-            FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 0 ? "B-" : "", iStage, imStages.GetInt(iBonus));
+            FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 1 ? "B-" : "", iStage, imStages.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
             imBuffer.SetString(HKMapType, sBuffer);
         }
-        else if (imCheckpoints.GetInt(iBonus) > 0)
+        else if (imCheckpoints.GetInt(iBonus) > 1)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
 
@@ -457,10 +457,10 @@ public void OnGameFrame()
                 imBuffer.SetString(HKCSTime, sBuffer);
             } 
 
-            FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 0 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
+            FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 1 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
 
-            FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 0 ? "Bonus" : "Map");
+            FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 1 ? "Bonus" : "Map");
             imBuffer.SetString(HKMapType, sBuffer);
         }
         else
@@ -637,7 +637,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     
-    if (iStage > 0)
+    if (iStage > 1)
     {
         FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Stage %d%s%s", iStage, bStart ? " Start" : "", bEnd ? " End" : "");
     }
