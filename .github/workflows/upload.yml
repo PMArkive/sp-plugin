@@ -76,8 +76,32 @@ jobs:
           mkdir package
           mv ./{addons,cfg,LICENSE,README.md} package
 
-      - name: Create archive
+      - name: Create artifact
         uses: actions/upload-artifact@v2
         with:
           name: fuckTimer.${{ steps.get_branch_name.outputs.branch }}.${{ env.COMMIT }}.${{ env.SHORT_SHA }}.SM${{ matrix.SM_VERSION }}
           path: package
+
+      - name: Remove default plugin configs
+        run: rm -r package/cfg/fuckTimer
+
+      - name: Upload package to test server
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        env:
+          FTP_SERVER: ${{ secrets.SFTP_HOST }}
+          FTP_USERNAME: ${{ secrets.SFTP_USER }}
+          FTP_PASSWORD: ${{ secrets.SFTP_PASS }}
+          LOCAL_DIR: package
+          METHOD: sftp
+          PORT: ${{ secrets.SFTP_PORT }}
+          ARGS: --no-empty-dirs
+
+      - name: Trigger server restart
+        shell: bash
+        run: |
+          curl --request POST \
+            --url ${{ secrets.BASE_URL }}api/client/servers/${{ secrets.SERVER_ID }}/power \
+            --header 'Accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.API_KEY }}' \
+            --header 'Content-Type: application/json' \
+            --data '{ "signal": "restart" }'
