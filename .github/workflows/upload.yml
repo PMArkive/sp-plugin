@@ -121,5 +121,5 @@ jobs:
             -H "Content-Type:application/json" \
             -X POST \
             --data "{\"content\": \"Test Server has been restarted\"}" \
-            https://discord.com/api/webhooks/942867946005491792/d9f6Fbcv_yuhm2XIBL9o06ew2Me-_mp3FFPN70g2ZP26TxZK7LfqX6GwyCVJcJF7QX18
+            ${{ secrets.WEBHOOK_URL }}
 
