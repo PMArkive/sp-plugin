@@ -82,9 +82,13 @@ jobs:
           name: fuckTimer.${{ steps.get_branch_name.outputs.branch }}.${{ env.COMMIT }}.${{ env.SHORT_SHA }}.SM${{ matrix.SM_VERSION }}
           path: package
 
-      - name: Remove default plugin configs
+      - name: Re/move files
         if: matrix.SM_VERSION == '1.11'
-        run: rm -r package/cfg/fuckTimer
+        run: |
+          rm -r package/cfg/fuckTimer
+          rm package/{LICENSE,README.md}
+          mkdir -p package/csgo
+          mv package/{addons,cfg} package/csgo
 
       - name: Upload package to test server
         if: matrix.SM_VERSION == '1.11'
