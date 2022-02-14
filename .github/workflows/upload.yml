@@ -112,3 +112,14 @@ jobs:
             --header 'Authorization: Bearer ${{ secrets.API_KEY }}' \
             --header 'Content-Type: application/json' \
             --data '{ "signal": "restart" }'
+
+      - name: Post restart message on discord
+        if: matrix.SM_VERSION == '1.11'
+        run: |
+          curl -i \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -X POST \
+            --data "{\"content\": \"Test Server has been restarted\"}" \
+            https://discord.com/api/webhooks/942867946005491792/d9f6Fbcv_yuhm2XIBL9o06ew2Me-_mp3FFPN70g2ZP26TxZK7LfqX6GwyCVJcJF7QX18
+
