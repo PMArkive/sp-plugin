@@ -881,6 +881,14 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     if (iStage > 0)
     {
         Player[client].Stage = iStage;
+
+        int iPreSpeed = fuckTimer_GetZonePreSpeed(zone);
+        float fClientSpeed = GetClientSpeed(client);
+    
+        if (iPreSpeed > 0 && fClientSpeed > view_as<float>(iPreSpeed))
+        {
+            SetClientSpeed(client, iPreSpeed);
+        }
     }
 
     if (bEnd)
