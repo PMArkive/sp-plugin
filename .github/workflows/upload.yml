@@ -83,9 +83,11 @@ jobs:
           path: package
 
       - name: Remove default plugin configs
+        if: matrix.SM_VERSION == '1.11'
         run: rm -r package/cfg/fuckTimer
 
       - name: Upload package to test server
+        if: matrix.SM_VERSION == '1.11'
         uses: SamKirkland/FTP-Deploy-Action@2.0.0
         env:
           FTP_SERVER: ${{ secrets.SFTP_HOST }}
@@ -97,6 +99,7 @@ jobs:
           ARGS: --no-empty-dirs
 
       - name: Trigger server restart
+        if: matrix.SM_VERSION == '1.11'
         shell: bash
         run: |
           curl --request POST \
