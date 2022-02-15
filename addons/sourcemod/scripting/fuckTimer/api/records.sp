@@ -259,6 +259,7 @@ void PostPlayerRecord(int client, bool firstRecord, JSONObject record, bool serv
     pack.WriteCell(view_as<int>(serverRecord));
     pack.WriteFloat(oldTime);
     pack.WriteCell(view_as<int>(smRecord));
+    pack.WriteCell(view_as<int>(firstRecord));
 
     if (firstRecord)
     {
@@ -284,7 +285,26 @@ void PostPlayerRecord(int client, bool firstRecord, JSONObject record, bool serv
 
 public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
 {
-    if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_Created)
+    if (response.Status == HTTPStatus_InternalServerError)
+    {
+        LogError("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
+
+        pack.Reset();
+        int client = GetClientOfUserId(pack.ReadCell());
+        pack.ReadCell();  // serverRecord
+        pack.ReadFloat(); // oldTime
+        pack.ReadCell();  // smRecord
+        bool bPost = view_as<bool>(pack.ReadCell());
+
+        if (client > 0)
+        {
+            CPrintToChat(client, "Something went wrong while %s record. Status Code: %d, Error: %s", (bPost) ? "posting" : "putting", response.Status, error);
+        }
+
+        delete pack;
+        return;
+    }
+    else if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_Created)
     {
         SetFailState("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
         delete pack;
