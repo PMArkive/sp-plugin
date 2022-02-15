@@ -29,6 +29,7 @@ jobs:
           echo "SHORT_SHA=$(git describe --always --long --dirty)" >> $GITHUB_ENV
 
           SOURCEMOD_PATH=$GITHUB_WORKSPACE/addons/sourcemod
+          echo "DATE_TIME=$(date +'%H:%i:%s %d-%m-%Y')" >> $GITHUB_ENV
           echo "SOURCEMOD_PATH=$SOURCEMOD_PATH" >> $GITHUB_ENV
           echo "PLUGINS_PATH=$SOURCEMOD_PATH/plugins" >> $GITHUB_ENV
           echo "GAMEDATA_PATH=$SOURCEMOD_PATH/gamedata" >> $GITHUB_ENV
@@ -120,6 +121,6 @@ jobs:
             -H "Accept: application/json" \
             -H "Content-Type:application/json" \
             -X POST \
-            --data "{\"content\": \"Test Server has been restarted\"}" \
+            --data "{\"content\": \"Test Server has been restarted.\n${{ env.DATE_TIME }}\nBranch: ${{ steps.get_branch_name.outputs.branch }}\nCommit: ${{ env.COMMIT }}\nSHA: ${{ env.SHORT_SHA }}\nSM-Version: ${{ matrix.SM_VERSION }}\"}" \
             ${{ secrets.WEBHOOK_URL }}
 
