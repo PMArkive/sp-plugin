@@ -121,6 +121,6 @@ jobs:
             -H "Accept: application/json" \
             -H "Content-Type:application/json" \
             -X POST \
-            --data "{\"content\": \"Test Server has been restarted.\n\n**Time:** ${{ env.DATE_TIME }}\n**Branch:** ${{ steps.get_branch_name.outputs.branch }}\n**Commit:** ${{ env.COMMIT }}\n**SHA:** ${{ env.SHORT_SHA }}\n**SourceMod:** ${{ matrix.SM_VERSION }}\"}" \
+            --data "{\"content\": \"Test Server has been restarted.\n\n**Time:** ${{ env.DATE_TIME }}\n**Branch:** ${{ steps.get_branch_name.outputs.branch }}\n**Commit:** ${{ env.COMMIT }}\n**Message:** ${{ github.event.head_commit.message }}\nAuthor: ${{ github.event.head_commit.author.name }}\n**SHA:** ${{ env.SHORT_SHA }}\n**SourceMod:** ${{ matrix.SM_VERSION }}\"}" \
             ${{ secrets.WEBHOOK_URL }}
 
