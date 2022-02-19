@@ -208,6 +208,8 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
 
         if (client > 0)
         {
+            PrintDebug(client, "[Records.API.Line%d] Player: \"%N\", MapId: %d, PlayerId: %d, StyleId: %d, Level: %d", __LINE__, client, jMainRecord.GetInt("MapId"), record.PlayerId, record.Style, record.Level);
+
             if (Player[client].Records[record.Style] == null)
             {
                 Player[client].Records[record.Style] = new IntMap();
