@@ -287,14 +287,14 @@ public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
 {
     if (response.Status == HTTPStatus_InternalServerError)
     {
-        LogError("[Records.SendRecord] Something went wrong. Status Code: %d, Error: %s", response.Status, error);
-
         pack.Reset();
         int client = GetClientOfUserId(pack.ReadCell());
         pack.ReadCell();  // serverRecord
         pack.ReadFloat(); // oldTime
         pack.ReadCell();  // smRecord
         bool bPost = view_as<bool>(pack.ReadCell());
+
+        LogError("[Records.SendRecord] Something went wrong. Status Code: %d (%s request), Error: %s", (bPost) ? "POST" : "PUT", response.Status, error);
 
         if (client > 0)
         {
