@@ -240,3 +240,12 @@ stock bool StringToBool(const char[] value)
 {
     return view_as<bool>(StringToInt(value));
 }
+
+stock void PrintDebug(int client, const char[] message, any ...)
+{
+    char buffer[1024];
+    VFormat(buffer, sizeof(buffer), message, 3);
+
+    LogMessage(buffer);
+    PrintToChat(client, buffer);
+}

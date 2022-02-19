@@ -835,6 +835,8 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         map.SetArray("EndAngle", Player[client].EndAngle, 3);
         map.SetArray("EndVelocity", Player[client].EndVelocity, 3);
 
+        PrintDebug(client, "[Timer.Line%d] Player: \"%N\", MapId: %d, PlayerId: %d, StyleId: %d, Level: %d", __LINE__, client, fuckTimer_GetCurrentMapId(), GetSteamAccountID(client), style, Player[client].Bonus);
+
         Call_StartForward(Core.OnClientTimerEnd);
         Call_PushCell(client);
         Call_PushCell(view_as<int>(map));

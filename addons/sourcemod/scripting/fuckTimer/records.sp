@@ -185,6 +185,16 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         bPlayerRecord = true;
     }
 
+    if (client > 0)
+    {
+        int iMapId;
+        smRecord.GetValue("MapId", iMapId);
+
+        int iPlayerId;
+        smRecord.GetValue("PlayerId", iPlayerId);
+        PrintDebug(client, "[Records.Line%d] Player: \"%N\", MapId: %d, PlayerId: %d, StyleId: %d, Level: %d, firstRecord: %d", __LINE__, client, iMapId, iPlayerId, iStyle, iLevel, bFirstRecord);
+    }
+
     if (bServerRecord)
     {
         UpdateRecord(smRecord, false, .serverRecord=true, .oldTime=fOldTime);
@@ -361,13 +371,19 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     if (updatePlayer)
     {
-        PostPlayerRecord(client, firstRecord, jRecord, serverRecord, oldTime, smRecord);
+        PrintDebug(client, "[Records.Line%d] Player: \"%N\", MapId: %d, PlayerId: %d, StyleId: %d, Level: %d, firstRecord: %d", __LINE__, client, jRecord.GetInt("MapId"), jRecord.GetInt("PlayerId"), jRecord.GetInt("StyleId"), jRecord.GetInt("Level"), firstRecord);
+    }
+
+    if (updatePlayer)
+    {
         if (Player[client].Records[record.Style] == null)
         {
             Player[client].Records[record.Style] = new IntMap();
         }
 
         Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
+
+        PostPlayerRecord(client, firstRecord, jRecord, serverRecord, oldTime, smRecord);
     }
     else
     {
