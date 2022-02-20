@@ -168,26 +168,6 @@ void DownloadZoneFile()
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon", sMap);
 
-    if (FileExists(sFile))
-    {
-        if (FileSize(sFile) > 16)
-        {
-            LogMessage("[Maps.DownloadZoneFile] %s.zon already exist.", sMap);
-            CallZoneDownload(sMap, true);
-
-            char sEndpoint[MAX_URL_LENGTH];
-            FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", sMap);
-            fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetMap);
-
-            DownloadStripperGlobal(sMap);
-            return;
-        }
-        else
-        {
-            DeleteFile(sFile);
-        }
-    }
-
     int iTier = 0;
     Core.MapTiers.GetValue(sMap, iTier);
 
@@ -197,13 +177,105 @@ void DownloadZoneFile()
         return;
     }
     
-    char sEndpoint[128];
+    char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "zones/main/files/Tier%d/%s.zon", iTier, sMap);
+
+    if (FileExists(sFile))
+    {
+        if (FileSize(sFile) > 16)
+        {
+            LogMessage("[Maps.DownloadZoneFile] %s.zon already exist. Lets check the local and cloud zone file version...", sMap);
+
+            int iLocalVersion = GetVersion(sMap);
+
+            DataPack pack = new DataPack();
+            pack.WriteString(sMap);
+            pack.WriteCell(iLocalVersion);
+            pack.WriteString(sEndpoint);
+            pack.WriteString(sFile);
+
+            Format(sFile, sizeof(sFile), "%s.tmp", sFile);
+            fuckTimer_NewCloudHTTPRequest(sEndpoint).DownloadFile(sFile, CompareVersions, pack);
+            return;
+        }
+        else
+        {
+            DeleteFile(sFile);
+        }
+    }
 
     DataPack pack = new DataPack();
     pack.WriteString(sMap);
 
     fuckTimer_NewCloudHTTPRequest(sEndpoint).DownloadFile(sFile, OnZoneDownload, pack);
+}
+
+public void CompareVersions(HTTPStatus status, DataPack pack, const char[] error)
+{
+    if (status != HTTPStatus_OK)
+    {
+        SetFailState("[Maps.CompareVersions] Error while comparing versions. Status Code: %d", status);
+        delete pack;
+        return;
+    }
+
+    LogMessage("[Maps.CompareVersions] Success. Status Code: %d", status);
+
+    pack.Reset();
+    char sMap[MAX_NAME_LENGTH];
+    pack.ReadString(sMap, sizeof(sMap));
+
+    int iLocalVersion = pack.ReadCell();
+
+    char sEndpoint[MAX_URL_LENGTH];
+    pack.ReadString(sEndpoint, sizeof(sEndpoint));
+
+    char sFile[PLATFORM_MAX_PATH + 1];
+    pack.ReadString(sFile, sizeof(sFile));
+    delete pack;
+
+    int iCloudVersion = GetVersion(sMap, true);
+
+    if (iCloudVersion < 1)
+    {
+        iCloudVersion = iLocalVersion;
+    }
+
+    LogMessage("[Maps.CompareVersions] Local Version: %d, Cloud Version: %d", iLocalVersion, iCloudVersion);
+
+    if (iLocalVersion >= iCloudVersion)
+    {
+        LogMessage("[Maps.CompareVersions] Your zone file is %s.", (iLocalVersion > iCloudVersion) ? "newer" : "up to date");
+
+        CallZoneDownload(sMap, true);
+
+        FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", sMap);
+        fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetMap);
+
+        DownloadStripperGlobal(sMap);
+    }
+    else
+    {
+        LogMessage("[Maps.CompareVersions] Your zone file is out of date. Replacing with newer version...");
+
+        DeleteFile(sFile);
+
+        char sTemp[PLATFORM_MAX_PATH + 1];
+        FormatEx(sTemp, sizeof(sTemp), "%s.tmp", sFile);
+        bool success = RenameFile(sFile, sTemp);
+
+        if (success)
+        {
+            LogMessage("[Maps.CompareVersions] Zone file has been updated.");
+        }
+
+        CallZoneDownload(sMap, true);
+
+        FormatEx(sEndpoint, sizeof(sEndpoint), "Map/Name/%s", sMap);
+        fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetMap);
+
+        DownloadStripperGlobal(sMap);
+    }
 }
 
 public void OnZoneDownload(HTTPStatus status, DataPack pack, const char[] error)
@@ -454,7 +526,7 @@ void DownloadStripperMap(const char[] map)
         return;
     }
 
-    char sEndpoint[128];
+    char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "stripper/main/files/%s.cfg", map);
 
     DataPack dpPack = new DataPack();
@@ -522,7 +594,6 @@ void CheckStatus(const char[] map)
 
     Call_StartForward(Core.OnMapDataLoaded);
     Call_Finish();
-    LogStackTrace("1");
 }
 
 void CallZoneDownload(const char[] map, bool success)
@@ -531,6 +602,56 @@ void CallZoneDownload(const char[] map, bool success)
     Call_PushString(map);
     Call_PushCell(success);
     Call_Finish();
+}
+
+int GetVersion(const char[] map, bool fromTemp = false)
+{
+    char sFile[PLATFORM_MAX_PATH + 1];
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/zones/%s.zon%s", map, fromTemp ? ".tmp" : "");
+
+    if (!FileExists(sFile))
+    {
+        return 0;
+    }
+
+    KeyValues kv = new KeyValues("zones");
+
+    if (!kv.ImportFromFile(sFile))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetVersion] Can not data read from file.");
+        return 0;
+    }
+
+    if (!kv.JumpToKey("main0_start"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetVersion] Can not find \"main0_start\" zone.");
+        return 0;
+    }
+
+    if (!kv.JumpToKey("effects"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetVersion] Can not find \"effects\" key.");
+        return 0;
+    }
+
+    if (!kv.JumpToKey("fuckTimer"))
+    {
+        delete kv;
+        
+        SetFailState("[Maps.GetVersion] Can not find \"fuckTimer\" effect.");
+        return 0;
+    }
+
+    int iVersion = kv.GetNum("Version", 1);
+
+    delete kv;
+    return iVersion;
 }
 
 void GetAuthor(const char[] map, bool mapAuthor, char[] author, int maxlen)
