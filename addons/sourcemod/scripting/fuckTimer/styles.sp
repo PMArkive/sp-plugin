@@ -3,6 +3,7 @@
 
 #include <sourcemod>
 #include <fuckTimer_stocks>
+#include <fuckTimer_styles>
 #include <fuckTimer_api>
 
 enum struct PluginData

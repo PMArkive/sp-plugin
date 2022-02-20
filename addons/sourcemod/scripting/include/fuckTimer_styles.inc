@@ -21,17 +21,6 @@ enum struct Style {
     StyleStatus Status;
 }
 
-enum Styles {
-    StyleNone = 0,
-    StyleNormal,
-    StyleSideways,
-    StyleHSW,
-    StyleBackwards,
-    StyleLowGravity,
-    StyleSlowMotion,
-    StylePractice
-}
-
 forward void fuckTimer_OnStylesLoaded();
 
 native IntMap fuckTimer_GetStyles();

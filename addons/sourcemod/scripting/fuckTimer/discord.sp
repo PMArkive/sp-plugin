@@ -6,6 +6,7 @@
 #include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_records>
+#include <fuckTimer_hud>
 
 enum struct PluginData
 {

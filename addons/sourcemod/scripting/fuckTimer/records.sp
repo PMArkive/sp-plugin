@@ -5,6 +5,7 @@
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
 #include <fuckTimer_maps>
+#include <fuckTimer_styles>
 #include <fuckTimer_timer>
 
 enum struct PluginData

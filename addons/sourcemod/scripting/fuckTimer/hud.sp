@@ -5,6 +5,8 @@
 #include <fuckZones>
 #include <fuckTimer_api>
 #include <fuckTimer_stocks>
+#include <fuckTimer_hud>
+#include <fuckTimer_timer>
 #include <fuckTimer_maps>
 #include <fuckTimer_zones>
 #include <fuckTimer_records>

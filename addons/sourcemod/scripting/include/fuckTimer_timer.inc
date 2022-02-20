@@ -7,13 +7,6 @@
 #define OFFSET_END 1
 #define OFFSET_MAX 2
 
-enum TimeType
-{
-    TimeMain = 0,
-    TimeCheckpoint,
-    TimeStage
-};
-
 enum struct CSDetails
 {
     float Time;
