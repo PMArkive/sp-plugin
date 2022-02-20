@@ -232,6 +232,8 @@ public void CompareVersions(HTTPStatus status, DataPack pack, const char[] error
 
     char sFile[PLATFORM_MAX_PATH + 1];
     pack.ReadString(sFile, sizeof(sFile));
+    char sTemp[PLATFORM_MAX_PATH + 1];
+    FormatEx(sTemp, sizeof(sTemp), "%s.tmp", sFile);
     delete pack;
 
     int iCloudVersion = GetVersion(sMap, true);
@@ -246,6 +248,7 @@ public void CompareVersions(HTTPStatus status, DataPack pack, const char[] error
     if (iLocalVersion >= iCloudVersion)
     {
         LogMessage("[Maps.CompareVersions] Your zone file is %s.", (iLocalVersion > iCloudVersion) ? "newer" : "up to date");
+        DeleteFile(sTemp);
 
         CallZoneDownload(sMap, true);
 
@@ -259,9 +262,6 @@ public void CompareVersions(HTTPStatus status, DataPack pack, const char[] error
         LogMessage("[Maps.CompareVersions] Your zone file is out of date. Replacing with newer version...");
 
         DeleteFile(sFile);
-
-        char sTemp[PLATFORM_MAX_PATH + 1];
-        FormatEx(sTemp, sizeof(sTemp), "%s.tmp", sFile);
         bool success = RenameFile(sFile, sTemp);
 
         if (success)
