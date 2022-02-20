@@ -251,10 +251,14 @@ public Action Timer_CallForward(Handle timer, DataPack pack)
 
 void PostPlayerRecord(int client, bool firstRecord, JSONObject record, bool serverRecord, float oldTime, StringMap smRecord)
 {
-    // TODO: For debugging
+    // TODO
+    // Start debug
+    int iTime = GetTime();
     char sFile[PLATFORM_MAX_PATH + 1];
-    BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s.txt", firstRecord ? "post" : "put");
+    BuildPath(Path_SM, sFile, sizeof(sFile), "data/fucktimer/record_%s-request_%d_%d_%d.txt", firstRecord ? "post" : "put", iTime, record.GetInt("MapId"), record.GetInt("PlayerId"));
+    PrintDebug(client, "[Records.API.Line%d] JSON Record data will dumped into this file: %s", __LINE__, sFile);
     record.ToFile(sFile, 0x1F);
+    // End Debug
 
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(client));
