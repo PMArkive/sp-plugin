@@ -247,6 +247,7 @@ public void fuckZones_OnEffectsReady()
 {
     fuckZones_RegisterEffect(FUCKTIMER_EFFECT_NAME, OneZoneStartTouch, OnZoneTouch, OnZoneEndTouch);
 
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Version", "1");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Tier", "0");
 
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Start", "0");
