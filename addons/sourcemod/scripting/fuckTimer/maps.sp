@@ -212,11 +212,11 @@ void DownloadZoneFile()
 
 public void CompareVersions(HTTPStatus status, DataPack pack, const char[] error)
 {
+    bool bError = false;
     if (status != HTTPStatus_OK)
     {
-        SetFailState("[Maps.CompareVersions] Error while comparing versions. Status Code: %d", status);
-        delete pack;
-        return;
+        LogError("[Maps.CompareVersions] Error while comparing versions. Status Code: %d", status);
+        bError = true;
     }
 
     LogMessage("[Maps.CompareVersions] Success. Status Code: %d", status);
@@ -236,7 +236,7 @@ public void CompareVersions(HTTPStatus status, DataPack pack, const char[] error
     FormatEx(sTemp, sizeof(sTemp), "%s.tmp", sFile);
     delete pack;
 
-    int iCloudVersion = GetVersion(sMap, true);
+    int iCloudVersion = (!bError) ? GetVersion(sMap, true) : 0;
 
     if (iCloudVersion < 1)
     {
