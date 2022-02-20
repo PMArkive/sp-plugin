@@ -1,6 +1,6 @@
 # sp-plugin
 
-Installation:
+### Installation:
 - Add all required extensions and plugins
 - Get latest artifact from [here](https://github.com/fuckTimer/sp-plugin/actions)
 - Upload all directories from the package folder
@@ -8,7 +8,7 @@ Installation:
 - Set your API url and key in `cfg/fuckTimer/api.cfg`
 - Optional: Edit/Adjust the other fuckTimer config values
 
-Requirements:
+### Requirements:
 - [MetaMod 1.11 (or higher)](https://www.sourcemm.net/downloads.php?branch=stable)
 - [SourceMod 1.11 (or higher)](http://www.sourcemod.net/downloads.php?branch=dev)
 - [Stripper 1.2.2-git129 (or higher)](http://www.bailopan.net/stripper/snapshots/1.2/)
@@ -18,7 +18,7 @@ Requirements:
 - [Running PHP-API](https://github.com/fuckTimer/php-api) (php-testapi is for testing purpose, so usage at your own risk.)
 - [EndTouchFix](https://github.com/rumourA/End-Touch-Fix/blob/master/scripting/EndTouchFix.sp) - Need to be compiled
 
-Fixes:
+### Fixes:
 - [Remove Hint Dollar](https://forums.alliedmods.net/showthread.php?p=2760175)
 - [MomSurfFix](https://forums.alliedmods.net/showthread.php?t=320971)
 - [RNGFix](https://forums.alliedmods.net/showthread.php?t=310825)
@@ -27,7 +27,7 @@ Fixes:
 - [PushFixDE](https://github.com/GAMMACASE/PushFixDE)
 - [HeadBugFix](https://github.com/GAMMACASE/HeadBugFix)
 
-Optional:
+### Optional:
 - [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)
 - [Example (surf/round) settings](https://github.com/fuckTimer/sp-plugin/blob/main/cfg/fuckTimer.cfg)
 - [Auto Assign Team](https://forums.alliedmods.net/showthread.php?p=2682718) Note: This spawns the player after grace time end
