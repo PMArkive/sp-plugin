@@ -270,6 +270,12 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
     StringMap smValues;
     smEffects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
 
+    if (smValues == null)
+    {
+        LogError("No zone effects found for \"%s\".", zone_name);
+        return;
+    }
+
     StringMapSnapshot snap = smValues.Snapshot();
 
     char sKey[MAX_KEY_NAME_LENGTH];

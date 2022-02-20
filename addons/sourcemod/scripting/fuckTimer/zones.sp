@@ -127,7 +127,14 @@ public void fuckZones_OnZoneCreate(int entity, const char[] zone_name, int type)
 
     char sValue[12];
 
-    GetfuckTimerZoneValue(smEffects, "Start", sValue, sizeof(sValue));
+    int iReturn = GetfuckTimerZoneValue(smEffects, "Start", sValue, sizeof(sValue));
+
+    if (iReturn == -1)
+    {
+        LogError("No zone effects found for \"%s\".", zone_name);
+        return;
+    }
+
     Zone[entity].Start = StringToBool(sValue);
 
     GetfuckTimerZoneValue(smEffects, "End", sValue, sizeof(sValue));

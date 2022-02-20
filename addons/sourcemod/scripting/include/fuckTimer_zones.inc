@@ -150,10 +150,15 @@ native void fuckTimer_GetZoneZoneAuthor(int zone, char[] author, int maxlen);
 native bool fuckTimer_GetZoneTeleportCoords(int zone, float origin[3], float angles[3]);
 native void fuckTimer_TeleportEntityToZone(int client, int zone);
 
-stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
+stock int GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] value, int length)
 {
     StringMap smValues;
     effects.GetValue(FUCKTIMER_EFFECT_NAME, smValues);
+
+    if (smValues == null)
+    {
+        return -1;
+    }
 
     char sKey[MAX_KEY_NAME_LENGTH];
     StringMapSnapshot keys = smValues.Snapshot();
@@ -167,12 +172,12 @@ stock bool GetfuckTimerZoneValue(StringMap effects, const char[] key, char[] val
             smValues.GetString(sKey, value, length);
 
             delete keys;
-            return true;
+            return 1;
         }
     }
 
     delete keys;
-    return false;
+    return 0;
 }
 
 #if !defined REQUIRE_PLUGIN
