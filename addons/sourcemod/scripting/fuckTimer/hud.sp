@@ -72,6 +72,8 @@ enum struct PluginData
 
     char Title[32];
 
+    IntMap Checkpoints;
+    IntMap Stages;
     IntMap MapRecordDetails[MAX_STYLES + 1];
 }
 PluginData Core;
@@ -199,13 +201,16 @@ public void OnGameFrame()
     float fTime = 0.0;
     int iMaxBonus = fuckTimer_GetAmountOfBonus();
 
-    IntMap imCheckpoints = new IntMap();
-    IntMap imStages = new IntMap();
-
-    for (int i = 0; i <= iMaxBonus; i++)
+    if (Core.Checkpoints == null)
     {
-        imCheckpoints.SetValue(i, fuckTimer_GetAmountOfCheckpoints(i));
-        imStages.SetValue(i, fuckTimer_GetAmountOfStages(i));
+        Core.Checkpoints = new IntMap();
+        Core.Stages = new IntMap();
+
+        for (int i = 0; i <= iMaxBonus; i++)
+        {
+            Core.Checkpoints.SetValue(i, fuckTimer_GetAmountOfCheckpoints(i));
+            Core.Stages.SetValue(i, fuckTimer_GetAmountOfStages(i));
+        }
     }
 
     fuckTimer_LoopClients(client, false, false)
@@ -412,7 +417,7 @@ public void OnGameFrame()
             fuckTimer_IsCheckerZone(Player[client].LastZone, iTemp, iValidator);
         }
 
-        if (imStages.GetInt(iBonus) > 1)
+        if (Core.Stages.GetInt(iBonus) > 1)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
 
@@ -438,11 +443,11 @@ public void OnGameFrame()
             }
             
 
-            FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 1 ? "B-" : "", iStage, imStages.GetInt(iBonus));
+            FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 1 ? "B-" : "", iStage, Core.Stages.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
             imBuffer.SetString(HKMapType, sBuffer);
         }
-        else if (imCheckpoints.GetInt(iBonus) > 1)
+        else if (Core.Checkpoints.GetInt(iBonus) > 1)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
 
@@ -459,7 +464,7 @@ public void OnGameFrame()
                 imBuffer.SetString(HKCSTime, sBuffer);
             } 
 
-            FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 1 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
+            FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 1 ? "B-" : "", iCheckpoint, Core.Checkpoints.GetInt(iBonus));
             imBuffer.SetString(HKCurrentStage, sBuffer);
 
             FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 1 ? "Bonus" : "Map");
@@ -606,9 +611,6 @@ public void OnGameFrame()
         Format(sHUD, sizeof(sHUD), "%s%s</font></pre>", sHUD, sHUDBuffer);
         PrintCSGOHUDText(iClient, sHUD);
     }
-
-    delete imCheckpoints;
-    delete imStages;
 }
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
