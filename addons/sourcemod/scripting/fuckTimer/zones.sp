@@ -252,20 +252,19 @@ public void fuckZones_OnEffectsReady()
 
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Start", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "End", "0");
-    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Misc", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Stop", "0");
-
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Stage", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Checkpoint", "0");
-
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Bonus", "0");
 
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Misc", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "TeleToStart", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Checker", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Validator", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "AntiJump", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "PreSpeed", "0");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "MaxVelocity", "0");
+    fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "Slay", "0");
 
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "MapAuthor", "n/a");
     fuckZones_RegisterEffectKey(FUCKTIMER_EFFECT_NAME, "ZoneAuthor", "n/a");
