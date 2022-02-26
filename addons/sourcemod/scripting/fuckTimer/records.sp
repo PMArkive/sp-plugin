@@ -6,6 +6,7 @@
 #include <fuckTimer_api>
 #include <fuckTimer_maps>
 #include <fuckTimer_styles>
+#include <fuckTimer_players>
 #include <fuckTimer_timer>
 
 enum struct PluginData
@@ -108,6 +109,11 @@ public void OnClientDisconnect(int client)
 
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
+    if (fuckTimer_GetClientStyle(client) < StylePractice)
+    {
+        return;
+    }
+
     for (int i = 0; i < 3; i++)
     {
         PrintToServer("fuckTimer_OnClientTimerEnd");
