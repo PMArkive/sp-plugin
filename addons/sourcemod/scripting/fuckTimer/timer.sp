@@ -843,6 +843,11 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         PrintDebug(client, "[Timer.Line%d] Player: \"%N\", MapId: %d, PlayerId: %d, StyleId: %d, Level: %d", __LINE__, client, fuckTimer_GetCurrentMapId(), GetSteamAccountID(client), style, Player[client].Bonus);
 
+        if (fuckTimer_GetClientStyle(client) == StylePractice)
+        {
+            PrintDetailsToPlayersConsole(client, map);
+        }
+
         Call_StartForward(Core.OnClientTimerEnd);
         Call_PushCell(client);
         Call_PushCell(view_as<int>(map));
@@ -1651,5 +1656,129 @@ void TestAngles(int client, float dirangle, float yawdelta, float vel[3])
         {
             SetIntMapSync(Player[client].StageDetails, Player[client].Stage, true);
         }
+    }
+}
+
+void PrintDetailsToPlayersConsole(int client, StringMap details)
+{
+    CPrintToChat(client, "Details will not saved, because you are in practice mode. All details was printed in your console.");
+
+    RecordData record;
+    details.GetValue("PlayerId", record.PlayerId);
+    details.GetString("PlayerName", record.PlayerName, sizeof(RecordData::PlayerName));
+    details.GetValue("Level", record.Level);
+    details.GetValue("Type", record.Type);
+    details.GetValue("Tickrate", record.Tickrate);
+    details.GetValue("Time", record.Time);
+    details.GetValue("TimeInZone", record.TimeInZone);
+    details.GetValue("Attempts", record.Attempts);
+    details.GetValue("Sync", record.Sync);
+    details.GetValue("Speed", record.Speed);
+    details.GetValue("Jumps", record.Jumps);
+    details.GetArray("StartPosition", record.StartPosition, 3);
+    details.GetArray("EndPosition", record.EndPosition, 3);
+    details.GetArray("StartAngle", record.StartAngle, 3);
+    details.GetArray("EndAngle", record.EndAngle, 3);
+    details.GetArray("StartVelocity", record.StartVelocity, 3);
+    details.GetArray("EndVelocity", record.EndVelocity, 3);
+
+    char sType[12];
+    if (record.Type == TimeCheckpoint)
+    {
+        FormatEx(sType, sizeof(sType), "Checkpoint");
+    }
+    else if (record.Type == TimeStage)
+    {
+        FormatEx(sType, sizeof(sType), "Stage");
+    }
+    else
+    {
+        FormatEx(sType, sizeof(sType), "Linear");
+    }
+
+    PrintToConsole(client, "PlayerName: %s (Id: %d)", record.PlayerName, record.PlayerId);
+    PrintToConsole(client, "Level: %d", record.Level);
+    PrintToConsole(client, "Type: %s", sType);
+    PrintToConsole(client, "Tickrate: %.2f", record.Tickrate);
+    PrintToConsole(client, "Time: %.3f", record.Time);
+    PrintToConsole(client, "TimeInZone: %.3f", record.TimeInZone);
+    PrintToConsole(client, "Attempts: %d", record.Attempts);
+    PrintToConsole(client, "Sync: %.2f", record.Sync);
+    PrintToConsole(client, "Speed: %d", record.Speed);
+    PrintToConsole(client, "Jumps: %d", record.Jumps);
+    PrintToConsole(client, "StartPosition - X: %.2f, Y: %.2f, Z: %.2f", record.StartPosition[0], record.StartPosition[1], record.StartPosition[2]);
+    PrintToConsole(client, "EndPosition - X: %.2f, Y: %.2f, Z: %.2f", record.EndPosition[0], record.EndPosition[1], record.EndPosition[2]);
+    PrintToConsole(client, "StartAngle - X: %.2f, Y: %.2f, Z: %.2f", record.StartAngle[0], record.StartAngle[1], record.StartAngle[2]);
+    PrintToConsole(client, "EndAngle - X: %.2f, Y: %.2f, Z: %.2f", record.EndAngle[0], record.EndAngle[1], record.EndAngle[2]);
+    PrintToConsole(client, "StartVelocity - X: %.2f, Y: %.2f, Z: %.2f", record.StartVelocity[0], record.StartVelocity[1], record.StartVelocity[2]);
+    PrintToConsole(client, "EndVelocity - X: %.2f, Y: %.2f, Z: %.2f", record.EndVelocity[0], record.EndVelocity[1], record.EndVelocity[2]);
+
+    if (record.Type == TimeCheckpoint || record.Type == TimeStage)
+    {
+        if (record.Details == null)
+        {
+            record.Details = new IntMap();
+        }
+
+        IntMap imDetails;
+        details.GetValue("Details", imDetails);
+
+        int iPoint;
+        IntMapSnapshot snap = imDetails.Snapshot();
+        CSDetails csDetails;
+
+        if (snap.Length > 0)
+        {
+            PrintToConsole(client, " ");
+            PrintToConsole(client, " ");
+        }
+
+        for (int j = 0; j < snap.Length; j++)
+        {
+            iPoint = snap.GetKey(j);
+            imDetails.GetArray(iPoint, csDetails, sizeof(csDetails));
+            if (record.Type == TimeStage)
+            {
+                PrintToConsole(client, "Stage: %d", iPoint);
+                PrintToConsole(client, "Time: %.3f", csDetails.Time);
+                PrintToConsole(client, "TimeInZone: %.3f", csDetails.TimeInZone);
+                PrintToConsole(client, "Attempts", csDetails.Attempts);
+                PrintToConsole(client, "Sync: %.2f", csDetails.GoodGains / float(csDetails.SyncCount) * 100.0);
+                PrintToConsole(client, "Speed: %d", csDetails.Speed / csDetails.SpeedCount);
+                PrintToConsole(client, "Jumps: %d", csDetails.Jumps);
+                PrintToConsole(client, "StartPosition - X: %.2f, Y: %.2f, Z: %.2f", csDetails.StartPosition[0], csDetails.StartPosition[1], csDetails.StartPosition[2]);
+                PrintToConsole(client, "EndPosition - X: %.2f, Y: %.2f, Z: %.2f", csDetails.EndPosition[0], csDetails.EndPosition[1], csDetails.EndPosition[2]);
+                PrintToConsole(client, "StartAngle - X: %.2f, Y: %.2f, Z: %.2f", csDetails.StartAngle[0], csDetails.StartAngle[1], csDetails.StartAngle[2]);
+                PrintToConsole(client, "EndAngle - X: %.2f, Y: %.2f, Z: %.2f", csDetails.EndAngle[0], csDetails.EndAngle[1], csDetails.EndAngle[2]);
+                PrintToConsole(client, "StartVelocity - X: %.2f, Y: %.2f, Z: %.2f", csDetails.StartVelocity[0], csDetails.StartVelocity[1], csDetails.StartVelocity[2]);
+                PrintToConsole(client, "EndVelocity - X: %.2f, Y: %.2f, Z: %.2f", csDetails.EndVelocity[0], csDetails.EndVelocity[1], csDetails.EndVelocity[2]);
+            }
+            else
+            {
+                PrintToConsole(client, "Checkpoint: %d", iPoint);
+                PrintToConsole(client, "Time: %.3f", csDetails.Time);
+
+                if (iPoint > 0)
+                {
+                    PrintToConsole(client, "Sync: %.2f", csDetails.GoodGains / float(csDetails.SyncCount) * 100.0);
+                    PrintToConsole(client, "Speed: %d", csDetails.Speed / csDetails.SpeedCount);
+                    PrintToConsole(client, "Jumps: %d", csDetails.Jumps);
+                }
+                else
+                {
+                    PrintToConsole(client, "Sync: %.2f", 0.0);
+                    PrintToConsole(client, "Speed: %d", 0);
+                    PrintToConsole(client, "Jumps: %d", 0);
+                }
+                
+                PrintToConsole(client, "Position - X: %.2f, Y: %.2f, Z: %.2f", csDetails.StartPosition[0], csDetails.StartPosition[1], csDetails.StartPosition[2]);
+                PrintToConsole(client, "Angle - X: %.2f, Y: %.2f, Z: %.2f", csDetails.StartAngle[0], csDetails.StartAngle[1], csDetails.StartAngle[2]);
+                PrintToConsole(client, "Velocity - X: %.2f, Y: %.2f, Z: %.2f", csDetails.StartVelocity[0], csDetails.StartVelocity[1], csDetails.StartVelocity[2]);
+            }
+            
+            PrintToConsole(client, " ");
+        }
+
+        delete snap;
     }
 }

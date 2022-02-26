@@ -241,21 +241,21 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     jRecord.SetInt("StyleId", view_as<int>(record.Style));
     jRecord.SetInt("Level", record.Level);
 
-    char sStype[12];
+    char sType[12];
     if (record.Type == TimeCheckpoint)
     {
-        FormatEx(sStype, sizeof(sStype), "Checkpoint");
+        FormatEx(sType, sizeof(sType), "Checkpoint");
     }
     else if (record.Type == TimeStage)
     {
-        FormatEx(sStype, sizeof(sStype), "Stage");
+        FormatEx(sType, sizeof(sType), "Stage");
     }
     else
     {
-        FormatEx(sStype, sizeof(sStype), "Linear");
+        FormatEx(sType, sizeof(sType), "Linear");
     }
 
-    jRecord.SetString("Type", sStype);
+    jRecord.SetString("Type", sType);
     jRecord.SetFloat("Tickrate", record.Tickrate);
     jRecord.SetFloat("Time", record.Time);
     jRecord.SetFloat("TimeInZone", record.TimeInZone);
