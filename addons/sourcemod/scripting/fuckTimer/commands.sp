@@ -125,6 +125,11 @@ public void OnConfigsExecuted()
     cChatMessage.AddChangeHook(OnCVarChange);
 }
 
+public void fuckTimer_OnPlayerStyleChange(int client, Styles oldValue, Styles newValue)
+{
+    ClientRestart(client);
+}
+
 public void OnCVarChange(ConVar convar, const char[] oldValue, const char[] newValue)
 {
     CSetPrefix(newValue);
@@ -675,7 +680,6 @@ public int Menu_Styles(Menu menu, MenuAction action, int client, int param)
             fuckTimer_GetStyleName(style, sStyle, sizeof(sStyle));
 
             fuckTimer_SetClientSetting(client, "Style", sParam);
-            ClientRestart(client);
         }
     }
     else if (action == MenuAction_End)
