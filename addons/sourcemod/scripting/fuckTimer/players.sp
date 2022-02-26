@@ -42,6 +42,7 @@ enum struct PluginData
 
     GlobalForward OnPlayerLoaded;
     GlobalForward OnSharedLocationsLoaded;
+    GlobalForward OnPlayerStyleChange;
 }
 PluginData Core;
 
@@ -62,6 +63,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
     Core.OnPlayerLoaded = new GlobalForward("fuckTimer_OnPlayerLoaded", ET_Ignore, Param_Cell);
     Core.OnSharedLocationsLoaded = new GlobalForward("fuckTimer_OnSharedLocationsLoaded", ET_Ignore);
+    Core.OnPlayerStyleChange = new GlobalForward("fuckTimer_OnPlayerStyleChange", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
     
     CreateNative("fuckTimer_RegisterSetting", Native_RegisterSetting);
 
@@ -406,23 +408,38 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
 
     if (sSetting[0] == 'S' && sSetting[2] == 'y')
     {
-        Styles style = view_as<Styles>(StringToInt(sValue));
+        Styles newStyle = view_as<Styles>(StringToInt(sValue));
 
-        if (style != StyleLowGravity)
+        char sOldValue[MAX_SETTING_VALUE_LENGTH];
+        Player[client].Settings.GetString(sSetting, sOldValue, sizeof(sOldValue));
+        Styles oldStyle = view_as<Styles>(StringToInt(sOldValue));
+
+        if (oldStyle == newStyle)
+        {
+            return false;
+        }
+
+        if (newStyle != StyleLowGravity)
         {
             SetEntityGravity(client, 1.0);
         }
         
-        if (style != StyleSlowMotion)
+        if (newStyle != StyleSlowMotion)
         {
             SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
         }
+
+        Call_StartForward(Core.OnPlayerStyleChange);
+        Call_PushCell(client);
+        Call_PushCell(oldStyle);
+        Call_PushCell(newStyle);
+        Call_Finish();
     }
 
     Player[client].Settings.SetString(sSetting, sValue);
     SetPlayerSetting(client, sSetting, sValue);
     
-    return 0;
+    return true;
 }
 
 public any Native_GetClientStatus(Handle plugin, int numParams)
