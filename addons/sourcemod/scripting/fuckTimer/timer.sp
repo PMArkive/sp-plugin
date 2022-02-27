@@ -1715,11 +1715,6 @@ void PrintDetailsToPlayersConsole(int client, StringMap details)
 
     if (record.Type == TimeCheckpoint || record.Type == TimeStage)
     {
-        if (record.Details == null)
-        {
-            record.Details = new IntMap();
-        }
-
         IntMap imDetails;
         details.GetValue("Details", imDetails);
 
