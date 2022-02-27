@@ -63,6 +63,7 @@ public void OnPluginStart()
     // sm_settings
 
     // Player commands
+    RegConsoleCmd("sm_commands", Command_AllCommands, "List all fuckTimer related commands as menu");
     RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref, "Choose your prefered option on invalid key input");
 
     // Timer Commands
@@ -803,6 +804,49 @@ public void OnMapTiers(int client, StringMap tiers)
     delete tiers;
 }
 
+public Action Command_AllCommands(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    Menu menu = new Menu(Menu_ListCommands);
+    menu.SetTitle("Select command to see how to use it:\n ");
+
+    CommandIterator iterator = new CommandIterator();
+
+    char sCommand[32], sDescription[64], sText[101];
+    while (iterator.Next())
+    {
+        char sName[32];
+        GetPluginFilename(iterator.Plugin, sName, sizeof(sName));
+
+        if (sName[0] != 'f' || sName[9] != '/')
+        {
+            continue;
+        }
+
+        iterator.GetName(sCommand, sizeof(sCommand));
+
+        if (StrContains(sCommand, "sm_commands", false) != -1)
+        {
+            iterator.GetDescription(sDescription, sizeof(sDescription));
+
+            FormatEx(sText, sizeof(sText), "%s\n%s", sCommand, sDescription);
+            menu.AddItem(sCommand, sText);
+        }
+    }
+
+    delete iterator;
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
 public Action Command_HUD(int client, int args)
 {
     if (!fuckTimer_IsClientValid(client, true, true))
@@ -810,7 +854,7 @@ public Action Command_HUD(int client, int args)
         return Plugin_Handled;
     }
 
-    Menu menu = new Menu(Menu_ListHUDCommands);
+    Menu menu = new Menu(Menu_ListCommands);
     menu.SetTitle("Select command to see how to use it:\n ");
 
     CommandIterator iterator = new CommandIterator();
@@ -843,7 +887,7 @@ public Action Command_HUD(int client, int args)
     return Plugin_Handled;
 }
 
-public int Menu_ListHUDCommands(Menu menu, MenuAction action, int client, int param)
+public int Menu_ListCommands(Menu menu, MenuAction action, int client, int param)
 {
     if (action == MenuAction_Select)
     {
