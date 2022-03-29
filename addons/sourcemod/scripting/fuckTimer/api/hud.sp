@@ -212,7 +212,7 @@ public void GetRecordsCount(HTTPResponse response, any data, const char[] error)
 
         if (Core.MapRecordDetails[iStyle] == null)
         {
-            Core.MapRecordDetails[iStyle] = new IntMap();
+            Core.MapRecordDetails[iStyle] = new AnyMap();
         }
 
         MapRecordDetails mrDetails;

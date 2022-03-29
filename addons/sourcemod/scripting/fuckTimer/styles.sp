@@ -8,7 +8,7 @@
 
 enum struct PluginData
 {
-    IntMap Styles;
+    AnyMap Styles;
 
     GlobalForward OnStylesLoaded;
 }
@@ -64,7 +64,7 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
     }
 
     delete Core.Styles;
-    Core.Styles = new IntMap();
+    Core.Styles = new AnyMap();
 
     JSONObject jsonObject = null;
     Style style;

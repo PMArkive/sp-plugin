@@ -3,7 +3,7 @@
 #endif
 #define _fuckTimer_zones_included
 
-#include <intmap>
+#include <anymap>
 
 enum struct ZoneDetails
 {

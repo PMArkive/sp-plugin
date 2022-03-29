@@ -6,7 +6,7 @@
 #include <autoexecconfig>
 #include <sdktools>
 #include <multicolors>
-#include <intmap>
+#include <anymap>
 
 #define FUCKTIMER_PLUGIN_NAME "fuckTimer - "
 #define FUCKTIMER_PLUGIN_AUTHOR "fuckTimer Contributors"
@@ -76,7 +76,7 @@ enum struct RecordData
     float EndPosition[3];
     float EndAngle[3];
     float EndVelocity[3];
-    IntMap Details;
+    AnyMap Details;
 }
 
 stock void fuckTimer_StartConfig(char[] file, char[] directory = "fuckTimer")

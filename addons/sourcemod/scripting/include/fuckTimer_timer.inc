@@ -49,7 +49,7 @@ forward void fuckTimer_OnClientZoneTouchStart(int client, bool stop, int bonus, 
 forward void fuckTimer_OnClientZoneTouchEnd(int client, int bonus, TimeType type, int level);
 
 /**
- * Value of each IntMap details value is the CSDetails enum struct, get the enum struct with IntMap.GetArray.
+ * Value of each AnyMap details value is the CSDetails enum struct, get the enum struct with AnyMap.GetArray.
  */
 forward void fuckTimer_OnClientTimerEnd(int client, StringMap record);
 

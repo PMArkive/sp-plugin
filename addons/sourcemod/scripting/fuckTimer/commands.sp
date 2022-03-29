@@ -635,9 +635,9 @@ public Action Command_Styles(int client, int args)
         return Plugin_Handled;
     }
 
-    IntMap imStyles = fuckTimer_GetStyles();
+    AnyMap amStyles = fuckTimer_GetStyles();
 
-    if (imStyles.Size < 2)
+    if (amStyles.Size < 2)
     {
         CReplyToCommand(client, "No styles found.");
         return Plugin_Handled;
@@ -649,14 +649,14 @@ public Action Command_Styles(int client, int args)
 
     Style style;
     char sBuffer[8];
-    for (int i = 1; i <= imStyles.Size; i++)
+    for (int i = 1; i <= amStyles.Size; i++)
     {
         if (!style.Status)
         {
             continue;
         }
 
-        imStyles.GetArray(i, style, sizeof(style));
+        amStyles.GetArray(i, style, sizeof(style));
         IntToString(style.Id, sBuffer, sizeof(sBuffer));
         menu.AddItem(sBuffer, style.Name);
     }

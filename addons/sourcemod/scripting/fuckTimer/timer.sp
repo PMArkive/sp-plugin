@@ -62,8 +62,8 @@ enum struct PlayerData
     float EndAngle[3];
     float EndVelocity[3];
 
-    IntMap StageDetails;
-    IntMap CheckpointDetails;
+    AnyMap StageDetails;
+    AnyMap CheckpointDetails;
 
     void Reset(bool noCheckpoint = false, bool resetTimeInZone = true, bool resetAttempts = true)
     {
@@ -148,8 +148,8 @@ PlayerData Player[MAXPLAYERS + 1];
 
 enum struct PluginData
 {
-    IntMap Stages;
-    IntMap Checkpoints;
+    AnyMap Stages;
+    AnyMap Checkpoints;
 
     int Bonus;
 
@@ -196,6 +196,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("fuckTimer_GetAmountOfStages", Native_GetAmountOfStages);
     CreateNative("fuckTimer_GetAmountOfBonus", Native_GetAmountOfBonus);
 
+    // TODO: Add natives fuckTimer_SetClientTimes, but only in practice mode/style allowed
+
     CreateNative("fuckTimer_ResetClientTimer", Native_ResetClientTimer);
 
     RegPluginLibrary("fuckTimer_timer");
@@ -234,10 +236,10 @@ public void OnAllPluginsLoaded()
 public void OnMapStart()
 {
     delete Core.Stages;
-    Core.Stages = new IntMap();
+    Core.Stages = new AnyMap();
     
     delete Core.Checkpoints;
-    Core.Checkpoints = new IntMap();
+    Core.Checkpoints = new AnyMap();
     
     Core.Bonus = 0;
 }
@@ -395,11 +397,11 @@ public Action Event_PlayerJump(Event event, const char[] name, bool dontBroadcas
 
         if (Player[client].CheckpointRunning)
         {
-            SetIntMapJumps(Player[client].CheckpointDetails, Player[client].Checkpoint, 1);
+            SetAnyMapJumps(Player[client].CheckpointDetails, Player[client].Checkpoint, 1);
         }
         else if (Player[client].StageRunning)
         {
-            SetIntMapJumps(Player[client].StageDetails, Player[client].Stage, 1);
+            SetAnyMapJumps(Player[client].StageDetails, Player[client].Stage, 1);
         }
     }
 
@@ -646,7 +648,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         // selected or current stage.
         if (Player[client].StageDetails == null)
         {
-            Player[client].StageDetails = new IntMap();
+            Player[client].StageDetails = new AnyMap();
             return;
         }
 
@@ -654,7 +656,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         if (details.Time > 0.0)
         {
-            SetIntMapTime(Player[client].StageDetails, iStage, 0.0);
+            SetAnyMapTime(Player[client].StageDetails, iStage, 0.0);
             return;
         }
 
@@ -667,16 +669,16 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         Player[client].StageDetails.GetArray(iPrevStage, details, sizeof(details));
         CalculateTickIntervalOffsetCS(client, Player[client].StageDetails, iPrevStage, true);
-        details.Time += GetIntMapOffset(Player[client].StageDetails, iPrevStage, OFFSET_START);
+        details.Time += GetAnyMapOffset(Player[client].StageDetails, iPrevStage, OFFSET_START);
         details.Time -= GetTickInterval();
-        details.Time += GetIntMapOffset(Player[client].StageDetails, iPrevStage, OFFSET_END);
+        details.Time += GetAnyMapOffset(Player[client].StageDetails, iPrevStage, OFFSET_END);
         Player[client].StageDetails.SetArray(iPrevStage, details, sizeof(details));
 
         Player[client].StageRunning = false;
 
-        SetIntMapAttempts(Player[client].StageDetails, iPrevStage, Player[client].Attempts);
-        SetIntMapTimeInZone(Player[client].StageDetails, iPrevStage, Player[client].TimeInZone);
-        SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, iPrevStage, false);
+        SetAnyMapAttempts(Player[client].StageDetails, iPrevStage, Player[client].Attempts);
+        SetAnyMapTimeInZone(Player[client].StageDetails, iPrevStage, Player[client].TimeInZone);
+        SetAnyMapPositionAngleVelocity(client, Player[client].StageDetails, iPrevStage, false);
 
         Call_StartForward(Core.OnClientZoneTouchStart);
         Call_PushCell(client);
@@ -718,7 +720,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
         if (details.Time > 0.0)
         {
-            SetIntMapTime(Player[client].CheckpointDetails, iCheckpoint, 0.0);
+            SetAnyMapTime(Player[client].CheckpointDetails, iCheckpoint, 0.0);
         }
 
         int iPrevCheckpoint = iCheckpoint - 1;
@@ -736,13 +738,13 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
         }
 
         CalculateTickIntervalOffsetCS(client, Player[client].CheckpointDetails, iPrevCheckpoint, true);
-        details.Time += GetIntMapOffset(Player[client].CheckpointDetails, iPrevCheckpoint, OFFSET_START);
+        details.Time += GetAnyMapOffset(Player[client].CheckpointDetails, iPrevCheckpoint, OFFSET_START);
         details.Time -= GetTickInterval();
-        details.Time += GetIntMapOffset(Player[client].CheckpointDetails, iPrevCheckpoint, OFFSET_END);
+        details.Time += GetAnyMapOffset(Player[client].CheckpointDetails, iPrevCheckpoint, OFFSET_END);
         Player[client].CheckpointDetails.SetArray(iPrevCheckpoint, details, sizeof(details));
 
-        SetIntMapTime(Player[client].CheckpointDetails, iPrevCheckpoint, details.Time, false);
-        SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, iPrevCheckpoint, false, true);
+        SetAnyMapTime(Player[client].CheckpointDetails, iPrevCheckpoint, details.Time, false);
+        SetAnyMapPositionAngleVelocity(client, Player[client].CheckpointDetails, iPrevCheckpoint, false, true);
 
         Player[client].CheckpointRunning = false;
 
@@ -797,7 +799,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
             map.SetValue("Type", TimeStage);
 
             int iPoint;
-            IntMapSnapshot snap = Player[client].StageDetails.Snapshot();
+            AnyMapSnapshot snap = Player[client].StageDetails.Snapshot();
 
             for (int i = 0; i < snap.Length; i++)
             {
@@ -864,7 +866,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
 public void Frame_DeleteStringMap(StringMap map)
 {
-    IntMap details;
+    AnyMap details;
     map.GetValue("Details", details);
     delete details;
     
@@ -933,14 +935,14 @@ public void fuckTimer_OnTouchZone(int client, int zone, const char[] name)
     {
         Player[client].SetSpeed = true;
         Player[client].StageRunning = false;
-        SetIntMapTime(Player[client].StageDetails, iStage, 0.0);
+        SetAnyMapTime(Player[client].StageDetails, iStage, 0.0);
         Player[client].TimeInZone += GetTickInterval();
     }
 
     if (!fuckTimer_IsMiscZone(Player[client].Zone, iBonus) && iCheckpoint > 0)
     {
         Player[client].CheckpointRunning = false;
-        SetIntMapTime(Player[client].CheckpointDetails, iCheckpoint, 0.0);
+        SetAnyMapTime(Player[client].CheckpointDetails, iCheckpoint, 0.0);
     }
 
     if (fuckTimer_IsAntiJumpZone(Player[client].Zone, iBonus))
@@ -1000,28 +1002,28 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         {
             if (Player[client].StageDetails == null)
             {
-                Player[client].StageDetails = new IntMap();
+                Player[client].StageDetails = new AnyMap();
             }
 
             Player[client].Stage = 1;
             Player[client].StageRunning = true;
-            SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
-            SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
-            SetIntMapSpeed(Player[client].StageDetails, Player[client].Stage, iSpeed, false);
+            SetAnyMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
+            SetAnyMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
+            SetAnyMapSpeed(Player[client].StageDetails, Player[client].Stage, iSpeed, false);
         }
 
         if (Core.Checkpoints.GetInt(bonus) > 0)
         {
             if (Player[client].CheckpointDetails == null)
             {
-                Player[client].CheckpointDetails = new IntMap();
+                Player[client].CheckpointDetails = new AnyMap();
             }
 
             Player[client].Checkpoint = 1;
             Player[client].CheckpointRunning = true;
-            SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
-            SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint - 1, true, true);
-            SetIntMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, iSpeed, false);
+            SetAnyMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
+            SetAnyMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint - 1, true, true);
+            SetAnyMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, iSpeed, false);
         }
 
         if (Player[client].Attempts < 0)
@@ -1045,9 +1047,9 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         
         Player[client].Stage = iStage;
         Player[client].StageRunning = true;
-        SetIntMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
-        SetIntMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
-        SetIntMapGetOffset(Player[client].StageDetails, Player[client].Stage, true);
+        SetAnyMapTime(Player[client].StageDetails, Player[client].Stage, 0.0);
+        SetAnyMapPositionAngleVelocity(client, Player[client].StageDetails, Player[client].Stage, true);
+        SetAnyMapGetOffset(Player[client].StageDetails, Player[client].Stage, true);
 
         Player[client].BlockTeleport = false;
     }
@@ -1058,9 +1060,9 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
         Player[client].Checkpoint++;
         Player[client].CheckpointRunning = true;
         // ???
-        // SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
-        // SetIntMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint, true, true);
-        // SetIntMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint, true);
+        // SetAnyMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, 0.0);
+        // SetAnyMapPositionAngleVelocity(client, Player[client].CheckpointDetails, Player[client].Checkpoint, true, true);
+        // SetAnyMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint, true);
         
         Player[client].BlockTeleport = false;
     }
@@ -1164,26 +1166,26 @@ public Action OnPostThinkPost(int client)
 
     if (Player[client].CheckpointRunning)
     {
-        if (GetIntMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint))
+        if (GetAnyMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint))
         {
             CalculateTickIntervalOffsetCS(client, Player[client].CheckpointDetails, Player[client].Checkpoint, false);
-            SetIntMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+            SetAnyMapGetOffset(Player[client].CheckpointDetails, Player[client].Checkpoint, false);
         }
 
-        SetIntMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, fTickInterval);
-        SetIntMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, iSpeed);
+        SetAnyMapTime(Player[client].CheckpointDetails, Player[client].Checkpoint, fTickInterval);
+        SetAnyMapSpeed(Player[client].CheckpointDetails, Player[client].Checkpoint, iSpeed);
     }
 
     if (Player[client].StageRunning)
     {
-        if (GetIntMapGetOffset(Player[client].StageDetails, Player[client].Stage))
+        if (GetAnyMapGetOffset(Player[client].StageDetails, Player[client].Stage))
         {
             CalculateTickIntervalOffsetCS(client, Player[client].StageDetails, Player[client].Stage, false);
-            SetIntMapGetOffset(Player[client].StageDetails, Player[client].Stage, false);
+            SetAnyMapGetOffset(Player[client].StageDetails, Player[client].Stage, false);
         }
 
-        SetIntMapTime(Player[client].StageDetails, Player[client].Stage, fTickInterval);
-        SetIntMapSpeed(Player[client].StageDetails, Player[client].Stage, iSpeed);
+        SetAnyMapTime(Player[client].StageDetails, Player[client].Stage, fTickInterval);
+        SetAnyMapSpeed(Player[client].StageDetails, Player[client].Stage, iSpeed);
     }
     
     return Plugin_Continue;
@@ -1228,7 +1230,7 @@ void LoadPlayer(int client)
     SDKHook(client, SDKHook_PostThinkPost, OnPostThinkPost);
 }
 
-void SetIntMapTime(IntMap map, int key, float value, bool add = true)
+void SetAnyMapTime(AnyMap map, int key, float value, bool add = true)
 {
     if (map == null)
     {
@@ -1250,7 +1252,7 @@ void SetIntMapTime(IntMap map, int key, float value, bool add = true)
     map.SetArray(key, details, sizeof(details));
 }
 
-void SetIntMapSync(IntMap map, int key, bool goodGains)
+void SetAnyMapSync(AnyMap map, int key, bool goodGains)
 {
     if (map == null)
     {
@@ -1272,7 +1274,7 @@ void SetIntMapSync(IntMap map, int key, bool goodGains)
     map.SetArray(key, details, sizeof(details));
 }
 
-float GetIntMapSync(IntMap map, int key)
+float GetAnyMapSync(AnyMap map, int key)
 {
     if (map == null)
     {
@@ -1285,7 +1287,7 @@ float GetIntMapSync(IntMap map, int key)
     return details.GoodGains / float(details.SyncCount) * 100.0;
 }
 
-void SetIntMapSpeed(IntMap map, int key, int value, bool add = true)
+void SetAnyMapSpeed(AnyMap map, int key, int value, bool add = true)
 {
     if (map == null)
     {
@@ -1316,7 +1318,7 @@ void SetIntMapSpeed(IntMap map, int key, int value, bool add = true)
     map.SetArray(key, details, sizeof(details));
 }
 
-int GetIntMapSpeed(IntMap map, int key)
+int GetAnyMapSpeed(AnyMap map, int key)
 {
     if (map == null)
     {
@@ -1334,7 +1336,7 @@ int GetIntMapSpeed(IntMap map, int key)
     return details.Speed / details.SpeedCount;
 }
 
-void SetIntMapJumps(IntMap map, int key, int value, bool add = true)
+void SetAnyMapJumps(AnyMap map, int key, int value, bool add = true)
 {
     if (map == null)
     {
@@ -1356,7 +1358,7 @@ void SetIntMapJumps(IntMap map, int key, int value, bool add = true)
     map.SetArray(key, details, sizeof(details));
 }
 
-int GetIntMapJumps(IntMap map, int key)
+int GetAnyMapJumps(AnyMap map, int key)
 {
     if (map == null)
     {
@@ -1369,7 +1371,7 @@ int GetIntMapJumps(IntMap map, int key)
     return details.Jumps;
 }
 
-void SetIntMapTimeInZone(IntMap map, int key, float value)
+void SetAnyMapTimeInZone(AnyMap map, int key, float value)
 {
     if (map == null)
     {
@@ -1384,7 +1386,7 @@ void SetIntMapTimeInZone(IntMap map, int key, float value)
     map.SetArray(key, details, sizeof(details));
 }
 
-void SetIntMapPositionAngleVelocity(int client, IntMap map, int key, bool start, bool checkpoint = false)
+void SetAnyMapPositionAngleVelocity(int client, AnyMap map, int key, bool start, bool checkpoint = false)
 {
     if (map == null)
     {
@@ -1410,7 +1412,7 @@ void SetIntMapPositionAngleVelocity(int client, IntMap map, int key, bool start,
     map.SetArray(key, details, sizeof(details));
 }
 
-bool GetIntMapGetOffset(IntMap map, int key)
+bool GetAnyMapGetOffset(AnyMap map, int key)
 {
     if (map == null)
     {
@@ -1423,7 +1425,7 @@ bool GetIntMapGetOffset(IntMap map, int key)
     return details.GetOffset;
 }
 
-bool SetIntMapGetOffset(IntMap map, int key, bool status)
+bool SetAnyMapGetOffset(AnyMap map, int key, bool status)
 {
     if (map == null)
     {
@@ -1438,7 +1440,7 @@ bool SetIntMapGetOffset(IntMap map, int key, bool status)
     return details.GetOffset;
 }
 
-float GetIntMapOffset(IntMap map, int key, int offset)
+float GetAnyMapOffset(AnyMap map, int key, int offset)
 {
     if (map == null)
     {
@@ -1451,7 +1453,7 @@ float GetIntMapOffset(IntMap map, int key, int offset)
     return details.Offset[offset];
 }
 
-float GetIntMapTimeInZone(IntMap map, int key)
+float GetAnyMapTimeInZone(AnyMap map, int key)
 {
     if (map == null)
     {
@@ -1464,7 +1466,7 @@ float GetIntMapTimeInZone(IntMap map, int key)
     return details.TimeInZone;
 }
 
-void SetIntMapAttempts(IntMap map, int key, int value)
+void SetAnyMapAttempts(AnyMap map, int key, int value)
 {
     if (map == null)
     {
@@ -1479,7 +1481,7 @@ void SetIntMapAttempts(IntMap map, int key, int value)
     map.SetArray(key, details, sizeof(details));
 }
 
-int GetIntMapAttempts(IntMap map, int key)
+int GetAnyMapAttempts(AnyMap map, int key)
 {
     if (map == null)
     {
@@ -1538,7 +1540,7 @@ bool TREnumTrigger(int entity, any client)
     return true;
 }
 
-void CalculateTickIntervalOffsetCS(int client, IntMap map, int key, bool end)
+void CalculateTickIntervalOffsetCS(int client, AnyMap map, int key, bool end)
 {
     float fFraction;
     float fOrigin[3];
@@ -1636,11 +1638,11 @@ void TestAngles(int client, float dirangle, float yawdelta, float vel[3])
 
         if (Player[client].CheckpointRunning)
         {
-            SetIntMapSync(Player[client].CheckpointDetails, Player[client].Checkpoint, false);
+            SetAnyMapSync(Player[client].CheckpointDetails, Player[client].Checkpoint, false);
         }
         else if (Player[client].StageRunning)
         {
-            SetIntMapSync(Player[client].StageDetails, Player[client].Stage, false);
+            SetAnyMapSync(Player[client].StageDetails, Player[client].Stage, false);
         }
     }
 
@@ -1650,11 +1652,11 @@ void TestAngles(int client, float dirangle, float yawdelta, float vel[3])
 
         if (Player[client].CheckpointRunning)
         {
-            SetIntMapSync(Player[client].CheckpointDetails, Player[client].Checkpoint, true);
+            SetAnyMapSync(Player[client].CheckpointDetails, Player[client].Checkpoint, true);
         }
         else if (Player[client].StageRunning)
         {
-            SetIntMapSync(Player[client].StageDetails, Player[client].Stage, true);
+            SetAnyMapSync(Player[client].StageDetails, Player[client].Stage, true);
         }
     }
 }
@@ -1715,11 +1717,11 @@ void PrintDetailsToPlayersConsole(int client, StringMap details)
 
     if (record.Type == TimeCheckpoint || record.Type == TimeStage)
     {
-        IntMap imDetails;
-        details.GetValue("Details", imDetails);
+        AnyMap amDetails;
+        details.GetValue("Details", amDetails);
 
         int iPoint;
-        IntMapSnapshot snap = imDetails.Snapshot();
+        AnyMapSnapshot snap = amDetails.Snapshot();
         CSDetails csDetails;
 
         if (snap.Length > 0)
@@ -1731,7 +1733,7 @@ void PrintDetailsToPlayersConsole(int client, StringMap details)
         for (int j = 0; j < snap.Length; j++)
         {
             iPoint = snap.GetKey(j);
-            imDetails.GetArray(iPoint, csDetails, sizeof(csDetails));
+            amDetails.GetArray(iPoint, csDetails, sizeof(csDetails));
             if (record.Type == TimeStage)
             {
                 PrintToConsole(client, "Stage: %d", iPoint);

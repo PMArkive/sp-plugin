@@ -22,7 +22,7 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
             if (Player[client].Records[i] != null)
             {
                 RecordData record;
-                IntMapSnapshot snap = Player[client].Records[i].Snapshot();
+                AnyMapSnapshot snap = Player[client].Records[i].Snapshot();
 
                 for (int j = 0; j < snap.Length; j++)
                 {
@@ -40,7 +40,7 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
             if (Core.Records[i] != null)
             {
                 RecordData record;
-                IntMapSnapshot snap = Core.Records[i].Snapshot();
+                AnyMapSnapshot snap = Core.Records[i].Snapshot();
 
                 for (int j = 0; j < snap.Length; j++)
                 {
@@ -147,7 +147,7 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
         {
             if (record.Details == null)
             {
-                record.Details = new IntMap();
+                record.Details = new AnyMap();
             }
 
             JSONArray jCSRecords = view_as<JSONArray>(jMainRecord.Get("*items"));
@@ -212,7 +212,7 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
 
             if (Player[client].Records[record.Style] == null)
             {
-                Player[client].Records[record.Style] = new IntMap();
+                Player[client].Records[record.Style] = new AnyMap();
             }
 
             Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
@@ -221,7 +221,7 @@ public void GetRecords(HTTPResponse response, int userid, const char[] error)
         {
             if (Core.Records[record.Style] == null)
             {
-                Core.Records[record.Style] = new IntMap();
+                Core.Records[record.Style] = new AnyMap();
             }
 
             Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));
@@ -331,7 +331,7 @@ public void SendRecord(HTTPResponse response, DataPack pack, const char[] error)
     Call_PushFloat(fOldTime);
     Call_Finish();
 
-    IntMap imDetails;
+    AnyMap imDetails;
     smRecord.GetValue("Details", imDetails);
     delete imDetails;
     delete smRecord;

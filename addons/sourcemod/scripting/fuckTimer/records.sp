@@ -11,7 +11,7 @@
 
 enum struct PluginData
 {
-    IntMap Records[MAX_STYLES + 1];
+    AnyMap Records[MAX_STYLES + 1];
 
     GlobalForward OnNewRecord;
     GlobalForward OnPlayerRecordsLoaded;
@@ -21,7 +21,7 @@ PluginData Core;
 
 enum struct PlayerData
 {
-    IntMap Records[MAX_STYLES + 1];
+    AnyMap Records[MAX_STYLES + 1];
 }
 PlayerData Player[MAXPLAYERS + 1];
 
@@ -93,7 +93,7 @@ public void OnClientDisconnect(int client)
         }
 
         RecordData record;
-        IntMapSnapshot snap = Player[client].Records[i].Snapshot();
+        AnyMapSnapshot snap = Player[client].Records[i].Snapshot();
 
         for (int j = 0; j < snap.Length; j++)
         {
@@ -121,12 +121,12 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     
     // Cloning handles
     StringMap smRecord = view_as<StringMap>(CloneHandle(temp));
-    IntMap imDetails;
-    temp.GetValue("Details", imDetails);
+    AnyMap amDetails;
+    temp.GetValue("Details", amDetails);
 
-    if (imDetails != null)
+    if (amDetails != null)
     {
-        smRecord.SetValue("Details", CloneHandle(imDetails));
+        smRecord.SetValue("Details", CloneHandle(amDetails));
     }
 
     Styles iStyle;
@@ -283,19 +283,19 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     jRecord.SetFloat("EndVelocityZ", record.EndVelocity[2]);
 
     JSONArray jRecords = new JSONArray();
-    IntMap imDetails;
+    AnyMap amDetails;
 
     if (record.Type == TimeCheckpoint || record.Type == TimeStage)
     {
         if (record.Details == null)
         {
-            record.Details = new IntMap();
+            record.Details = new AnyMap();
         }
 
-        smRecord.GetValue("Details", imDetails);
+        smRecord.GetValue("Details", amDetails);
 
         int iPoint;
-        IntMapSnapshot snap = imDetails.Snapshot();
+        AnyMapSnapshot snap = amDetails.Snapshot();
         CSDetails details;
 
         JSONObject jDetails = null;
@@ -303,7 +303,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
         for (int j = 0; j < snap.Length; j++)
         {
             iPoint = snap.GetKey(j);
-            imDetails.GetArray(iPoint, details, sizeof(details));
+            amDetails.GetArray(iPoint, details, sizeof(details));
 
             if (record.Type == TimeStage)
             {
@@ -385,7 +385,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     {
         if (Player[client].Records[record.Style] == null)
         {
-            Player[client].Records[record.Style] = new IntMap();
+            Player[client].Records[record.Style] = new AnyMap();
         }
 
         Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
@@ -396,7 +396,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     {
         if (Core.Records[record.Style] == null)
         {
-            Core.Records[record.Style] = new IntMap();
+            Core.Records[record.Style] = new AnyMap();
         }
 
         Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));

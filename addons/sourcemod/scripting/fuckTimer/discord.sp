@@ -52,7 +52,7 @@ public void fuckTimer_OnNewRecord(int client, bool serverRecord, StringMap temp,
 {
     // Copy all handles, before it'll be deleted and we get some errors
     StringMap recordDetails = view_as<StringMap>(CloneHandle(temp));
-    /* IntMap moreTemp;
+    /* AnyMap moreTemp;
     temp.GetValue("Details", moreTemp);
     if (moreTemp != null)
     {
@@ -93,9 +93,9 @@ public void OnHTTPResponse(HTTPResponse response, DataPack pack)
         pack.ReadCell(); // TODO: DataPack.Position?
         pack.ReadCell();
         StringMap recordDetails = view_as<StringMap>(pack.ReadCell());
-        /* IntMap imDetails;
-        recordDetails.GetValue("Details", imDetails);
-        delete imDetails; */
+        /* AnyMap amDetails;
+        recordDetails.GetValue("Details", amDetails);
+        delete amDetails; */
         delete recordDetails;
         delete pack;
         return;
@@ -243,9 +243,9 @@ void PrepareMessage(int client, bool serverRecord, StringMap recordDetails, floa
     }
     delete wWebhook;
 
-    /* IntMap imDetails;
-    recordDetails.GetValue("Details", imDetails);
-    delete imDetails; */
+    /* AnyMap amDetails;
+    recordDetails.GetValue("Details", amDetails);
+    delete amDetails; */
     delete recordDetails;
 }
 
