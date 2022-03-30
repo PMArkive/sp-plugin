@@ -1,5 +1,9 @@
 # sp-plugin
 
+## Status: Inactive
+Code isn't "optimized", lot of test/old code left, ... please waste your time for your own codes.
+This project was born as a meme. So you'll not find the "best code" here, but I'm sure you're the best coder with your private plugins.
+
 ### Installation:
 - Add all required extensions and plugins
 - Get latest artifact from [here](https://github.com/fuckTimer/sp-plugin/actions)
