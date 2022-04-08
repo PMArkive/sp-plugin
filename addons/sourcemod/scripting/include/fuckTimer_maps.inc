@@ -17,6 +17,8 @@ native int fuckTimer_GetCurrentMapId();
 native int fuckTimer_GetCurrentMapTier();
 native MapStatus fuckTimer_GetCurrentMapStatus();
 
+native int fuckTimer_GetMapTier(const char[] name);
+
 /*
  *   StringMap must be closed/freed with delete (or CloseHandle) in callback.
  */
@@ -28,6 +30,8 @@ public void __pl_fuckTimer_maps_SetNTVOptional()
     MarkNativeAsOptional("fuckTimer_GetCurrentMapId");
     MarkNativeAsOptional("fuckTimer_GetCurrentMapTier");
     MarkNativeAsOptional("fuckTimer_GetCurrentMapStatus");
+
+    MarkNativeAsOptional("fuckTimer_GetMapTier");
 
     MarkNativeAsOptional("fuckTimer_GetMapTiers");
 }

@@ -8,7 +8,7 @@
 /**
  * If serverRecord is false, then it's a player record
  * oldTime is 0.0, when no record exist before.
- * Note: Get Bonus from recordDetails and use this as index for oldRecord IntMap to get the correct record as RecordDetails enum struct
+ * Note: Get Bonus from recordDetails and use this as index for oldRecord AnyMap to get the correct record as RecordDetails enum struct
 */
 forward void fuckTimer_OnNewRecord(int client, bool serverRecord, StringMap recordDetails, float oldTime);
 
@@ -16,7 +16,7 @@ forward void fuckTimer_OnServerRecordsLoaded(int records);
 forward void fuckTimer_OnPlayerRecordsLoaded(int client, int records);
 
 /**
- * IMPORTANT: Don't delete the Details IntMap! 
+ * IMPORTANT: Don't delete the Details AnyMap! 
  *
  */
 native bool fuckTimer_GetServerRecord(Styles style, int level, any[] record);

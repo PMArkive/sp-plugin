@@ -5,30 +5,23 @@
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
 #include <fuckTimer_maps>
+#include <fuckTimer_styles>
+#include <fuckTimer_players>
 #include <fuckTimer_timer>
 
 enum struct PluginData
 {
-    bool MapLoaded;
-    bool StylesLoaded;
-
-    IntMap Records[MAX_STYLES + 1];
+    AnyMap Records[MAX_STYLES + 1];
 
     GlobalForward OnNewRecord;
     GlobalForward OnPlayerRecordsLoaded;
     GlobalForward OnServerRecordsLoaded;
-
-    void Reset()
-    {
-        this.MapLoaded = false;
-        this.StylesLoaded = false;
-    }
 }
 PluginData Core;
 
 enum struct PlayerData
 {
-    IntMap Records[MAX_STYLES + 1];
+    AnyMap Records[MAX_STYLES + 1];
 }
 PlayerData Player[MAXPLAYERS + 1];
 
@@ -57,11 +50,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-public void OnMapStart()
-{
-    Core.Reset();
-}
-
 public void OnConfigsExecuted()
 {
     ConVar cChatMessage = FindConVar("misc_chat_prefix");
@@ -78,27 +66,8 @@ public void OnCVarChange(ConVar convar, const char[] oldValue, const char[] newV
     CSetPrefix(newValue);
 }
 
-public void fuckTimer_OnMapDataLoaded()
+public void fuckTimer_OnSharedLocationsLoaded()
 {
-    Core.MapLoaded = true;
-
-    CheckState();
-}
-
-public void fuckTimer_OnStylesLoaded()
-{
-    Core.StylesLoaded = true;
-
-    CheckState();
-}
-
-void CheckState()
-{
-    if (!Core.StylesLoaded || !Core.MapLoaded)
-    {
-        return;
-    }
-
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/MapId/%d", fuckTimer_GetCurrentMapId());
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecords, 0);
@@ -124,7 +93,7 @@ public void OnClientDisconnect(int client)
         }
 
         RecordData record;
-        IntMapSnapshot snap = Player[client].Records[i].Snapshot();
+        AnyMapSnapshot snap = Player[client].Records[i].Snapshot();
 
         for (int j = 0; j < snap.Length; j++)
         {
@@ -140,6 +109,11 @@ public void OnClientDisconnect(int client)
 
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
+    if (fuckTimer_GetClientStyle(client) < StylePractice)
+    {
+        return;
+    }
+
     for (int i = 0; i < 3; i++)
     {
         PrintToServer("fuckTimer_OnClientTimerEnd");
@@ -147,9 +121,13 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
     
     // Cloning handles
     StringMap smRecord = view_as<StringMap>(CloneHandle(temp));
-    IntMap imDetails;
-    temp.GetValue("Details", imDetails);
-    smRecord.SetValue("Details", CloneHandle(imDetails));
+    AnyMap amDetails;
+    temp.GetValue("Details", amDetails);
+
+    if (amDetails != null)
+    {
+        smRecord.SetValue("Details", CloneHandle(amDetails));
+    }
 
     Styles iStyle;
     smRecord.GetValue("StyleId", iStyle);
@@ -194,25 +172,16 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 
         if (record.Time == 0.0 || fTime < record.Time)
         {
-            if (record.Time == 0.0)
+            if (!bServerRecord)
             {
-                CPrintToChatAll("%N finished this map first time!", client);
-                bFirstRecord = true;
+                CPrintToChatAll("%N has beaten his record!", client, record.PlayerName);
             }
             else
             {
-                if (!bServerRecord)
-                {
-                    CPrintToChatAll("%N has beaten his record!", client, record.PlayerName);
-                }
-                else
-                {
-                    CPrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
-                }
-
-                fOldTime = record.Time;
+                CPrintToChat(client, "%N has beaten his record!", client, record.PlayerName);
             }
 
+            fOldTime = record.Time;
             bPlayerRecord = true;
         }
     }
@@ -221,6 +190,16 @@ public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
         CPrintToChatAll("%N finished this map first time!", client);
         bFirstRecord = true;
         bPlayerRecord = true;
+    }
+
+    if (client > 0)
+    {
+        int iMapId;
+        smRecord.GetValue("MapId", iMapId);
+
+        int iPlayerId;
+        smRecord.GetValue("PlayerId", iPlayerId);
+        PrintDebug(client, "[Records.Line%d] Player: \"%N\", MapId: %d, PlayerId: %d, StyleId: %d, Level: %d, firstRecord: %d", __LINE__, client, iMapId, iPlayerId, iStyle, iLevel, bFirstRecord);
     }
 
     if (bServerRecord)
@@ -262,21 +241,21 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     jRecord.SetInt("StyleId", view_as<int>(record.Style));
     jRecord.SetInt("Level", record.Level);
 
-    char sStype[12];
+    char sType[12];
     if (record.Type == TimeCheckpoint)
     {
-        FormatEx(sStype, sizeof(sStype), "Checkpoint");
+        FormatEx(sType, sizeof(sType), "Checkpoint");
     }
     else if (record.Type == TimeStage)
     {
-        FormatEx(sStype, sizeof(sStype), "Stage");
+        FormatEx(sType, sizeof(sType), "Stage");
     }
     else
     {
-        FormatEx(sStype, sizeof(sStype), "Linear");
+        FormatEx(sType, sizeof(sType), "Linear");
     }
 
-    jRecord.SetString("Type", sStype);
+    jRecord.SetString("Type", sType);
     jRecord.SetFloat("Tickrate", record.Tickrate);
     jRecord.SetFloat("Time", record.Time);
     jRecord.SetFloat("TimeInZone", record.TimeInZone);
@@ -304,19 +283,19 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
     jRecord.SetFloat("EndVelocityZ", record.EndVelocity[2]);
 
     JSONArray jRecords = new JSONArray();
-    IntMap imDetails;
+    AnyMap amDetails;
 
     if (record.Type == TimeCheckpoint || record.Type == TimeStage)
     {
         if (record.Details == null)
         {
-            record.Details = new IntMap();
+            record.Details = new AnyMap();
         }
 
-        smRecord.GetValue("Details", imDetails);
+        smRecord.GetValue("Details", amDetails);
 
         int iPoint;
-        IntMapSnapshot snap = imDetails.Snapshot();
+        AnyMapSnapshot snap = amDetails.Snapshot();
         CSDetails details;
 
         JSONObject jDetails = null;
@@ -324,7 +303,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
         for (int j = 0; j < snap.Length; j++)
         {
             iPoint = snap.GetKey(j);
-            imDetails.GetArray(iPoint, details, sizeof(details));
+            amDetails.GetArray(iPoint, details, sizeof(details));
 
             if (record.Type == TimeStage)
             {
@@ -334,7 +313,7 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails.SetFloat("TimeInZone", details.TimeInZone);
                 jDetails.SetInt("Attempts", details.Attempts);
                 jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
-                jDetails.SetInt("Speed", details.Speed);
+                jDetails.SetInt("Speed", details.Speed / details.SpeedCount);
                 jDetails.SetInt("Jumps", details.Jumps);
                 jDetails.SetFloat("StartPositionX", details.StartPosition[0]);
                 jDetails.SetFloat("StartPositionY", details.StartPosition[1]);
@@ -361,9 +340,22 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
                 jDetails = new JSONObject();
                 jDetails.SetInt("Checkpoint", iPoint);
                 jDetails.SetFloat("Time", details.Time);
-                jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
-                jDetails.SetInt("Speed", details.Speed);
-                jDetails.SetInt("Jumps", details.Jumps);
+
+                if (iPoint > 0)
+                {
+                    jDetails.SetFloat("Sync", details.GoodGains / float(details.SyncCount) * 100.0);
+                    jDetails.SetInt("Speed", details.Speed / details.SpeedCount);
+                    jDetails.SetInt("Jumps", details.Jumps);
+
+                    LogMessage("Speed: %d", jDetails.GetInt("Speed"));
+                }
+                else
+                {
+                    jDetails.SetFloat("Sync", 0.0);
+                    jDetails.SetInt("Speed", 0);
+                    jDetails.SetInt("Jumps", 0);
+                }
+                
                 jDetails.SetFloat("PositionX", details.StartPosition[0]);
                 jDetails.SetFloat("PositionY", details.StartPosition[1]);
                 jDetails.SetFloat("PositionZ", details.StartPosition[2]);
@@ -386,19 +378,25 @@ void UpdateRecord(StringMap smRecord, bool updatePlayer, int client = 0, bool fi
 
     if (updatePlayer)
     {
-        PostPlayerRecord(client,firstRecord, jRecord, serverRecord, oldTime, smRecord);
+        PrintDebug(client, "[Records.Line%d] Player: \"%N\", MapId: %d, PlayerId: %d, StyleId: %d, Level: %d, firstRecord: %d", __LINE__, client, jRecord.GetInt("MapId"), jRecord.GetInt("PlayerId"), jRecord.GetInt("StyleId"), jRecord.GetInt("Level"), firstRecord);
+    }
+
+    if (updatePlayer)
+    {
         if (Player[client].Records[record.Style] == null)
         {
-            Player[client].Records[record.Style] = new IntMap();
+            Player[client].Records[record.Style] = new AnyMap();
         }
 
         Player[client].Records[record.Style].SetArray(record.Level, record, sizeof(record));
+
+        PostPlayerRecord(client, firstRecord, jRecord, serverRecord, oldTime, smRecord);
     }
     else
     {
         if (Core.Records[record.Style] == null)
         {
-            Core.Records[record.Style] = new IntMap();
+            Core.Records[record.Style] = new AnyMap();
         }
 
         Core.Records[record.Style].SetArray(record.Level, record, sizeof(record));

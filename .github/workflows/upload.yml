@@ -29,6 +29,7 @@ jobs:
           echo "SHORT_SHA=$(git describe --always --long --dirty)" >> $GITHUB_ENV
 
           SOURCEMOD_PATH=$GITHUB_WORKSPACE/addons/sourcemod
+          echo "DATE_TIME=$(date +'%c')" >> $GITHUB_ENV
           echo "SOURCEMOD_PATH=$SOURCEMOD_PATH" >> $GITHUB_ENV
           echo "PLUGINS_PATH=$SOURCEMOD_PATH/plugins" >> $GITHUB_ENV
           echo "GAMEDATA_PATH=$SOURCEMOD_PATH/gamedata" >> $GITHUB_ENV
@@ -46,11 +47,11 @@ jobs:
 
       - name: Compile fuckTimer plugins
         run: |
-          mkdir -p $PLUGINS_PATH/fucktimer
+          mkdir -p $PLUGINS_PATH/fuckTimer
           for file in *.sp
           do
             echo -e "\nCompiling $file..."
-            spcomp -E -w234 -O2 -v2 -i$includePath -i$SCRIPTING_PATH/include -o $PLUGINS_PATH/fucktimer/$file $file
+            spcomp -E -w234 -O2 -v2 -i$includePath -i$SCRIPTING_PATH/include -o $PLUGINS_PATH/fuckTimer/$file $file
           done
         working-directory: ${{ env.SCRIPTING_PATH }}/fuckTimer
 
@@ -59,6 +60,8 @@ jobs:
           wget https://github.com/rumourA/End-Touch-Fix/raw/master/scripting/EndTouchFix.sp -P $SCRIPTING_PATH
           wget https://github.com/rumourA/End-Touch-Fix/raw/master/gamedata/endtouch.games.txt -P $GAMEDATA_PATH
           wget https://github.com/Bara/fuckZones/raw/master/addons/sourcemod/scripting/fuckZones.sp -P $SCRIPTING_PATH
+          mkdir $SCRIPTING_PATH/fuckZones
+          wget https://github.com/Bara/fuckZones/raw/master/addons/sourcemod/scripting/fuckZones/converter.sp -P $SCRIPTING_PATH/fuckZones
           wget https://github.com/Bara/fuckZones/raw/master/addons/sourcemod/translations/fuckZones.phrases.txt -P $TRANSLATIONS_PATH
 
       - name: Compile 3rd party plugins
@@ -76,8 +79,50 @@ jobs:
           mkdir package
           mv ./{addons,cfg,LICENSE,README.md} package
 
-      - name: Create archive
+      - name: Create artifact
         uses: actions/upload-artifact@v2
         with:
           name: fuckTimer.${{ steps.get_branch_name.outputs.branch }}.${{ env.COMMIT }}.${{ env.SHORT_SHA }}.SM${{ matrix.SM_VERSION }}
           path: package
+
+      - name: Re/move files
+        if: matrix.SM_VERSION == '1.12'
+        run: |
+          rm -r package/cfg/fuckTimer
+          rm package/{LICENSE,README.md}
+          mkdir -p package/csgo
+          mv package/{addons,cfg} package/csgo
+
+      - name: Upload package to test server
+        if: matrix.SM_VERSION == '1.12'
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        env:
+          FTP_SERVER: ${{ secrets.SFTP_HOST }}
+          FTP_USERNAME: ${{ secrets.SFTP_USER }}
+          FTP_PASSWORD: ${{ secrets.SFTP_PASS }}
+          LOCAL_DIR: package
+          METHOD: sftp
+          PORT: ${{ secrets.SFTP_PORT }}
+          ARGS: --no-empty-dirs
+
+      - name: Trigger server restart
+        if: matrix.SM_VERSION == '1.12'
+        shell: bash
+        run: |
+          curl --request POST \
+            --url ${{ secrets.BASE_URL }}api/client/servers/${{ secrets.SERVER_ID }}/power \
+            --header 'Accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.API_KEY }}' \
+            --header 'Content-Type: application/json' \
+            --data '{ "signal": "restart" }'
+
+      - name: Post restart message on discord
+        if: matrix.SM_VERSION == '1.12'
+        run: |
+          curl -i \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -X POST \
+            --data "{\"content\": \"Test Server has been restarted.\n\n**Time:** ${{ env.DATE_TIME }}\n**Branch:** ${{ steps.get_branch_name.outputs.branch }}\n**Commit:** ${{ env.COMMIT }}\n**Message:** ${{ github.event.head_commit.message }}\n**Author:** ${{ github.event.head_commit.author.name }}\n**SHA:** ${{ env.SHORT_SHA }}\n**SourceMod:** ${{ matrix.SM_VERSION }}\"}" \
+            ${{ secrets.WEBHOOK_URL }}
+

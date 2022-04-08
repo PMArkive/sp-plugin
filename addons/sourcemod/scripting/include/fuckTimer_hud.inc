@@ -15,13 +15,6 @@ enum eHUDSeparator
     HSBar
 }
 
-enum eHUDSpeed
-{
-    HSXY = 0,
-    HSXYZ,
-    HSZ
-}
-
 enum eHUDTime
 {
     HTMinimal = 0,

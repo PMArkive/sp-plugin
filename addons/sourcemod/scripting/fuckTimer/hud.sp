@@ -5,6 +5,8 @@
 #include <fuckZones>
 #include <fuckTimer_api>
 #include <fuckTimer_stocks>
+#include <fuckTimer_hud>
+#include <fuckTimer_timer>
 #include <fuckTimer_maps>
 #include <fuckTimer_zones>
 #include <fuckTimer_records>
@@ -70,7 +72,9 @@ enum struct PluginData
 
     char Title[32];
 
-    IntMap MapRecordDetails[MAX_STYLES + 1];
+    AnyMap Checkpoints;
+    AnyMap Stages;
+    AnyMap MapRecordDetails[MAX_STYLES + 1];
 }
 PluginData Core;
 
@@ -191,19 +195,22 @@ public void OnGameFrame()
         return;
     }
 
-    IntMap imBuffer;
+    AnyMap amBuffer;
     char sBuffer[MAX_HUD_KEY_LENGTH], sRightBuffer[MAX_HUD_KEY_LENGTH], sSetting[MAX_SETTING_VALUE_LENGTH];
 
     float fTime = 0.0;
     int iMaxBonus = fuckTimer_GetAmountOfBonus();
 
-    IntMap imCheckpoints = new IntMap();
-    IntMap imStages = new IntMap();
-
-    for (int i = 0; i <= iMaxBonus; i++)
+    if (Core.Checkpoints == null)
     {
-        imCheckpoints.SetValue(i, fuckTimer_GetAmountOfCheckpoints(i));
-        imStages.SetValue(i, fuckTimer_GetAmountOfStages(i));
+        Core.Checkpoints = new AnyMap();
+        Core.Stages = new AnyMap();
+
+        for (int i = 0; i <= iMaxBonus; i++)
+        {
+            Core.Checkpoints.SetValue(i, fuckTimer_GetAmountOfCheckpoints(i));
+            Core.Stages.SetValue(i, fuckTimer_GetAmountOfStages(i));
+        }
     }
 
     fuckTimer_LoopClients(client, false, false)
@@ -248,13 +255,13 @@ public void OnGameFrame()
             client = target;
         }
 
-        imBuffer = new IntMap();
+        amBuffer = new AnyMap();
 
         FormatEx(sBuffer, sizeof(sBuffer), "Tier: %d", fuckTimer_GetCurrentMapTier());
-        imBuffer.SetString(HKTier, sBuffer);
+        amBuffer.SetString(HKTier, sBuffer);
 
         GetCurrentMap(sBuffer, sizeof(sBuffer));
-        imBuffer.SetString(HKMap, sBuffer);
+        amBuffer.SetString(HKMap, sBuffer);
 
         char sSpeed[MAX_SETTING_VALUE_LENGTH];
         fuckTimer_GetClientSetting(iClient, "HUDSpeed", sSpeed);
@@ -312,13 +319,13 @@ public void OnGameFrame()
         }
 
         FormatEx(sBuffer, sizeof(sBuffer), "Speed: %.0f%s", fSpeed, (StringToBool(sSetting) ? " u/s" : ""));
-        imBuffer.SetString(HKSpeed, sBuffer);
+        amBuffer.SetString(HKSpeed, sBuffer);
         
         Styles style = fuckTimer_GetClientStyle(iClient);
         fuckTimer_GetStyleName(style, sBuffer, sizeof(sBuffer));
         
         Format(sBuffer, sizeof(sBuffer), "Style: %s", sBuffer);
-        imBuffer.SetString(HKStyle, sBuffer);
+        amBuffer.SetString(HKStyle, sBuffer);
 
         int iBonus = fuckTimer_GetClientBonus(client);
 
@@ -336,7 +343,7 @@ public void OnGameFrame()
         {
             FormatEx(sBuffer, sizeof(sBuffer), "PR: None");
         }
-        imBuffer.SetString(HKPersonalRecord, sBuffer);
+        amBuffer.SetString(HKPersonalRecord, sBuffer);
 
         if (fuckTimer_GetServerRecord(style, iBonus, record))
         {
@@ -347,7 +354,7 @@ public void OnGameFrame()
         {
             FormatEx(sBuffer, sizeof(sBuffer), "SR: None");
         }
-        imBuffer.SetString(HKServerRecord, sBuffer);
+        amBuffer.SetString(HKServerRecord, sBuffer);
 
         MapRecordDetails mrDetails;
         mrDetails.AvgTime = 0.0;
@@ -370,25 +377,25 @@ public void OnGameFrame()
             FormatEx(sBuffer, sizeof(sBuffer), "Rank: %d/%d", iRank, mrDetails.Count);
         }
 
-        imBuffer.SetString(HKMapRank, sBuffer);
+        amBuffer.SetString(HKMapRank, sBuffer);
 
         if (Player[client].CompareTime == 0 || Player[client].CompareTime <= GetTime())
         {
             GetTimeBySeconds(iClient, fTime, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-            imBuffer.SetString(HKTime, sBuffer);
+            amBuffer.SetString(HKTime, sBuffer);
         }
         else
         {
             GetTimeBySeconds(iClient, Player[client].CompareTimeValue, sBuffer, sizeof(sBuffer));
             Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-            imBuffer.SetString(HKTime, sBuffer);
+            amBuffer.SetString(HKTime, sBuffer);
         }
 
         if (strlen(Player[client].Zone) > 1)
         {
             FormatEx(sBuffer, sizeof(sBuffer), "Zone: %s", Player[client].Zone);
-            imBuffer.SetString(HKZone, sBuffer);
+            amBuffer.SetString(HKZone, sBuffer);
         }
 
         bool bReplaceBonus = true;
@@ -410,7 +417,7 @@ public void OnGameFrame()
             fuckTimer_IsCheckerZone(Player[client].LastZone, iTemp, iValidator);
         }
 
-        if (imStages.GetInt(iBonus) > 0)
+        if (Core.Stages.GetInt(iBonus) > 1)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeStage, iStage);
 
@@ -420,27 +427,27 @@ public void OnGameFrame()
                 {
                     GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
                     Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-                    imBuffer.SetString(HKCSTime, sBuffer);
+                    amBuffer.SetString(HKCSTime, sBuffer);
                 }
                 else
                 {
                     FormatEx(sBuffer, sizeof(sBuffer), "0.000");
-                    imBuffer.SetString(HKCSTime, sBuffer);
+                    amBuffer.SetString(HKCSTime, sBuffer);
                 }
             }
             else
             {
                 GetTimeBySeconds(iClient, Player[client].CompareCSTimeValue, sBuffer, sizeof(sBuffer));
                 Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-                imBuffer.SetString(HKCSTime, sBuffer);
+                amBuffer.SetString(HKCSTime, sBuffer);
             }
             
 
-            FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 0 ? "B-" : "", iStage, imStages.GetInt(iBonus));
-            imBuffer.SetString(HKCurrentStage, sBuffer);
-            imBuffer.SetString(HKMapType, sBuffer);
+            FormatEx(sBuffer, sizeof(sBuffer), "%sStage: %d/%d", iBonus > 1 ? "B-" : "", iStage, Core.Stages.GetInt(iBonus));
+            amBuffer.SetString(HKCurrentStage, sBuffer);
+            amBuffer.SetString(HKMapType, sBuffer);
         }
-        else if (imCheckpoints.GetInt(iBonus) > 0)
+        else if (Core.Checkpoints.GetInt(iBonus) > 1)
         {
             fCPStageTime = fuckTimer_GetClientTime(client, TimeCheckpoint, iCheckpoint);
 
@@ -448,29 +455,29 @@ public void OnGameFrame()
             {
                 GetTimeBySeconds(iClient, fCPStageTime, sBuffer, sizeof(sBuffer));
                 Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-                imBuffer.SetString(HKCSTime, sBuffer);
+                amBuffer.SetString(HKCSTime, sBuffer);
             }
             else
             {
                 GetTimeBySeconds(iClient, Player[client].CompareCSTimeValue, sBuffer, sizeof(sBuffer));
                 Format(sBuffer, sizeof(sBuffer), "%s", sBuffer);
-                imBuffer.SetString(HKCSTime, sBuffer);
+                amBuffer.SetString(HKCSTime, sBuffer);
             } 
 
-            FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 0 ? "B-" : "", iCheckpoint, imCheckpoints.GetInt(iBonus));
-            imBuffer.SetString(HKCurrentStage, sBuffer);
+            FormatEx(sBuffer, sizeof(sBuffer), "%sCP: %d/%d", iBonus > 1 ? "B-" : "", iCheckpoint, Core.Checkpoints.GetInt(iBonus));
+            amBuffer.SetString(HKCurrentStage, sBuffer);
 
-            FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 0 ? "Bonus" : "Map");
-            imBuffer.SetString(HKMapType, sBuffer);
+            FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 1 ? "Bonus" : "Map");
+            amBuffer.SetString(HKMapType, sBuffer);
         }
         else
         {
             FormatEx(sBuffer, sizeof(sBuffer), "Linear %s", iBonus > 0 ? "Bonus" : "Map");
-            imBuffer.SetString(HKMapType, sBuffer);
-            imBuffer.SetString(HKCurrentStage, sBuffer);
+            amBuffer.SetString(HKMapType, sBuffer);
+            amBuffer.SetString(HKCurrentStage, sBuffer);
 
             FormatEx(sBuffer, sizeof(sBuffer), "0.000");
-            imBuffer.SetString(HKCSTime, sBuffer);
+            amBuffer.SetString(HKCSTime, sBuffer);
 
             if (iBonus > 0)
             {
@@ -479,25 +486,25 @@ public void OnGameFrame()
         }
 
         FormatEx(sBuffer, sizeof(sBuffer), "Attempts: %d", fuckTimer_GetClientAttempts(client));
-        imBuffer.SetString(HKAttempts, sBuffer);
+        amBuffer.SetString(HKAttempts, sBuffer);
 
         FormatEx(sBuffer, sizeof(sBuffer), "Sync: %.2f", fuckTimer_GetClientSync(client, iBonus));
-        imBuffer.SetString(HKSync, sBuffer);
+        amBuffer.SetString(HKSync, sBuffer);
 
         FormatEx(sBuffer, sizeof(sBuffer), "Av-Speed: %d", fuckTimer_GetClientAVGSpeed(client));
-        imBuffer.SetString(HKAVGSpeed, sBuffer);
+        amBuffer.SetString(HKAVGSpeed, sBuffer);
         
         GetTimeBySeconds(iClient, mrDetails.AvgTime, sBuffer, sizeof(sBuffer));
         FormatEx(sBuffer, sizeof(sBuffer), "Av-Time: %s", sBuffer);
-        imBuffer.SetString(HKAVGTime, sBuffer);
+        amBuffer.SetString(HKAVGTime, sBuffer);
 
         FormatEx(sBuffer, sizeof(sBuffer), "Jumps: %d", fuckTimer_GetClientJumps(client));
-        imBuffer.SetString(HKJumps, sBuffer);
+        amBuffer.SetString(HKJumps, sBuffer);
 
         fTime = fuckTimer_GetClientTimeInZone(client);
         GetTimeBySeconds(iClient, fTime, sBuffer, sizeof(sBuffer));
         Format(sBuffer, sizeof(sBuffer), "Zone Time: %s", sBuffer);
-        imBuffer.SetString(HKTimeInZone, sBuffer);
+        amBuffer.SetString(HKTimeInZone, sBuffer);
 
         int iStartMatches = StrContains(Player[client].Zone, "start", false);
         bool bStartZone = fuckZones_IsClientInZoneIndex(client, fuckTimer_GetStartZone(fuckTimer_GetClientBonus(client)));
@@ -507,12 +514,12 @@ public void OnGameFrame()
         if (iStartMatches != -1 || bStartZone)
         {
             FormatEx(sBuffer, sizeof(sBuffer), "Map Start");
-            imBuffer.SetString(HKMapType, sBuffer);
+            amBuffer.SetString(HKMapType, sBuffer);
         }
         else if (iEndMatches != -1 || bEndZone)
         {
             FormatEx(sBuffer, sizeof(sBuffer), "Map End");
-            imBuffer.SetString(HKMapType, sBuffer);
+            amBuffer.SetString(HKMapType, sBuffer);
         }
 
         if (bReplaceBonus && iMaxBonus > 0 && iBonus > 0)
@@ -520,7 +527,7 @@ public void OnGameFrame()
             if (bStartZone || bEndZone)
             {
                 FormatEx(sBuffer, sizeof(sBuffer), "Bonus: %d/%d", iBonus, iMaxBonus);
-                imBuffer.SetString(HKCurrentStage, sBuffer);
+                amBuffer.SetString(HKCurrentStage, sBuffer);
             }
 
             sBuffer[0] = '\0';
@@ -539,13 +546,13 @@ public void OnGameFrame()
             }
 
             Format(sBuffer, sizeof(sBuffer), "Bonus%s", sBuffer);
-            imBuffer.SetString(HKMapType, sBuffer);
+            amBuffer.SetString(HKMapType, sBuffer);
         }
 
         if (iValidator > 0)
         {
             FormatEx(sBuffer, sizeof(sBuffer), "Validator: %d/%d", fuckTimer_GetClientValidator(client), iValidator);
-            imBuffer.SetString(HKValidator, sBuffer);
+            amBuffer.SetString(HKValidator, sBuffer);
         }
 
         char sHUD[6*128+32], sHUDBuffer[128], sScale[8];
@@ -563,12 +570,12 @@ public void OnGameFrame()
         {
             if (Player[client].LeftSide[i] > 0)
             {
-                imBuffer.GetString(Player[client].LeftSide[i], sBuffer, sizeof(sBuffer));
+                amBuffer.GetString(Player[client].LeftSide[i], sBuffer, sizeof(sBuffer));
             }
             
             if (Player[client].RightSide[i] > 0)
             {
-                imBuffer.GetString(Player[client].RightSide[i], sRightBuffer, sizeof(sRightBuffer));
+                amBuffer.GetString(Player[client].RightSide[i], sRightBuffer, sizeof(sRightBuffer));
             }
 
             if (strlen(sBuffer) < 1 && strlen(sRightBuffer) < 1)
@@ -599,14 +606,11 @@ public void OnGameFrame()
             sRightBuffer[0] = '\0';
         }
 
-        delete imBuffer;
+        delete amBuffer;
 
         Format(sHUD, sizeof(sHUD), "%s%s</font></pre>", sHUD, sHUDBuffer);
         PrintCSGOHUDText(iClient, sHUD);
     }
-
-    delete imCheckpoints;
-    delete imStages;
 }
 
 public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
@@ -637,7 +641,7 @@ public void fuckTimer_OnEnteringZone(int client, int zone, const char[] name)
 
     int iStage = fuckTimer_GetStageByIndex(zone, iBonus);
     
-    if (iStage > 0)
+    if (iStage > 1)
     {
         FormatEx(Player[client].Zone, sizeof(PlayerData::Zone), "Stage %d%s%s", iStage, bStart ? " Start" : "", bEnd ? " End" : "");
     }
@@ -686,6 +690,7 @@ public void fuckTimer_OnLeavingZone(int client, int zone, const char[] name)
     RecordData recordPR;
     RecordData recordSR;
     eCompareAgainst eReturn = GetRecord(client, sStyle, iBonus, eAgainst, recordPR, recordSR);
+    PrintToChatAll("%N - eReturn: %d", client, eReturn);
 
     float fVelocity[3];
     GetClientVelocity(client, fVelocity);
@@ -1005,12 +1010,12 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
             RecordData record;
             CSDetails recordDetails;
 
-            if (against == CAPR)
+            if (against == CAPR && recordPR.Details != null)
             {
                 recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
                 record = recordPR;
             }
-            else if (against == CASR)
+            else if (against == CASR && recordSR.Details != null)
             {
                 recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
                 record = recordSR;
@@ -1029,23 +1034,20 @@ void CompareChat_LeaveZone(int client, bool startZone, int level, eCompareAgains
         }
         else if (against == CABoth)
         {
-            float fRecordSpeed = 0.0;
-            float fServerRecordSpeed = 0.0;
-            
             CSDetails recordDetailsPR;
             if (recordPR.Details != null)
             {
                 recordPR.Details.GetArray(level, recordDetailsPR, sizeof(recordDetailsPR));
-                fRecordSpeed = GetVelocitySpeed(startZone ? recordPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
             }
 
             CSDetails recordDetailsSR;
             if (recordSR.Details != null)
             {
                 recordSR.Details.GetArray(level, recordDetailsSR, sizeof(recordDetailsSR));
-                fServerRecordSpeed = GetVelocitySpeed(startZone ? recordSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
             }
 
+            float fRecordSpeed = GetVelocitySpeed(startZone ? recordPR.StartVelocity : recordDetailsPR.EndVelocity, speed);
+            float fServerRecordSpeed = GetVelocitySpeed(startZone ? recordSR.StartVelocity : recordDetailsSR.EndVelocity, speed);
 
             if (mode == CMFull)
             {
@@ -1178,11 +1180,11 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
         {
             CSDetails recordDetails;
 
-            if (against == CAPR)
+            if (against == CAPR && recordPR.Details != null)
             {
                 recordPR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
             }
-            else if (against == CASR)
+            else if (against == CASR && recordSR.Details != null)
             {
                 recordSR.Details.GetArray(level, recordDetails, sizeof(recordDetails));
             }
@@ -1220,8 +1222,8 @@ void CompareChat_EnterZone(int client, RecordData recordPR, RecordData recordSR,
         }
         else if (against == CABoth)
         {
-            float fRecordSpeed = 0.0;
-            float fServerRecordSpeed = 0.0;
+            float fRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordPR.StartVelocity : recordPR.EndVelocity, speed);
+            float fServerRecordSpeed = GetVelocitySpeed(type == TimeCheckpoint ? recordSR.StartVelocity : recordSR.EndVelocity, speed);
 
             CSDetails recordDetailsPR;
             if (recordPR.Details != null)
@@ -1444,6 +1446,5 @@ void LoadServerRecordCount()
 {
     char sEndpoint[MAX_URL_LENGTH];
     FormatEx(sEndpoint, sizeof(sEndpoint), "Records/Count/MapId/%d", fuckTimer_GetCurrentMapId());
-    LogStackTrace(sEndpoint);
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Get(GetRecordsCount);
 }

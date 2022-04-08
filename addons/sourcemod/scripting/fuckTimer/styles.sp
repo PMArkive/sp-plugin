@@ -3,11 +3,12 @@
 
 #include <sourcemod>
 #include <fuckTimer_stocks>
+#include <fuckTimer_styles>
 #include <fuckTimer_api>
 
 enum struct PluginData
 {
-    IntMap Styles;
+    AnyMap Styles;
 
     GlobalForward OnStylesLoaded;
 }
@@ -36,7 +37,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
-public void OnConfigsExecuted()
+public void fuckTimer_OnMapDataLoaded()
 {
     LoadStyles();
 }
@@ -63,7 +64,7 @@ public void GetAllStyles(HTTPResponse response, any value, const char[] error)
     }
 
     delete Core.Styles;
-    Core.Styles = new IntMap();
+    Core.Styles = new AnyMap();
 
     JSONObject jsonObject = null;
     Style style;
@@ -89,7 +90,6 @@ public any Native_GetStyles(Handle plugin, int numParams)
 {
     return Core.Styles;
 }
-
 
 public int Native_GetStyleName(Handle plugin, int numParams)
 {

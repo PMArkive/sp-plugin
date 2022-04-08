@@ -8,6 +8,8 @@
 #define MAX_URL_LENGTH 2048
 #define FUCKTIMER_BASE_CLOUD_URL "https://raw.githubusercontent.com/fuckTimer"
 
+forward void fuckTimer_OnAPIReady();
+
 /**
  * @return        SP_ERROR_NONE on success, any other integer on failure.
  */

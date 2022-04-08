@@ -6,6 +6,8 @@
 #include <fuckZones>
 #include <fuckTimer_stocks>
 #include <fuckTimer_api>
+#include <fuckTimer_maps>
+#include <fuckTimer_timer>
 #include <fuckTimer_zones>
 #include <fuckTimer_players>
 #include <fuckTimer_commands>
@@ -37,11 +39,16 @@ enum struct PluginData
 {
     StringMap Settings;
     ConVar MessageInterval;
+
     GlobalForward OnPlayerLoaded;
+    GlobalForward OnSharedLocationsLoaded;
+    GlobalForward OnPlayerStyleChange;
 }
 PluginData Core;
 
+#include "players/locations.sp"
 #include "api/players.sp"
+#include "api/locations.sp"
 
 public Plugin myinfo =
 {
@@ -55,6 +62,8 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     Core.OnPlayerLoaded = new GlobalForward("fuckTimer_OnPlayerLoaded", ET_Ignore, Param_Cell);
+    Core.OnSharedLocationsLoaded = new GlobalForward("fuckTimer_OnSharedLocationsLoaded", ET_Ignore);
+    Core.OnPlayerStyleChange = new GlobalForward("fuckTimer_OnPlayerStyleChange", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
     
     CreateNative("fuckTimer_RegisterSetting", Native_RegisterSetting);
 
@@ -85,7 +94,6 @@ public void OnPluginStart()
     IntToString(view_as<int>(IKBlock), sValue, sizeof(sValue));
     Core.Settings.SetString(SETTING_INVALIDKEYPREF, sValue);
 
-    HookEvent("player_activate", Event_PlayerActivate);
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
 
@@ -93,11 +101,27 @@ public void OnPluginStart()
     {
         SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
     }
+
+    Locations_RegisterCommands();
+    Locations_RegisterSettings();
+}
+
+public void OnMapStart()
+{
+    Locations_OnMapStart();
+}
+
+public void fuckTimer_OnStylesLoaded()
+{
+    LoadSharedLocations();
 }
 
 public void OnClientPutInServer(int client)
 {
     SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
+
+    LoadPlayer(client);
+    Locations_OnClientPutInServer(client);
 }
 
 public void fuckTimer_OnClientRestart(int client)
@@ -110,18 +134,10 @@ public void fuckTimer_OnClientRestart(int client)
     }
 }
 
-public Action Event_PlayerActivate(Event event, const char[] name, bool dontBroadcast)
-{
-    int client = GetClientOfUserId(event.GetInt("userid"));
-
-    LoadPlayer(client);
-
-    return Plugin_Continue;
-}
-
 public void OnClientDisconnect(int client)
 {
     UpdatePlayer(client, true);
+    Locations_OnClientDisconnect(client);
 }
 
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
@@ -131,7 +147,7 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
     return Plugin_Continue;
 }
 
-public void Frame_PlayerSpawn(any userid)
+public void Frame_PlayerSpawn(int userid)
 {
     int client = GetClientOfUserId(userid);
 
@@ -392,23 +408,38 @@ public any Native_SetClientSetting(Handle plugin, int numParams)
 
     if (sSetting[0] == 'S' && sSetting[2] == 'y')
     {
-        Styles style = view_as<Styles>(StringToInt(sValue));
+        Styles newStyle = view_as<Styles>(StringToInt(sValue));
 
-        if (style != StyleLowGravity)
+        char sOldValue[MAX_SETTING_VALUE_LENGTH];
+        Player[client].Settings.GetString(sSetting, sOldValue, sizeof(sOldValue));
+        Styles oldStyle = view_as<Styles>(StringToInt(sOldValue));
+
+        if (oldStyle == newStyle)
+        {
+            return false;
+        }
+
+        if (newStyle != StyleLowGravity)
         {
             SetEntityGravity(client, 1.0);
         }
         
-        if (style != StyleSlowMotion)
+        if (newStyle != StyleSlowMotion)
         {
             SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.0);
         }
+
+        Call_StartForward(Core.OnPlayerStyleChange);
+        Call_PushCell(client);
+        Call_PushCell(oldStyle);
+        Call_PushCell(newStyle);
+        Call_Finish();
     }
 
     Player[client].Settings.SetString(sSetting, sValue);
     SetPlayerSetting(client, sSetting, sValue);
     
-    return 0;
+    return true;
 }
 
 public any Native_GetClientStatus(Handle plugin, int numParams)
@@ -452,6 +483,8 @@ void UpdatePlayer(int client, bool reset = false)
     jPlayer.SetString("LastIP", sBuffer);
 
     jPlayer.SetInt("Status", view_as<int>(Player[client].Status));
+    
+    LogStackTrace("Status set to %d (%d)", Player[client].Status, jPlayer.GetInt("Status"));
 
     fuckTimer_NewAPIHTTPRequest(sEndpoint).Put(jPlayer, UpdatePlayerData);
 

@@ -4,6 +4,9 @@
 #include <sourcemod>
 #include <fuckZones>
 #include <fuckTimer_stocks>
+#include <fuckTimer_hud>
+#include <fuckTimer_timer>
+#include <fuckTimer_styles>
 #include <fuckTimer_maps>
 #include <fuckTimer_zones>
 #include <fuckTimer_players>
@@ -60,6 +63,7 @@ public void OnPluginStart()
     // sm_settings
 
     // Player commands
+    RegConsoleCmd("sm_commands", Command_AllCommands, "List all fuckTimer related commands as menu");
     RegConsoleCmd("sm_invalidkey", Command_InvalidKeyPref, "Choose your prefered option on invalid key input");
 
     // Timer Commands
@@ -106,6 +110,9 @@ public void OnPluginStart()
     RegConsoleCmd("sm_hudcomparetime", Command_HUDCompareTime, "How long the comparison should be shown in HUD");
     RegConsoleCmd("sm_hudcenterspeedposition", Command_HUDCenterSpeedPosition, "Specify the position of the X- and Y-Axis for the speed (center) hud");
     RegConsoleCmd("sm_hudcenterspeedcolor", Command_HUDCenterSpeedColor, "Specify the color of the X- and Y-Axis for the speed (center) hud");
+
+    // Locations commands
+    RegConsoleCmd("sm_sharelocations", Command_ShareLocations, "Enable/Disable sharing locations by default");
 }
 
 public void OnConfigsExecuted()
@@ -117,6 +124,11 @@ public void OnConfigsExecuted()
     CSetPrefix(sPrefix);
 
     cChatMessage.AddChangeHook(OnCVarChange);
+}
+
+public void fuckTimer_OnPlayerStyleChange(int client, Styles oldValue, Styles newValue)
+{
+    ClientRestart(client);
 }
 
 public void OnCVarChange(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -287,6 +299,11 @@ public Action Command_RestartStage(int client, int args)
     {
         iZone = fuckTimer_GetStartZone(iBonus);
         iLevel = 0;
+    }
+    else
+    {
+        CallOnClientCommand(client, 0, true);
+        ClientRestart(client);
     }
 
     if (iZone > 0)
@@ -618,9 +635,9 @@ public Action Command_Styles(int client, int args)
         return Plugin_Handled;
     }
 
-    IntMap imStyles = fuckTimer_GetStyles();
+    AnyMap amStyles = fuckTimer_GetStyles();
 
-    if (imStyles.Size < 2)
+    if (amStyles.Size < 2)
     {
         CReplyToCommand(client, "No styles found.");
         return Plugin_Handled;
@@ -632,14 +649,14 @@ public Action Command_Styles(int client, int args)
 
     Style style;
     char sBuffer[8];
-    for (int i = 1; i <= imStyles.Size; i++)
+    for (int i = 1; i <= amStyles.Size; i++)
     {
         if (!style.Status)
         {
             continue;
         }
 
-        imStyles.GetArray(i, style, sizeof(style));
+        amStyles.GetArray(i, style, sizeof(style));
         IntToString(style.Id, sBuffer, sizeof(sBuffer));
         menu.AddItem(sBuffer, style.Name);
     }
@@ -664,7 +681,6 @@ public int Menu_Styles(Menu menu, MenuAction action, int client, int param)
             fuckTimer_GetStyleName(style, sStyle, sizeof(sStyle));
 
             fuckTimer_SetClientSetting(client, "Style", sParam);
-            ClientRestart(client);
         }
     }
     else if (action == MenuAction_End)
@@ -788,6 +804,49 @@ public void OnMapTiers(int client, StringMap tiers)
     delete tiers;
 }
 
+public Action Command_AllCommands(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    Menu menu = new Menu(Menu_ListCommands);
+    menu.SetTitle("Select command to see how to use it:\n ");
+
+    CommandIterator iterator = new CommandIterator();
+
+    char sCommand[32], sDescription[64], sText[101];
+    while (iterator.Next())
+    {
+        char sName[32];
+        GetPluginFilename(iterator.Plugin, sName, sizeof(sName));
+
+        if (sName[0] != 'f' || sName[9] != '/')
+        {
+            continue;
+        }
+
+        iterator.GetName(sCommand, sizeof(sCommand));
+
+        if (StrContains(sCommand, "sm_commands", false) != -1)
+        {
+            iterator.GetDescription(sDescription, sizeof(sDescription));
+
+            FormatEx(sText, sizeof(sText), "%s\n%s", sCommand, sDescription);
+            menu.AddItem(sCommand, sText);
+        }
+    }
+
+    delete iterator;
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+
+    return Plugin_Handled;
+}
+
 public Action Command_HUD(int client, int args)
 {
     if (!fuckTimer_IsClientValid(client, true, true))
@@ -795,7 +854,7 @@ public Action Command_HUD(int client, int args)
         return Plugin_Handled;
     }
 
-    Menu menu = new Menu(Menu_ListHUDCommands);
+    Menu menu = new Menu(Menu_ListCommands);
     menu.SetTitle("Select command to see how to use it:\n ");
 
     CommandIterator iterator = new CommandIterator();
@@ -828,7 +887,7 @@ public Action Command_HUD(int client, int args)
     return Plugin_Handled;
 }
 
-public int Menu_ListHUDCommands(Menu menu, MenuAction action, int client, int param)
+public int Menu_ListCommands(Menu menu, MenuAction action, int client, int param)
 {
     if (action == MenuAction_Select)
     {
@@ -1726,10 +1785,10 @@ public Action Command_HUDCenterSpeedPosition(int client, int args)
         return Plugin_Handled;
     }
 
-    char sBuffer[12];
+    char sBuffer[33];
     fuckTimer_GetClientSetting(client, "HUDCenterSpeedPosition", sBuffer);
 
-    char sPrevPositions[2][4];
+    char sPrevPositions[2][16];
     ExplodeString(sBuffer, ";", sPrevPositions, sizeof(sPrevPositions), sizeof(sPrevPositions[]));
 
     if (args != 2)
@@ -1767,14 +1826,35 @@ public Action Command_HUDCenterSpeedPosition(int client, int args)
 
     if (sAxis[0] == 'x')
     {
-        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", sPosition, sPrevPositions[1]);
+        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", (fPosition != -1.0) ? sPosition : "-1.0", sPrevPositions[1]);
     }
     else
     {
-        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", sPrevPositions[0], sPosition);
+        FormatEx(sBuffer, sizeof(sBuffer), "%s;%s", sPrevPositions[0], (fPosition != -1.0) ? sPosition : "0.6");
     }
 
     fuckTimer_SetClientSetting(client, "HUDCenterSpeedPosition", sBuffer);
+
+    return Plugin_Handled;
+}
+
+public Action Command_ShareLocations(int client, int args)
+{
+    if (!fuckTimer_IsClientValid(client, true, true))
+    {
+        return Plugin_Handled;
+    }
+
+    char sSetting[MAX_SETTING_VALUE_LENGTH];
+    fuckTimer_GetClientSetting(client, "ShareLocations", sSetting);
+    bool status = StringToBool(sSetting);
+
+    status = !status;
+
+    IntToString(view_as<int>(status), sSetting, sizeof(sSetting));
+    fuckTimer_SetClientSetting(client, "ShareLocations", sSetting);
+
+    CReplyToCommand(client, "Share locations by default %s", status ? "enabled" : "disabled");
 
     return Plugin_Handled;
 }

@@ -6,6 +6,7 @@
 #include <ripext>
 #include <fuckTimer_stocks>
 #include <fuckTimer_records>
+#include <fuckTimer_hud>
 
 enum struct PluginData
 {
@@ -18,6 +19,7 @@ enum struct PluginData
     ConVar SRColor;
     ConVar MapImage;
     ConVar MapBase;
+    ConVar BonusImages;
 }
 PluginData Core;
 
@@ -42,6 +44,7 @@ public void OnPluginStart()
     Core.SRColor = AutoExecConfig_CreateConVar("discord_server_color", "16758272", "Decimal color code for server records\nHex to Decimal - https://www.rapidtables.com/convert/number/hex-to-decimal.html");
     Core.MapImage = AutoExecConfig_CreateConVar("discord_map_image", "1", "Where the map image should be shown. (0 - Disabled, 1 - Thumbnail, 2 - Big Image)", _, true, 0.0, true, 2.0);
     Core.MapBase = AutoExecConfig_CreateConVar("discord_map_base", "https://raw.githubusercontent.com/Sayt123/SurfMapPics/Maps-and-bonuses/csgo/<MAP>.jpg", "Base URL for map images.\nNote: <MAP> must be definied as map name\nExample: \"surf_easy1\" becomes <MAP>");
+    Core.BonusImages = AutoExecConfig_CreateConVar("discord_show_bonus_image", "1", "Show map bonus X image, when the base url support this feature - like the default one. (0 - Disabled, 1 - Enabled)", _, true, 0.0, true, 1.0);
     fuckTimer_EndConfig();
 }
 
@@ -49,7 +52,7 @@ public void fuckTimer_OnNewRecord(int client, bool serverRecord, StringMap temp,
 {
     // Copy all handles, before it'll be deleted and we get some errors
     StringMap recordDetails = view_as<StringMap>(CloneHandle(temp));
-    /* IntMap moreTemp;
+    /* AnyMap moreTemp;
     temp.GetValue("Details", moreTemp);
     if (moreTemp != null)
     {
@@ -90,9 +93,9 @@ public void OnHTTPResponse(HTTPResponse response, DataPack pack)
         pack.ReadCell(); // TODO: DataPack.Position?
         pack.ReadCell();
         StringMap recordDetails = view_as<StringMap>(pack.ReadCell());
-        /* IntMap imDetails;
-        recordDetails.GetValue("Details", imDetails);
-        delete imDetails; */
+        /* AnyMap amDetails;
+        recordDetails.GetValue("Details", amDetails);
+        delete amDetails; */
         delete recordDetails;
         delete pack;
         return;
@@ -148,9 +151,17 @@ void PrepareMessage(int client, bool serverRecord, StringMap recordDetails, floa
     eEmbed.SetColor(serverRecord ? Core.SRColor.IntValue : Core.PRColor.IntValue);
     // eEmbed.SetURL("..."); - when we've a statistic page?
 
+    int iBonus;
+    recordDetails.GetValue("Level", iBonus);
 
     char sMap[PLATFORM_MAX_PATH];
     fuckTimer_GetCurrentWorkshopMap(sMap, sizeof(sMap));
+    
+    if (Core.BonusImages.BoolValue && iBonus > 0)
+    {
+        Format(sMap, sizeof(sMap), "%s_b%d", sMap, iBonus);
+    }
+    
     Core.MapBase.GetString(sBuffer, sizeof(sBuffer));
     ReplaceString(sBuffer, sizeof(sBuffer), "<MAP>", sMap, false);
 
@@ -183,10 +194,6 @@ void PrepareMessage(int client, bool serverRecord, StringMap recordDetails, floa
         EmbedField eDifference = new EmbedField("Difference", sBuffer, true);
         eEmbed.AddField(eDifference);
     }
-
-    int iBonus;
-    recordDetails.GetValue("Level", iBonus);
-
     
     TimeType type;
     recordDetails.GetValue("Type", type);
@@ -236,9 +243,9 @@ void PrepareMessage(int client, bool serverRecord, StringMap recordDetails, floa
     }
     delete wWebhook;
 
-    /* IntMap imDetails;
-    recordDetails.GetValue("Details", imDetails);
-    delete imDetails; */
+    /* AnyMap amDetails;
+    recordDetails.GetValue("Details", amDetails);
+    delete amDetails; */
     delete recordDetails;
 }
 

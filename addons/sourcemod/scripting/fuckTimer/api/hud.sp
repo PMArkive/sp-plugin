@@ -1,4 +1,4 @@
-public void GetPlayerHudSettings(HTTPResponse response, any userid, const char[] error)
+public void GetPlayerHudSettings(HTTPResponse response, int userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
@@ -121,7 +121,7 @@ void PreparePlayerPostHudSettings(int client, eHUDStyle style = HUD_Default)
     delete jArray;
 }
 
-public void PostPlayerHudSettings(HTTPResponse response, any userid, const char[] error)
+public void PostPlayerHudSettings(HTTPResponse response, int userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
@@ -173,7 +173,7 @@ void PatchPlayerHUDKeys(int client, HUDEntry entry[2])
     delete jArray;
 }
 
-public void PatchPlayerHUDKey(HTTPResponse response, any userid, const char[] error)
+public void PatchPlayerHUDKey(HTTPResponse response, int userid, const char[] error)
 {
     int client = GetClientOfUserId(userid);
 
@@ -212,7 +212,7 @@ public void GetRecordsCount(HTTPResponse response, any data, const char[] error)
 
         if (Core.MapRecordDetails[iStyle] == null)
         {
-            Core.MapRecordDetails[iStyle] = new IntMap();
+            Core.MapRecordDetails[iStyle] = new AnyMap();
         }
 
         MapRecordDetails mrDetails;

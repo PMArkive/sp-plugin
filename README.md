@@ -26,8 +26,10 @@ This project was born as a meme. So you'll not find the "best code" here, but I'
 - [Remove Hint Dollar](https://forums.alliedmods.net/showthread.php?p=2760175)
 - [MomSurfFix](https://forums.alliedmods.net/showthread.php?t=320971)
 - [RNGFix](https://forums.alliedmods.net/showthread.php?t=310825)
-- [Movement Unlocker](https://forums.alliedmods.net/showthread.php?t=255298)
-- [Crouchboost Fix](https://github.com/t5mat/crouchboostfix/releases)
+- [Movement Unlocker](https://forums.alliedmods.net/showthread.php?t=255298) | [Gamedata](https://forums.alliedmods.net/attachment.php?attachmentid=141521&d=1495261818)
+- [Crouchboost Fix](https://github.com/Ciallo-Ani/boostfix) - Need to be compiled
+- [PushFixDE](https://github.com/GAMMACASE/PushFixDE)
+- [HeadBugFix](https://github.com/GAMMACASE/HeadBugFix)
 
 ### Optional:
 - [No Weapon Fix](https://forums.alliedmods.net/showthread.php?t=279035)

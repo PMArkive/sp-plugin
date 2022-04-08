@@ -66,17 +66,6 @@ public void Event_RoundPostStart(Event event, const char[] name, bool dontBroadc
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
     ItemCleanup();
-    RequestFrame(Frame_RespawnPlayer, event.GetInt("userid"));
-}
-
-public void Frame_RespawnPlayer(any userid)
-{
-    int client = GetClientOfUserId(userid);
-
-    if (client)
-    {
-        CS_RespawnPlayer(client);
-    }
 }
 
 void ItemCleanup()

@@ -11,6 +11,8 @@ enum struct PluginData
     ConVar APIKey;
     ConVar MetaModVersion;
     ConVar SourceModVersion;
+
+    GlobalForward OnAPIReady;
 }
 PluginData Core;
 
@@ -25,6 +27,8 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    Core.OnAPIReady = new GlobalForward("fuckTimer_OnAPIReady", ET_Ignore);
+
     CreateNative("fuckTimer_GetAPIUrl", Native_GetAPIUrl);
     CreateNative("fuckTimer_NewHTTPRequest", Native_NewHTTPRequest);
 
@@ -45,6 +49,9 @@ public void OnConfigsExecuted()
 {
     Core.MetaModVersion = FindConVar("metamod_version");
     Core.SourceModVersion = FindConVar("sourcemod_version");
+
+    Call_StartForward(Core.OnAPIReady);
+    Call_Finish();
 }
 
 public int Native_GetAPIUrl(Handle plugin, int numParams)

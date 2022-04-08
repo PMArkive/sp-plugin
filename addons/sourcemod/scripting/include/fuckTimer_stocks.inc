@@ -6,10 +6,7 @@
 #include <autoexecconfig>
 #include <sdktools>
 #include <multicolors>
-#include <intmap>
-#include <fuckTimer_hud>
-#include <fuckTimer_styles>
-#include <fuckTimer_timer>
+#include <anymap>
 
 #define FUCKTIMER_PLUGIN_NAME "fuckTimer - "
 #define FUCKTIMER_PLUGIN_AUTHOR "fuckTimer Contributors"
@@ -31,6 +28,31 @@
 #define MAX_ENTITIES 2048
 
 #define fuckTimer_LoopClients(%1,%2,%3) for (int %1 = 1; %1 <= MaxClients; %1++) if (fuckTimer_IsClientValid(%1, %2, %3))
+
+enum Styles {
+    StyleNone = 0,
+    StyleNormal,
+    StyleSideways,
+    StyleHSW,
+    StyleBackwards,
+    StyleLowGravity,
+    StyleSlowMotion,
+    StylePractice
+};
+
+enum TimeType
+{
+    TimeMain = 0,
+    TimeCheckpoint,
+    TimeStage
+};
+
+enum eHUDSpeed
+{
+    HSXY = 0,
+    HSXYZ,
+    HSZ
+}
 
 enum struct RecordData
 {
@@ -54,7 +76,7 @@ enum struct RecordData
     float EndPosition[3];
     float EndAngle[3];
     float EndVelocity[3];
-    IntMap Details;
+    AnyMap Details;
 }
 
 stock void fuckTimer_StartConfig(char[] file, char[] directory = "fuckTimer")
@@ -239,4 +261,13 @@ stock void GetClientVelocity(int client, float velocity[3])
 stock bool StringToBool(const char[] value)
 {
     return view_as<bool>(StringToInt(value));
+}
+
+stock void PrintDebug(int client, const char[] message, any ...)
+{
+    char buffer[1024];
+    VFormat(buffer, sizeof(buffer), message, 3);
+
+    LogMessage(buffer);
+    PrintToChat(client, buffer);
 }

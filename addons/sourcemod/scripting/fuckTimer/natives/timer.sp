@@ -70,7 +70,7 @@ public any Native_GetClientTimeInZone(Handle plugin, int numParams)
     }
     else if (level > 0)
     {
-        return GetIntMapTimeInZone(Player[client].StageDetails, level);
+        return GetAnyMapTimeInZone(Player[client].StageDetails, level);
     }
 
     return 0.0;
@@ -87,7 +87,7 @@ public int Native_GetClientAttempts(Handle plugin, int numParams)
     }
     else if (level > 0)
     {
-        return GetIntMapAttempts(Player[client].StageDetails, level);
+        return GetAnyMapAttempts(Player[client].StageDetails, level);
     }
 
     return 0;
@@ -111,11 +111,11 @@ public any Native_GetClientSync(Handle plugin, int numParams)
     {
         if (Player[client].CheckpointRunning)
         {
-            return GetIntMapSync(Player[client].CheckpointDetails, level);
+            return GetAnyMapSync(Player[client].CheckpointDetails, level);
         }
         else if (Player[client].StageRunning)
         {
-            return GetIntMapSync(Player[client].StageDetails, level);
+            return GetAnyMapSync(Player[client].StageDetails, level);
         }
     }
 
@@ -140,11 +140,11 @@ public int Native_GetClientAVGSpeed(Handle plugin, int numParams)
     {
         if (Player[client].CheckpointRunning)
         {
-            return GetIntMapSpeed(Player[client].CheckpointDetails, level);
+            return GetAnyMapSpeed(Player[client].CheckpointDetails, level);
         }
         else if (Player[client].StageRunning)
         {
-            return GetIntMapSpeed(Player[client].StageDetails, level);
+            return GetAnyMapSpeed(Player[client].StageDetails, level);
         }
     }
 
@@ -164,11 +164,11 @@ public int Native_GetClientJumps(Handle plugin, int numParams)
     {
         if (Player[client].CheckpointRunning)
         {
-            return GetIntMapJumps(Player[client].CheckpointDetails, level);
+            return GetAnyMapJumps(Player[client].CheckpointDetails, level);
         }
         else if (Player[client].StageRunning)
         {
-            return GetIntMapJumps(Player[client].StageDetails, level);
+            return GetAnyMapJumps(Player[client].StageDetails, level);
         }
     }
 

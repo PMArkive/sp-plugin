@@ -14,12 +14,13 @@
 #define EFFECT_CALLBACK_ONACTIVEZONE 1
 #define EFFECT_CALLBACK_ONLEAVEZONE 2
 
-#define ZONE_TYPES 5
+#define ZONE_TYPES 6
 #define ZONE_TYPE_NONE 0
 #define ZONE_TYPE_BOX 1
 #define ZONE_TYPE_CIRCLE 2
 #define ZONE_TYPE_POLY 3
 #define ZONE_TYPE_TRIGGER 4
+#define ZONE_TYPE_SOLID 5
 
 #define DISPLAY_TYPE_TYPES 3
 #define DISPLAY_TYPE_FULL 0
@@ -62,6 +63,7 @@ native bool fuckZones_IsClientInZone(int client, const char[] name);
 native bool fuckZones_IsClientInZoneIndex(int client, int zone);
 native bool fuckZones_TeleportClientToZone(int client, const char[] name);
 native bool fuckZones_TeleportClientToZoneIndex(int client, int zone);
+native int fuckZones_GetClientZone(int client); // returns -1 if client is not in any Zone. if Client is in multiple zones returns first occure.
 
 /*
  * Don't close this ArrayList. It will handled by fuckZones.
