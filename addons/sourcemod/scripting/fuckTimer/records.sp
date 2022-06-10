@@ -109,7 +109,7 @@ public void OnClientDisconnect(int client)
 
 public void fuckTimer_OnClientTimerEnd(int client, StringMap temp)
 {
-    if (fuckTimer_GetClientStyle(client) < StylePractice)
+    if (fuckTimer_GetClientStyle(client) == StylePractice)
     {
         return;
     }
